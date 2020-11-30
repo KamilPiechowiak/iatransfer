@@ -10,6 +10,7 @@ import torch_xla.distributed.parallel_loader as pl
 import torch_xla.distributed.xla_multiprocessing as xmp
 import torch_xla.utils.utils as xu
 from datetime import datetime
+from time import time
 import os, shutil
 from stats_reporter import StatsReporter
 import math
@@ -22,8 +23,14 @@ def singleEpoch(device, model, loader, loss_func, opt=None, stats=None, metrics=
   for metric in metrics.keys():
     metric_values[metric] = []
 
+  i = 0
+  t3 = time()
+  a1, a2, a3 = 0, 0, 0
   for x, y in loader:
+    t1 = time()
+    a1+=t1-t3
     y_pred = model(x)
+    t2 = time()
     loss = loss_func(y_pred, y)
     for metric, f in metrics.items():
       metric_values[metric].append(f(y_pred, y).detach())
@@ -31,6 +38,15 @@ def singleEpoch(device, model, loader, loss_func, opt=None, stats=None, metrics=
       loss.backward()
       xm.optimizer_step(opt)
       opt.zero_grad()
+    t3 = time()
+    a2+=t2-t1
+    a3+=t3-t2
+    i+=1
+  print("Total iter", i)
+  a1/=i
+  a2/=i
+  a3/=i
+  print(a1, a2, a3)
 
   metric_keys = list(metric_values.keys())
   metric_list = []
