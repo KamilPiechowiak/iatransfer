@@ -14,10 +14,11 @@ FLAGS = {
     'learning_rate': 1e-2,
     'epochs': 20,
     'scheduler_mocked_epochs': 100,
-    'batch_size': 128,
+    'batch_size': 32,
     'persist_state_every': 2,
     'repeat': 1,
     'path': '/content/gdrive/My Drive/projects/weightsTransfer/xla_test2',
-    'num_workers': 4
+    'num_workers': 4,
+    'datasets_path': '/content/data'
 }
 FLAGS['num_cores'] = 8 if os.environ.get('TPU_NAME', None) else 1

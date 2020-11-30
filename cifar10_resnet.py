@@ -30,11 +30,11 @@ class ResidualBlock(nn.Module):
     return self.block(x)+x
 
 class Cifar10Resnet(nn.Module):
-  def __init__(self, n, num_classes=10, channels=16):
+  def __init__(self, n, num_classes=10, channels=16, input_channels=3):
     super(Cifar10Resnet, self).__init__()
     channels = [channels, channels*2, channels*4]
     layers = [
-      nn.Conv2d(3, channels[0], kernel_size=3, padding=1),
+      nn.Conv2d(input_channels, channels[0], kernel_size=3, padding=1),
       nn.BatchNorm2d(channels[0]),
       nn.ReLU()
     ]

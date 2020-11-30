@@ -6,7 +6,7 @@ from typing import Dict, Callable, Tuple, List
 import pickle
 from train_model import trainModel
 from transfer_flags import FLAGS
-from data import TrainingTuple
+from data import TrainingTuple, get_dataset
 from models import training_tuples
 
 def createPretrainedModelsDict() -> Dict[str, TrainingTuple]:
@@ -29,7 +29,8 @@ def testTransfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Cal
         to_path = f"{FLAGS['path']}/{t.name}_{i}_from_{from_model_name}"
         to_model = t.model()
         transfer(from_model, to_model)
-        trainModel(FLAGS, device, to_model, to_path, SERIAL_EXEC.run(t.train_dataset), SERIAL_EXEC.run(t.val_dataset))
+        train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+        trainModel(FLAGS, device, to_model, to_path, SERIAL_EXEC.run(train_dataset), SERIAL_EXEC.run(val_dataset))
         if xm.is_master_ordinal():
           score+=getBestAccuracy(to_path)/getBestAccuracy(from_path)
     xm.master_print(f"Score: {score/FLAGS['repeat']/len(transfer_tuples)}")

@@ -1,7 +1,7 @@
 import torch_xla.core.xla_model as xm
 import torch_xla.distributed.xla_multiprocessing as xmp
 from train_model import trainModel
-from data import TrainingTuple
+from data import TrainingTuple, get_dataset
 from pretrain_flags import FLAGS
 from typing import List
 
@@ -15,7 +15,8 @@ def trainModels(trainingTuples: List[TrainingTuple]):
     device = xm.xla_device()
     for t in trainingTuples:
       for i in range(FLAGS['repeat']):
-        trainModel(FLAGS, device, t.model(), f"{FLAGS['path']}/{t.name}_{i}", SERIAL_EXEC.run(t.train_dataset), SERIAL_EXEC.run(t.val_dataset))
+        train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+        trainModel(FLAGS, device, t.model(), f"{FLAGS['path']}/{t.name}_{i}", SERIAL_EXEC.run(train_dataset), SERIAL_EXEC.run(val_dataset))
         
   xmp.spawn(_mp_fn, args=(trainingTuples,), nprocs=FLAGS['num_cores'],
           start_method='fork')
