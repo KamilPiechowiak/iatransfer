@@ -6,7 +6,7 @@ from typing import Dict, Callable, Tuple, List
 import pickle
 from train_model import trainModel
 from transfer_flags import FLAGS
-from data import TrainingTuple, get_dataset
+from data import TrainingTuple, get_dataset, get_dataset_name
 from models import training_tuples
 
 def createPretrainedModelsDict() -> Dict[str, TrainingTuple]:
@@ -22,11 +22,12 @@ def testTransfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Cal
     device = xm.xla_device()
     score = 0.0
     for t, from_model_name in transfer_tuples:
+      FLAGS['batch_size'] = t.batch_size
       for i in range(FLAGS['repeat']):
-        from_path = f"{FLAGS['path']}/{from_model_name}_{i}"
+        from_path = f"{FLAGS['path']}/{from_model_name}_{get_dataset_name(t.dataset_tuple)}_{i}"
         from_model: nn.Module = pretrained_models[from_model_name].model()
         from_model.load_state_dict(torch.load(f"{from_path}/best.pt")['model'])
-        to_path = f"{FLAGS['path']}/{t.name}_{i}_from_{from_model_name}"
+        to_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}"
         to_model = t.model()
         transfer(from_model, to_model)
         train_dataset, val_dataset = get_dataset(t.dataset_tuple)

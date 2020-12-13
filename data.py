@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms, datasets
 from typing import NamedTuple, Callable
 from pretrain_flags import FLAGS
+from custom_datasets import Flowers102, FGVCAircraft, Food101
 import PIL
 from enum import Enum
 
@@ -14,13 +15,18 @@ class TrainingTuple(NamedTuple):
   model: Callable[[], nn.Module]
   name: str
   dataset_tuple: DatasetTuple
+  batch_size: int
 
 FASHION_MNIST = 1
 CIFAR10 = 2
 CIFAR100 = 3
 FLOWERS = 4
 FGVC_AIRCRAFT = 5
-CELEB_A = 6
+FOOD = 6
+
+def get_dataset_name(dataset_tuple: DatasetTuple) -> str:
+  print(dataset_tuple)
+  return ["", "FASHION_MNIST", "CIFAR10", "CIFAR100", "FLOWERS", "FGVC_AIRCRAFT", "FOOD"][dataset_tuple.name]
 
 def get_dataset(dataset_tuple: DatasetTuple):
 
@@ -52,9 +58,9 @@ def get_dataset(dataset_tuple: DatasetTuple):
       FASHION_MNIST: lambda: datasets.FashionMNIST(f"{path}/fashion_mnist", train=train, transform=preprocess, download=True),
       CIFAR10: lambda: datasets.CIFAR10(f"{path}/cifar10", train=train, transform=preprocess, download=True),
       CIFAR100: lambda: datasets.CIFAR100(f"{path}/cifar100", train=train, transform=preprocess, download=True),
-      FLOWERS: lambda: None,
-      FGVC_AIRCRAFT: lambda: None,
-      CELEB_A: lambda: datasets.CelebA(f"{path}/celeb_a", split=('train' if train else 'valid'), target_type='identity', transform=preprocess, download=True)
+      FLOWERS: lambda: Flowers102(f"{path}", split='train' if train else 'val', transform=preprocess, download=True),
+      FGVC_AIRCRAFT: lambda: FGVCAircraft(f"{path}", split='train' if train else 'val', transform=preprocess, download=True),
+      FOOD: lambda: Food101(f"{path}", train, transform=preprocess, download=True),
     }[name]
   return prepare_dataset(dataset_tuple.name, True, dataset_tuple.resolution), prepare_dataset(dataset_tuple.name, False, dataset_tuple.resolution)
 
