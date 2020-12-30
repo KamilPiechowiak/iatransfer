@@ -4,6 +4,7 @@ from typing import Optional, Callable, Tuple, Any
 import os
 from PIL import Image
 from tqdm import tqdm
+import copy
 
 class Food101(VisionDataset):
 
@@ -41,7 +42,7 @@ class Food101(VisionDataset):
     with open(downloaded_list) as f:
       for file_name in tqdm(f.read().split("\n")[:-1]):
         # print(os.path.join(self.root, self.base_folder, "images", f"{file_name}.jpg"))
-        self.data.append(Image.open(os.path.join(self.root, self.base_folder, "images", f"{file_name}.jpg")))
+        self.data.append(copy.deepcopy(Image.open(os.path.join(self.root, self.base_folder, "images", f"{file_name}.jpg"))))
         self.targets.append(classes[file_name.split("/")[0]])    
 
   def __getitem__(self, index: int) -> Tuple[Any, Any]:

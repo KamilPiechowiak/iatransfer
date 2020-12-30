@@ -25,7 +25,7 @@ FGVC_AIRCRAFT = 5
 FOOD = 6
 
 def get_dataset_name(dataset_tuple: DatasetTuple) -> str:
-  print(dataset_tuple)
+  # print(dataset_tuple)
   return ["", "FASHION_MNIST", "CIFAR10", "CIFAR100", "FLOWERS", "FGVC_AIRCRAFT", "FOOD"][dataset_tuple.name]
 
 def get_dataset(dataset_tuple: DatasetTuple):
@@ -59,7 +59,7 @@ def get_dataset(dataset_tuple: DatasetTuple):
       CIFAR10: lambda: datasets.CIFAR10(f"{path}/cifar10", train=train, transform=preprocess, download=True),
       CIFAR100: lambda: datasets.CIFAR100(f"{path}/cifar100", train=train, transform=preprocess, download=True),
       FLOWERS: lambda: Flowers102(f"{path}", split='train' if train else 'val', transform=preprocess, download=True),
-      FGVC_AIRCRAFT: lambda: FGVCAircraft(f"{path}", split='train' if train else 'val', transform=preprocess, download=True),
+      FGVC_AIRCRAFT: lambda: FGVCAircraft(f"{path}", split='train' if train else 'test', transform=preprocess, download=True),
       FOOD: lambda: Food101(f"{path}", train, transform=preprocess, download=True),
     }[name]
   return prepare_dataset(dataset_tuple.name, True, dataset_tuple.resolution), prepare_dataset(dataset_tuple.name, False, dataset_tuple.resolution)

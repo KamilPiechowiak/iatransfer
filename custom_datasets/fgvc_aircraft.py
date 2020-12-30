@@ -4,6 +4,7 @@ from typing import Optional, Callable, Tuple, Any
 import os
 from PIL import Image
 from tqdm import tqdm
+import copy
 
 class FGVCAircraft(VisionDataset):
 
@@ -25,6 +26,8 @@ class FGVCAircraft(VisionDataset):
       self.download()
 
     assert(split in {'train', 'val', 'test'})
+    if split == 'train':
+      split = 'trainval'
     downloaded_list = os.path.join(self.root, self.base_folder, "data", f"images_variant_{split}.txt")
 
     classes = {}
@@ -40,7 +43,7 @@ class FGVCAircraft(VisionDataset):
         file_name = row.split(" ")[0]
         variant = " ".join(row.split(" ")[1:])
         # print(os.path.join(self.root, self.base_folder, "images", f"{file_name}.jpg"))
-        self.data.append(Image.open(os.path.join(self.root, self.base_folder, "data", "images", f"{file_name}.jpg")))
+        self.data.append(copy.deepcopy(Image.open(os.path.join(self.root, self.base_folder, "data", "images", f"{file_name}.jpg"))))
         self.targets.append(classes[variant])    
 
   def __getitem__(self, index: int) -> Tuple[Any, Any]:
