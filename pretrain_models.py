@@ -13,11 +13,18 @@ def trainModels(trainingTuples: List[TrainingTuple]):
   def _mp_fn(rank, trainingTuples):
     # print(xm.xrt_world_size()) #check number of nodes
     device = xm.xla_device()
+    print(device)
     for t in trainingTuples:
       FLAGS['batch_size'] = t.batch_size
+      if not xm.is_master_ordinal():
+        xm.rendezvous('download_only_once')
+      train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+      train_dataset = train_dataset()
+      val_dataset = val_dataset()
+      if xm.is_master_ordinal():
+        xm.rendezvous('download_only_once')
       for i in range(FLAGS['repeat']):
-        train_dataset, val_dataset = get_dataset(t.dataset_tuple)
-        trainModel(FLAGS, device, t.model(), f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}", SERIAL_EXEC.run(train_dataset), SERIAL_EXEC.run(val_dataset))
+        trainModel(FLAGS, device, t.model(), f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}", train_dataset, val_dataset)
         
   xmp.spawn(_mp_fn, args=(trainingTuples,), nprocs=FLAGS['num_cores'],
           start_method='fork')

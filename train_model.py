@@ -42,11 +42,11 @@ def singleEpoch(device, model, loader, loss_func, opt=None, stats=None, metrics=
     a2+=t2-t1
     a3+=t3-t2
     i+=1
-  print("Total iter", i)
+  # print("Total iter", i)
   a1/=i
   a2/=i
   a3/=i
-  print(a1, a2, a3)
+  # print(a1, a2, a3)
 
   metric_keys = list(metric_values.keys())
   metric_list = []
@@ -131,3 +131,5 @@ def trainModel(FLAGS, device, model, path, train_dataset, val_dataset):
       shutil.copy(f"{path}/best.pt", f"{path}/{epoch}_checkpoint.pt")
 
     scheduler.step()
+  if xm.is_master_ordinal():
+    os.system(f"gsutil cp -r {path} {FLAGS['bucket_path']}")

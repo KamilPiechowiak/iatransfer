@@ -12,13 +12,27 @@ np.random.seed(RANDOM_STATE)
 
 FLAGS = {
     'learning_rate': 1e-2,
-    'epochs': 2,
+    'epochs': 3,
     'scheduler_mocked_epochs': 100,
-    'batch_size': 32,
     'persist_state_every': 2,
     'repeat': 1,
-    'path': '/content/gdrive/My Drive/projects/weightsTransfer/xla_test3',
+    # 'path': '/content/gdrive/My Drive/projects/weightsTransfer/xla_test3',
+    'path': 'res',
+    'bucket_path': 'gs://kamil-piechowiak-weights-transfer/test',
     'num_workers': 4,
-    'datasets_path': '/content/data'
+    'datasets_path': 'data'
 }
-FLAGS['num_cores'] = 8 if os.environ.get('TPU_NAME', None) else 1
+FLAGS['num_cores'] = 8
+
+# FLAGS = {
+#     'learning_rate': 1e-2,
+#     'epochs': 50,
+#     'scheduler_mocked_epochs': 50,
+#     'persist_state_every': 5,
+#     'repeat': 5,
+#     'path': 'res',
+#     'bucket_path': 'gs://kamil-piechowiak-weights-transfer/stats',
+#     'num_workers': 4,
+#     'datasets_path': 'data',
+#     'num_cores': 8
+# }
