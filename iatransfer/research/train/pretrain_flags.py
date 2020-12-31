@@ -1,9 +1,10 @@
 import os
 import random
-import torch
-import numpy as np
 
-os.environ['XLA_USE_BF16'] = '1' #use bfloat16 on tpu
+import numpy as np
+import torch
+
+os.environ['XLA_USE_BF16'] = '1'  # use bfloat16 on tpu
 
 RANDOM_STATE = 13
 random.seed(RANDOM_STATE)
@@ -18,7 +19,7 @@ FLAGS = {
     'repeat': 1,
     # 'path': '/content/gdrive/My Drive/projects/weightsTransfer/xla_test3',
     'path': 'res',
-    'bucket_path': 'gs://kamil-piechowiak-weights-transfer/test',
+    'bucket_path': 'gs://weights-transfer/test',
     'num_workers': 4,
     'datasets_path': 'data'
 }
@@ -31,7 +32,7 @@ FLAGS['num_cores'] = 8
 #     'persist_state_every': 5,
 #     'repeat': 5,
 #     'path': 'res',
-#     'bucket_path': 'gs://kamil-piechowiak-weights-transfer/stats',
+#     'bucket_path': 'gs://weights-transfer/stats',
 #     'num_workers': 4,
 #     'datasets_path': 'data',
 #     'num_cores': 8

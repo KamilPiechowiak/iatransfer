@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #locally
 MACHINE_TYPE=e2-highcpu-16
 
@@ -20,10 +22,10 @@ unzip weights-transfer.zip
 gcloud auth login
 mkdir res
 mkdir data
-pip install efficientnet_pytorch 2>&1 > /dev/null
+pip install efficientnet_pytorch > /dev/null 2>&1
 
 #prepare datasets
-BUCKET="gs://kamil-piechowiak-weights-transfer/data"
+BUCKET="gs://weights-transfer/data"
 cd data
 gsutil cp $BUCKET/* .
 tar -xf fgvc-aircraft-2013b.tar.gz
@@ -43,7 +45,7 @@ gcloud compute tpus list --zone=us-central1-f
 TPU_IP_ADDRESS=[ip address of TPU] #from the command above
 export XRT_TPU_CONFIG="tpu_worker;0;$TPU_IP_ADDRESS:8470"
 
-python pretrain_models.py
+iatransfer_pretrain
 
 gcloud compute tpus delete $TPU_INSTANCE_NAME --zone=us-central1-f
 #vm end

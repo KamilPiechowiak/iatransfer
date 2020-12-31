@@ -1,9 +1,9 @@
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
+
 
 def transfer(from_model, to_model):
-
     def flatten_with_blocks(model):
         depth, conv_num, layers = 1, 0, []
         if isinstance(model, nn.Conv2d) or isinstance(model, nn.ConvTranspose2d):
@@ -13,15 +13,15 @@ def transfer(from_model, to_model):
             for child in model.children():
                 child_depth, child_conv_num, child_layers = flatten_with_blocks(child)
                 if child_depth > 1 or (child_conv_num <= 1):
-                    layers+=child_layers
-                    conv_num+=child_conv_num
+                    layers += child_layers
+                    conv_num += child_conv_num
                     depth = max(depth, child_depth)
                 else:
-                    layers+=[child_layers]
+                    layers += [child_layers]
                     depth = 2
             if len(layers) == 0:
                 layers = [model]
-        
+
         return depth, conv_num, layers
 
     def compute_score(from_model, to_model):
@@ -40,54 +40,53 @@ def transfer(from_model, to_model):
                 if all_are_of_this_clazz(layers, clazz):
                     score = 1
                     for x, y in zip(from_model.weight.shape, to_model.weight.shape):
-                        score*=min(x/y, y/x)
+                        score *= min(x / y, y / x)
                     break
-        
+
         return score
 
     def match_models(from_model, to_model):
         m = len(from_model)
         n = len(to_model)
-        dp = np.zeros((n+1, m+1))
-        transition = np.zeros((n+1, m+1)) #
-        scores = np.zeros((n+1, m+1))
-        #reduction_coeff = 0.7
-        for i in range(1, n+1):
-            for j in range(1, m+1):
-                scores[i,j] = compute_score(from_model[j-1], to_model[i-1])
-        
-        for i in range(1, n+1):
-            for j in range(1, m+1):
-                dp[i,j] = dp[i,j-1]
-                transition[i,j] = i
+        dp = np.zeros((n + 1, m + 1))
+        transition = np.zeros((n + 1, m + 1))  #
+        scores = np.zeros((n + 1, m + 1))
+        # reduction_coeff = 0.7
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                scores[i, j] = compute_score(from_model[j - 1], to_model[i - 1])
+
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                dp[i, j] = dp[i, j - 1]
+                transition[i, j] = i
                 current_reduction = 1
                 cumulative_sum = 0
-                for k in range(i,0,-1):
-                    cumulative_sum+=scores[k,j]
-                    #score = cumulative_sum*current_reduction+dp[k-1,j-1]
-                    score = cumulative_sum/(i-k+1)**0.5+dp[k-1,j-1]
+                for k in range(i, 0, -1):
+                    cumulative_sum += scores[k, j]
+                    # score = cumulative_sum*current_reduction+dp[k-1,j-1]
+                    score = cumulative_sum / (i - k + 1) ** 0.5 + dp[k - 1, j - 1]
                     # let d be the number of layers matched in to_model to the current layer in from_model
                     # max possible score = d*f(d)
                     # we want d*f(d) to be increasing - adding more matchings should give better score
                     # we want f(d) to be decreasing - adding more matchings should give lower score per layer,
                     # thanks to it we encourage dynamic programming not to choose single layer all the time
-                    if score > dp[i,j]:
-                        dp[i,j] = score
-                        transition[i,j] = k-1
-                    #current_reduction*=reduction_coeff
-                    
-        
+                    if score > dp[i, j]:
+                        dp[i, j] = score
+                        transition[i, j] = k - 1
+                    # current_reduction*=reduction_coeff
+
         matched = []
         matched_indices = []
         i, j = n, m
-        
+
         while i > 0:
-            t = transition[i,j]
-            j-=1
+            t = transition[i, j]
+            j -= 1
             from_model_layer_included = False
             while t < i:
-                i-=1
-                if scores[i+1,j+1] > 0:
+                i -= 1
+                if scores[i + 1, j + 1] > 0:
                     if isinstance(from_model[j], list) and isinstance(to_model[i], list):
                         _, sub_matched, sub_matched_indices = match_models(from_model[j], to_model[i])
                         matched.append(sub_matched)
@@ -103,8 +102,8 @@ def transfer(from_model, to_model):
             if from_model_layer_included == False:
                 matched_indices.append((j, None))
                 matched.append((from_model[j], None))
-    #     print(dp)
-    #     print(transition)
+        #     print(dp)
+        #     print(transition)
         matched.reverse()
         matched_indices.reverse()
         return dp[n][m], matched, matched_indices
@@ -115,14 +114,14 @@ def transfer(from_model, to_model):
         from_slices, to_slices = [], []
         for a, b in zip(from_tensor.shape, to_tensor.shape):
             if a < b:
-                from_slices.append(slice(0,a))
-                to_slices.append(slice((b-a)//2, -((b-a+1)//2)))
+                from_slices.append(slice(0, a))
+                to_slices.append(slice((b - a) // 2, -((b - a + 1) // 2)))
             elif a > b:
-                from_slices.append(slice((a-b)//2, -((a-b+1)//2)))
-                to_slices.append(slice(0,b))
+                from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
+                to_slices.append(slice(0, b))
             else:
-                from_slices.append(slice(0,a))
-                to_slices.append(slice(0,b))
+                from_slices.append(slice(0, a))
+                to_slices.append(slice(0, b))
         to_tensor[tuple(to_slices)] = from_tensor[tuple(from_slices)]
 
     def _transfer(matched):
@@ -139,17 +138,20 @@ def transfer(from_model, to_model):
     _, matched, _ = match_models(flattened_from_model, flattened_to_model)
     _transfer(matched)
 
+
 def get_stats(model):
     return [layer.float().abs().mean() for layer in model.state_dict().values()]
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     from efficientnet_pytorch import EfficientNet
-    amodel=EfficientNet.from_pretrained("efficientnet-b0")
-    bmodel=EfficientNet.from_pretrained("efficientnet-b3")
-    
+
+    amodel = EfficientNet.from_pretrained('efficientnet-b0')
+    bmodel = EfficientNet.from_pretrained('efficientnet-b3')
+
     stats_before = get_stats(bmodel)
     transfer(amodel, bmodel)
     stats_after = get_stats(bmodel)
-    print("\n".join(
+    print('\n'.join(
         [str((x, y)) for x, y in zip(stats_before, stats_after)]
     ))

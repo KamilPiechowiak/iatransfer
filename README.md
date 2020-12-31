@@ -8,3 +8,17 @@ Parametry treningu zdefiniowane są w `pretrain_flags.py`.
 Modele transferowe definujemy w `models.py` w `transfer_tuples`. Aby sprawdzić efektywność transferu, należy uruchomić `test_transfer.py`.
 Parametry treningu zdefiniowane są w `transfer_flags.py`.
 Przykładowa funkcja transferująca znajduje się w `transfer.py`.
+
+# Development
+
+#### Init:
+`./dev/init.sh`
+
+#### Run tests:
+`nosetests tests`
+
+#### Install package:
+`pip install .`
+
+##### in edit mode:
+`pip install -e .`
