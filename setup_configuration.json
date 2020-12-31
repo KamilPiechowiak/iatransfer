@@ -43,7 +43,7 @@
       ],
       "ENTRYPOINTS": {
         "console_scripts": [
-          "iatransfer_pretrain = iatransfer.toolkit:main"
+          "iatransfer_pretrain = iatransfer.research.train.pretrain_models:main"
         ]
       },
       "CLASSIFIERS": [

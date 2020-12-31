@@ -34,7 +34,11 @@ def train_models(training_tuples: List[TrainingTuple]):
               start_method='fork')
 
 
-if __name__ == '__main__':
-    from iatransfer.research.models import training_tuples
+def main():
+    from iatransfer.research.models.models import training_tuples
 
     train_models(training_tuples)
+
+
+if __name__ == '__main__':
+    main()
