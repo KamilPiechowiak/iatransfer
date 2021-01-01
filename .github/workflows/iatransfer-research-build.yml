@@ -35,3 +35,10 @@ jobs:
     - name: Test research module with pytest
       run: |
         pytest --cov=iatransfer/research  tests/research
+    - name: Make sdist
+      run: |
+        python setup_research.py sdist
+    - uses: actions/upload-artifact@v2
+      with:
+        name: research-build
+        path: dist
