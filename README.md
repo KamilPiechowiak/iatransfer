@@ -1,11 +1,11 @@
 # Inter-Architecture Knowledge Transfer
 
 **toolkit package**
-![Toolkit build](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
+![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
 
 
 **research reproduction package**
-![Research package build](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20package%20build/badge.svg)
+![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20package%20build/badge.svg)
 
 
 ## Modele początkowe
