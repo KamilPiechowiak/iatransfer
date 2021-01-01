@@ -39,6 +39,6 @@ jobs:
         python setup_research.py sdist
     - uses: actions/upload-artifact@v2
       with:
-        name: toolkit-build
+        name: iatransfer-toolkit
         path: dist
         
