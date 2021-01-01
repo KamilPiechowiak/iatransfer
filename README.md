@@ -1,10 +1,6 @@
 # Inter-Architecture Knowledge Transfer
-
-**toolkit package**
+--
 ![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
-
-
-**research reproduction package**
 ![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20package%20build/badge.svg)
 
 
