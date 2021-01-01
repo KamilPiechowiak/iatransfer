@@ -22,3 +22,10 @@ Przykładowa funkcja transferująca znajduje się w `transfer.py`.
 
 ##### in edit mode:
 `pip install -e .`
+
+# Running cloud package:
+Copy source code to the cloudshell.
+
+Run:
+`python3 setup_research.py sdist` 
+`/bin/bash -x ./scripts/research/iatransfer_full_run.sh`

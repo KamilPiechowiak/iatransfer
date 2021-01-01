@@ -1,6 +1,6 @@
 from efficientnet_pytorch import EfficientNet
 
-from iatransfer.research import data
+from iatransfer.research.data import data
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 from iatransfer.research.data.data import TrainingTuple, DatasetTuple
 

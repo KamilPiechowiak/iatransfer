@@ -8,10 +8,10 @@
   "LICENSE": "TODO",
   "KEYWORDS": "TODO TODO TODO",
 
-  "TEST_DIR_PATH": "tests/",
-  "SCRIPT_DIR_PATH": "scripts/",
-  "DIST_DIR_PATH": "dist/",
-  "BUILD_DIR_PATH": "build/",
+  "TEST_DIR_PATH": "tests",
+  "SCRIPT_DIR_PATH": "scripts",
+  "DIST_DIR_PATH": "dist",
+  "BUILD_DIR_PATH": "build",
   "README_PATH": "README.md",
 
   "SCRIPTS": [
@@ -23,6 +23,7 @@
     "TOOLKIT": {
       "NAME": "iatransfer",
       "PACKAGES": [
+        "_iatransfer_setup*",
         "iatransfer.toolkit*",
         "iatransfer.utils*"
       ],
@@ -36,7 +37,8 @@
     "RESEARCH": {
       "NAME": "iatransfer_research",
       "PACKAGES": [
-        "iatransfer.research*"
+        "_iatransfer_setup*",
+        "iatransfer*"
       ],
       "SCRIPTS": [
         "scripts/research/*"
@@ -50,7 +52,7 @@
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent"
       ],
-      "REQUIREMENTS_PATH": "requirements.txt"
+      "REQUIREMENTS_PATH": "requirements_research.txt"
     }
   }
 }
