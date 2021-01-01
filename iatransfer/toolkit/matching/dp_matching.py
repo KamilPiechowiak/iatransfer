@@ -1,0 +1,105 @@
+from typing import Tuple, List, Any, Union
+
+import numpy as np
+import torch.nn as nn
+
+from iatransfer.toolkit.base_matching import Matching
+from iatransfer.toolkit.utils import flatten_with_blocks
+
+
+class DPMatching(Matching):
+
+    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
+            -> List[Tuple[nn.Module, nn.Module]]:
+        _, _, flattened_from_module = flatten_with_blocks(from_module)
+        _, _, flattened_to_module = flatten_with_blocks(to_module)
+        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
+        return matched
+
+    def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
+        def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -> bool:
+            return all([isinstance(layer, clazz) for layer in layers])
+
+        score = 0
+        layers = [from_module, to_module]
+        if are_all_of_this_class(layers, list):
+            score, _, _ = self._match_models(from_module, to_module)
+        else:
+            classes = [
+                nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
+                nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+                nn.Linear
+            ]
+            for clazz in classes:
+                if are_all_of_this_class(layers, clazz):
+                    score = 1
+                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
+                        score *= min(x / y, y / x)
+                    break
+
+        return score
+
+    def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],
+                      flat_to_module: Union[nn.Module, List[nn.Module]]) \
+            -> Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
+        m = len(flat_from_module)
+        n = len(flat_to_module)
+        dp = np.zeros((n + 1, m + 1))
+        transition = np.zeros((n + 1, m + 1))  #
+        scores = np.zeros((n + 1, m + 1))
+        # reduction_coeff = 0.7
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                scores[i, j] = self._compute_score(flat_from_module[j - 1], flat_to_module[i - 1])
+
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                dp[i, j] = dp[i, j - 1]
+                transition[i, j] = i
+                current_reduction = 1
+                cumulative_sum = 0
+                for k in range(i, 0, -1):
+                    cumulative_sum += scores[k, j]
+                    # score = cumulative_sum*current_reduction+dp[k-1,j-1]
+                    score = cumulative_sum / (i - k + 1) ** 0.5 + dp[k - 1, j - 1]
+                    # let d be the number of layers matched in flat_to_module to the current layer in flat_from_module
+                    # max possible score = d*f(d)
+                    # we want d*f(d) to be increasing - adding more matchings should give better score
+                    # we want f(d) to be decreasing - adding more matchings should give lower score per layer,
+                    # thanks to it we encourage dynamic programming not to choose single layer all the time
+                    if score > dp[i, j]:
+                        dp[i, j] = score
+                        transition[i, j] = k - 1
+                    # current_reduction*=reduction_coeff
+
+        matched = []
+        matched_indices = []
+        i, j = n, m
+
+        while i > 0:
+            t = transition[i, j]
+            j -= 1
+            from_model_layer_included = False
+            while t < i:
+                i -= 1
+                if scores[i + 1, j + 1] > 0:
+                    if isinstance(flat_from_module[j], list) and isinstance(flat_to_module[i], list):
+                        _, sub_matched, sub_matched_indices = self._match_models(flat_from_module[j], flat_to_module[i])
+                        matched.append(sub_matched)
+                        matched_indices.append(sub_matched_indices)
+                        matched_indices.append((j, i))
+                    else:
+                        matched.append((flat_from_module[j], flat_to_module[i]))
+                        matched_indices.append((j, i))
+                    from_model_layer_included = True
+                else:
+                    matched.append((None, flat_to_module[i]))
+                    matched_indices.append((None, i))
+            if not from_model_layer_included:
+                matched_indices.append((j, None))
+                matched.append((flat_from_module[j], None))
+        #     print(dp)
+        #     print(transition)
+        matched.reverse()
+        matched_indices.reverse()
+        return dp[n][m], matched, matched_indices

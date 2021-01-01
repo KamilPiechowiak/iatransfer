@@ -41,7 +41,7 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Ca
                 for i in range(FLAGS['repeat']):
                     from_path = f"{FLAGS['path']}/{from_model_name}_{get_dataset_name(t.dataset_tuple)}_{i}"
                     from_model: nn.Module = pretrained_models[f"{from_model_name}_{get_dataset_name(t.dataset_tuple)}"].model()
-                    from_model.load_state_dict(torch.load(f"{from_path}/best.pt")['model'])
+                    from_model.load_state_dict(torch.load(f"{from_path}/best.pt")['module'])
                     to_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}"
                     to_model = t.model()
                     transfer(from_model, to_model)
@@ -75,7 +75,7 @@ def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
 
 
 if __name__ == '__main__':
-    from iatransfer.toolkit.transfer import transfer
+    from iatransfer.toolkit.transfer.clip_transfer import transfer
     from iatransfer.research.models.models import transfer_tuples
 
     test_transfer(transfer_tuples, transfer)
