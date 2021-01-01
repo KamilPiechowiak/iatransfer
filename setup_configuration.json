@@ -1,0 +1,58 @@
+{
+  "AUTHOR": "Kamil Piechowiak, Daniel Nowak, Maciej Czyżewski",
+  "EMAIL": "TODO",
+  "URL": "https://github.com/KamilPiechowiak/weights-transfer",
+  "VERSION": "1.0.0",
+  "DESCRIPTION": "Tool for inter-architecture weight transfer",
+  "LONG_DESCRIPTION_CONTENT_TYPE": "text/markdown",
+  "LICENSE": "TODO",
+  "KEYWORDS": "TODO TODO TODO",
+
+  "TEST_DIR_PATH": "tests",
+  "SCRIPT_DIR_PATH": "scripts",
+  "DIST_DIR_PATH": "dist",
+  "BUILD_DIR_PATH": "build",
+  "README_PATH": "README.md",
+
+  "SCRIPTS": [
+  ],
+  "ENTRYPOINTS": {
+  },
+
+  "DISTRIBUTIONS": {
+    "TOOLKIT": {
+      "NAME": "iatransfer",
+      "PACKAGES": [
+        "_iatransfer_setup*",
+        "iatransfer.toolkit*",
+        "iatransfer.utils*"
+      ],
+      "CLASSIFIERS": [
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent"
+      ],
+      "REQUIREMENTS_PATH": "requirements.txt"
+    },
+
+    "RESEARCH": {
+      "NAME": "iatransfer_research",
+      "PACKAGES": [
+        "_iatransfer_setup*",
+        "iatransfer*"
+      ],
+      "SCRIPTS": [
+        "scripts/research/*"
+      ],
+      "ENTRYPOINTS": {
+        "console_scripts": [
+          "iatransfer_pretrain = iatransfer.research.train.pretrain_models:main"
+        ]
+      },
+      "CLASSIFIERS": [
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent"
+      ],
+      "REQUIREMENTS_PATH": "requirements_research.txt"
+    }
+  }
+}
