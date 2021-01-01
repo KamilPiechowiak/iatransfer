@@ -54,7 +54,7 @@ def do_setup(configuration: DotDict) -> None:
         long_description_content_type=configuration.LONG_DESCRIPTION_CONTENT_TYPE,
         license=configuration.LICENSE,
         packages=find_packages(include=configuration.PACKAGES),
-        entry_points=configuration.ENTRY_POINTS,
+        entry_points=configuration.ENTRYPOINTS,
         scripts=[x for string in configuration.SCRIPTS for x in glob.glob(string)],
         classifiers=configuration.CLASSIFIERS,
         keywords=configuration.KEYWORDS,
