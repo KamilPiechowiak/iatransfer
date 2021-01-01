@@ -11,6 +11,7 @@ gcloud compute instances create $VM \
 --quiet
 
 gcloud compute scp --zone $ZONE dist/iatransfer_research-*.tar.gz $VM:.
+gcloud compute scp --zone $ZONE iatransfer.zip $VM:
 
 gcloud compute config-ssh
 rm ~/.ssh/config

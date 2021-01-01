@@ -15,7 +15,7 @@ from iatransfer.research.transfer.transfer_flags import FLAGS
 def create_pretrained_models_dict() -> Dict[str, TrainingTuple]:
     pretrained_models: Dict[str, TrainingTuple] = {}
     for t in training_tuples:
-        pretrained_models[t.name] = t
+        pretrained_models[f"{t.name}_{get_dataset_name(t.dataset_tuple)}"] = t
     return pretrained_models
 
 
@@ -27,21 +27,32 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Ca
         # print(xm.xrt_world_size()) #check number of nodes
         device = xm.xla_device()
         score = 0.0
-        for t, from_model_name in transfer_tuples:
+        iterations = 0
+        for t, from_model_names in transfer_tuples:
             FLAGS['batch_size'] = t.batch_size
-            for i in range(FLAGS['repeat']):
-                from_path = f'{FLAGS["path"]}/{from_model_name}_{get_dataset_name(t.dataset_tuple)}_{i}'
-                from_model: nn.Module = pretrained_models[from_model_name].model()
-                from_model.load_state_dict(torch.load(f'{from_path}/best.pt')['model'])
-                to_path = f'{FLAGS["path"]}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}'
-                to_model = t.model()
-                transfer(from_model, to_model)
-                train_dataset, val_dataset = get_dataset(t.dataset_tuple)
-                train_model(FLAGS, device, to_model, to_path, SERIAL_EXEC.run(train_dataset),
-                            SERIAL_EXEC.run(val_dataset))
-                if xm.is_master_ordinal():
-                    score += get_best_accuracy(to_path) / get_best_accuracy(from_path)
-        xm.master_print(f'Score: {score / FLAGS["repeat"] / len(transfer_tuples)}')
+            if not xm.is_master_ordinal():
+                xm.rendezvous('download_only_once')
+            train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+            train_dataset = train_dataset()
+            val_dataset = val_dataset()
+            if xm.is_master_ordinal():
+                xm.rendezvous('download_only_once')
+            for from_model_name in from_model_names:
+                for i in range(FLAGS['repeat']):
+                    from_path = f"{FLAGS['path']}/{from_model_name}_{get_dataset_name(t.dataset_tuple)}_{i}"
+                    from_model: nn.Module = pretrained_models[f"{from_model_name}_{get_dataset_name(t.dataset_tuple)}"].model()
+                    from_model.load_state_dict(torch.load(f"{from_path}/best.pt")['model'])
+                    to_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}"
+                    to_model = t.model()
+                    transfer(from_model, to_model)
+                    train_model(FLAGS, device, to_model, to_path, train_dataset, val_dataset)
+                    if xm.is_master_ordinal():
+                        non_transfer_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}"
+                        dscore = get_best_accuracy(to_path)/get_best_accuracy(non_transfer_path)
+                        print(f"{from_model_name} -> {t.name}: {dscore}")
+                        score+=dscore
+                    iterations+=1
+        xm.master_print(f"Score: {score/iterations}")
 
     def get_best_accuracy(path):
         with open(f'{path}/stats.pickle', 'rb') as f:
