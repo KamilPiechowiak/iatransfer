@@ -68,7 +68,7 @@ def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics
 def save_model(model, optimizer, scheduler, paths):
     for path in paths:
         xm.save({
-            'module': model.state_dict(),
+            'model': model.state_dict(),
             'optimizer': optimizer.state_dict(),
             'scheduler': scheduler.state_dict()
         }, path)
