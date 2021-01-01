@@ -23,7 +23,7 @@ SERIAL_EXEC = xmp.MpSerialExecutor()
 
 
 def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Callable[[nn.Module, nn.Module], None]):
-    def __mp_fn(rank, transfer_tuples):
+    def _mp_fn(rank, transfer_tuples):
         # print(xm.xrt_world_size()) #check number of nodes
         device = xm.xla_device()
         score = 0.0
