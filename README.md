@@ -1,3 +1,13 @@
+# Inter-Architecture Knowledge Transfer
+
+**toolkit package**
+![Toolkit build](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
+
+
+**research reproduction package**
+![Research package build](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20package%20build/badge.svg)
+
+
 ## Modele początkowe
 
 Modele początkowe definujemy są w `models.py` w `training_tuples`. Aby wytrenować modele początkowe, należy uruchomić `pretrain_models.py`.
