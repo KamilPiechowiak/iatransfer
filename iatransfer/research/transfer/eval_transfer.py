@@ -75,7 +75,7 @@ def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
 
 
 if __name__ == '__main__':
-    from iatransfer.toolkit.transfer.clip_transfer import transfer
+    from iatransfer.toolkit.transfer.clip_transfer import ClipTransfer
     from iatransfer.research.models.models import transfer_tuples
 
-    test_transfer(transfer_tuples, transfer)
+    test_transfer(transfer_tuples, ClipTransfer())
