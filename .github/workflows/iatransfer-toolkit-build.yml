@@ -33,5 +33,5 @@ jobs:
         flake8 iatransfer --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test toolkit with pytest
       run: |
-        pytest --cov=iatransfer/toolkit --cov=iatransfer/utils  tests/
+        pytest --cov=iatransfer/toolkit --cov=iatransfer/utils  tests/toolkit
         
