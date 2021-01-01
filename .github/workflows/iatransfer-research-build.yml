@@ -40,5 +40,5 @@ jobs:
         python setup_research.py sdist
     - uses: actions/upload-artifact@v2
       with:
-        name: research-build
+        name: iatransfer-research
         path: dist
