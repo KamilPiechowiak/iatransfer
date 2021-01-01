@@ -41,8 +41,10 @@ def get_dataset(dataset_tuple: DatasetTuple):
         if train:
             if name == FASHION_MNIST:
                 scale = (0.8, 1)
-            else:
+            elif resolution < 100:
                 scale = (0.5, 1)
+            else:
+                scale = (0.1, 1)
             preprocess = transforms.Compose([
                 transforms.RandomResizedCrop(resolution, scale),
                 transforms.RandomHorizontalFlip(),
