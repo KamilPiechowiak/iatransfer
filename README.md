@@ -1,5 +1,4 @@
 # Inter-Architecture Knowledge Transfer
-**builds**
 
 ![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
 ![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
