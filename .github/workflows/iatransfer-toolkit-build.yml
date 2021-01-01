@@ -34,4 +34,11 @@ jobs:
     - name: Test toolkit with pytest
       run: |
         pytest --cov=iatransfer/toolkit --cov=iatransfer/utils  tests/toolkit
+    - name: Make sdist
+      run: |
+        python setup_research.py sdist
+    - uses: actions/upload-artifact@v2
+      with:
+        name: toolkit-build
+        path: dist
         
