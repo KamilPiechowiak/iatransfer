@@ -2,8 +2,12 @@
 
 ![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
 ![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
-
-![](https://img.shields.io/badge/platform-linux--64-blue)
+---
+![Release](https://img.shields.io/badge/toolkit-1.0.0-blue)
+![Release](https://img.shields.io/badge/research-1.0.0-blue)
+---
+![Platform](https://img.shields.io/badge/platform-linux--64-blue)
+![Python](https://img.shields.io/badge/python-x64%203.8.5-blue)
 
 
 ## Modele początkowe
