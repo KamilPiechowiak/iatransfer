@@ -21,7 +21,9 @@ jobs:
           python3 -m pip install --upgrade pip
           
       - name: Install dependencies
-        run: python3 -m pip install pdoc3
+        run: |
+          python3 -m pip install pdoc3
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build docs
         run: pdoc --output-dir docs --html iatransfer.toolkit
