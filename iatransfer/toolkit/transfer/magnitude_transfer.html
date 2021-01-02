@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>iatransfer.toolkit.methods.greatest_weights_transfer API documentation</title>
+<title>iatransfer.toolkit.transfer.magnitude_transfer API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,33 +19,48 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>iatransfer.toolkit.methods.greatest_weights_transfer</code></h1>
+<h1 class="title">Module <code>iatransfer.toolkit.transfer.magnitude_transfer</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from iatransfer.toolkit.methods.transfer_method import TransferMethod
-import torch
+<pre><code class="python">from typing import List, Tuple, Union
 
-class GreatestWeightsTransfer(TransferMethod):
+import torch
+import torch.nn as nn
+
+from iatransfer.toolkit.base_matching import Matching
+from iatransfer.toolkit.base_transfer import Transfer
+from iatransfer.toolkit.matching.dp_matching import DPMatching
+from iatransfer.toolkit.transfer.transfer_stats import TransferStats
+from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
+
+
+class MagnitudeTransfer(Transfer):
     &#34;&#34;&#34;
         :param reverse_priority: if set to True, choose channels with smallest weights&#39; sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     &#34;&#34;&#34;
-    def __init__(self, reverse_priority = False, input_constrained_by_output = True):
+    def __init__(self, matching_strategy: Matching = DPMatching(), reverse_priority = False, input_constrained_by_output = True, **kwargs) -&gt; None:
+        self.matching_strategy = matching_strategy
         if reverse_priority:
             self.sgn = +1
         else:
             self.sgn = -1
         self.cut_from_tensor = input_constrained_by_output
-    
-    def transfer_with_greatest_weights(self, from_tensor, to_tensor, idx, from_slices, to_slices):
+        super().__init__(**kwargs)
+
+    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+        matched = self.matching_strategy(from_module, to_module)
+        self._transfer(matched)
+        return TransferStats()
+
+    def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -&gt; None:
         dims = [i for i in range(len(from_tensor.shape))]
         dims.remove(idx)
         if from_tensor.shape[idx] &gt; to_tensor.shape[idx]:
-            # print(&#34;HERE&#34;, from_tensor.shape, to_tensor.shape)
             if len(dims) == 0:
                 out_channels = list(enumerate(from_tensor))
             else: 
@@ -61,14 +76,14 @@ class GreatestWeightsTransfer(TransferMethod):
             from_slices.append(slice(0, from_tensor.shape[idx]))
             to_slices.append(slice(0, from_tensor.shape[idx]))
 
-    def get_slices(self, from_tensor, to_tensor):
+    def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Tuple[Tuple[Union[List[int], slice]]]:
         if from_tensor is None or to_tensor is None:
             return
         n = len(from_tensor.shape)
         from_slices, to_slices = [], []
-        self.transfer_with_greatest_weights(from_tensor, to_tensor, 0, from_slices, to_slices)
+        self.update_slice(from_tensor, to_tensor, 0, from_slices, to_slices)
         if n &gt; 1:
-            self.transfer_with_greatest_weights(from_tensor, to_tensor, 1, from_slices, to_slices)
+            self.update_slice(from_tensor, to_tensor, 1, from_slices, to_slices)
 
         for a, b in zip(from_tensor.shape[2:], to_tensor.shape[2:]):
             if a &lt; b:
@@ -89,11 +104,11 @@ class GreatestWeightsTransfer(TransferMethod):
                 total_unsqueeze+=1
         return tuple(to_slices), tuple(from_slices)
 
-    def transfer_matched(self, matched):
+    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -&gt; None:
         with torch.no_grad():
             for matching in matched:
                 if isinstance(matching, list):
-                    self.transfer_matched(matching)
+                    self._transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
                     to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
                     import sys
@@ -111,7 +126,21 @@ class GreatestWeightsTransfer(TransferMethod):
                             to_ids = to_ids.flatten()
                         if isinstance(from_ids, torch.Tensor):
                             from_ids = from_ids.flatten()
-                        matching[1].bias[to_ids] = matching[0].bias[from_ids]</code></pre>
+                        matching[1].bias[to_ids] = matching[0].bias[from_ids]
+
+
+if __name__ == &#39;__main__&#39;:
+    from efficientnet_pytorch import EfficientNet
+
+    amodel = EfficientNet.from_pretrained(&#39;efficientnet-b0&#39;)
+    bmodel = EfficientNet.from_pretrained(&#39;efficientnet-b3&#39;)
+
+    stats_before = get_absmeans(amodel)
+    MagnitudeTransfer()(bmodel, amodel)
+    stats_after = get_absmeans(amodel)
+    print(&#39;\n&#39;.join(
+        [str((x, y)) for x, y in zip(stats_before, stats_after)]
+    ))</code></pre>
 </details>
 </section>
 <section>
@@ -123,9 +152,9 @@ class GreatestWeightsTransfer(TransferMethod):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer"><code class="flex name class">
-<span>class <span class="ident">GreatestWeightsTransfer</span></span>
-<span>(</span><span>reverse_priority=False, input_constrained_by_output=True)</span>
+<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer"><code class="flex name class">
+<span>class <span class="ident">MagnitudeTransfer</span></span>
+<span>(</span><span>matching_strategy: <a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a> = &lt;iatransfer.toolkit.matching.dp_matching.DPMatching object&gt;, reverse_priority=False, input_constrained_by_output=True, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>:param reverse_priority: if set to True, choose channels with smallest weights' sum
@@ -134,23 +163,29 @@ class GreatestWeightsTransfer(TransferMethod):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class GreatestWeightsTransfer(TransferMethod):
+<pre><code class="python">class MagnitudeTransfer(Transfer):
     &#34;&#34;&#34;
         :param reverse_priority: if set to True, choose channels with smallest weights&#39; sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     &#34;&#34;&#34;
-    def __init__(self, reverse_priority = False, input_constrained_by_output = True):
+    def __init__(self, matching_strategy: Matching = DPMatching(), reverse_priority = False, input_constrained_by_output = True, **kwargs) -&gt; None:
+        self.matching_strategy = matching_strategy
         if reverse_priority:
             self.sgn = +1
         else:
             self.sgn = -1
         self.cut_from_tensor = input_constrained_by_output
-    
-    def transfer_with_greatest_weights(self, from_tensor, to_tensor, idx, from_slices, to_slices):
+        super().__init__(**kwargs)
+
+    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+        matched = self.matching_strategy(from_module, to_module)
+        self._transfer(matched)
+        return TransferStats()
+
+    def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -&gt; None:
         dims = [i for i in range(len(from_tensor.shape))]
         dims.remove(idx)
         if from_tensor.shape[idx] &gt; to_tensor.shape[idx]:
-            # print(&#34;HERE&#34;, from_tensor.shape, to_tensor.shape)
             if len(dims) == 0:
                 out_channels = list(enumerate(from_tensor))
             else: 
@@ -166,14 +201,14 @@ class GreatestWeightsTransfer(TransferMethod):
             from_slices.append(slice(0, from_tensor.shape[idx]))
             to_slices.append(slice(0, from_tensor.shape[idx]))
 
-    def get_slices(self, from_tensor, to_tensor):
+    def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Tuple[Tuple[Union[List[int], slice]]]:
         if from_tensor is None or to_tensor is None:
             return
         n = len(from_tensor.shape)
         from_slices, to_slices = [], []
-        self.transfer_with_greatest_weights(from_tensor, to_tensor, 0, from_slices, to_slices)
+        self.update_slice(from_tensor, to_tensor, 0, from_slices, to_slices)
         if n &gt; 1:
-            self.transfer_with_greatest_weights(from_tensor, to_tensor, 1, from_slices, to_slices)
+            self.update_slice(from_tensor, to_tensor, 1, from_slices, to_slices)
 
         for a, b in zip(from_tensor.shape[2:], to_tensor.shape[2:]):
             if a &lt; b:
@@ -194,11 +229,11 @@ class GreatestWeightsTransfer(TransferMethod):
                 total_unsqueeze+=1
         return tuple(to_slices), tuple(from_slices)
 
-    def transfer_matched(self, matched):
+    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -&gt; None:
         with torch.no_grad():
             for matching in matched:
                 if isinstance(matching, list):
-                    self.transfer_matched(matching)
+                    self._transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
                     to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
                     import sys
@@ -220,13 +255,13 @@ class GreatestWeightsTransfer(TransferMethod):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="iatransfer.toolkit.methods.transfer_method.TransferMethod" href="transfer_method.html#iatransfer.toolkit.methods.transfer_method.TransferMethod">TransferMethod</a></li>
+<li><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></li>
 <li>abc.ABC</li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.get_slices"><code class="name flex">
-<span>def <span class="ident">get_slices</span></span>(<span>self, from_tensor, to_tensor)</span>
+<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.get_slices"><code class="name flex">
+<span>def <span class="ident">get_slices</span></span>(<span>self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) ‑> Tuple[Tuple[Union[List[int], slice]]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -234,14 +269,14 @@ class GreatestWeightsTransfer(TransferMethod):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_slices(self, from_tensor, to_tensor):
+<pre><code class="python">def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Tuple[Tuple[Union[List[int], slice]]]:
     if from_tensor is None or to_tensor is None:
         return
     n = len(from_tensor.shape)
     from_slices, to_slices = [], []
-    self.transfer_with_greatest_weights(from_tensor, to_tensor, 0, from_slices, to_slices)
+    self.update_slice(from_tensor, to_tensor, 0, from_slices, to_slices)
     if n &gt; 1:
-        self.transfer_with_greatest_weights(from_tensor, to_tensor, 1, from_slices, to_slices)
+        self.update_slice(from_tensor, to_tensor, 1, from_slices, to_slices)
 
     for a, b in zip(from_tensor.shape[2:], to_tensor.shape[2:]):
         if a &lt; b:
@@ -263,8 +298,8 @@ class GreatestWeightsTransfer(TransferMethod):
     return tuple(to_slices), tuple(from_slices)</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_matched"><code class="name flex">
-<span>def <span class="ident">transfer_matched</span></span>(<span>self, matched)</span>
+<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer"><code class="name flex">
+<span>def <span class="ident">transfer</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -272,33 +307,14 @@ class GreatestWeightsTransfer(TransferMethod):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transfer_matched(self, matched):
-    with torch.no_grad():
-        for matching in matched:
-            if isinstance(matching, list):
-                self.transfer_matched(matching)
-            elif matching[0] is not None and matching[1] is not None:
-                to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
-                import sys
-                # print(to_slices, &#34;&lt;=&#34;, from_slices, file=sys.stderr)
-                if matching[1].weight is not None and matching[0].weight is not None:
-                    # print(matching[1].weight[to_slices].shape)
-                    # print(matching[0].weight.shape)
-                    matching[1].weight[to_slices] = matching[0].weight[from_slices]
-                if matching[1].bias is not None and matching[0].bias is not None:
-                    # print(matching[0].bias.shape)
-                    # print(matching[1].bias.shape)
-                    to_ids = to_slices[0]
-                    from_ids = from_slices[0]
-                    if isinstance(to_ids, torch.Tensor):
-                        to_ids = to_ids.flatten()
-                    if isinstance(from_ids, torch.Tensor):
-                        from_ids = from_ids.flatten()
-                    matching[1].bias[to_ids] = matching[0].bias[from_ids]</code></pre>
+<pre><code class="python">def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+    matched = self.matching_strategy(from_module, to_module)
+    self._transfer(matched)
+    return TransferStats()</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_with_greatest_weights"><code class="name flex">
-<span>def <span class="ident">transfer_with_greatest_weights</span></span>(<span>self, from_tensor, to_tensor, idx, from_slices, to_slices)</span>
+<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice"><code class="name flex">
+<span>def <span class="ident">update_slice</span></span>(<span>self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -306,11 +322,10 @@ class GreatestWeightsTransfer(TransferMethod):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transfer_with_greatest_weights(self, from_tensor, to_tensor, idx, from_slices, to_slices):
+<pre><code class="python">def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -&gt; None:
     dims = [i for i in range(len(from_tensor.shape))]
     dims.remove(idx)
     if from_tensor.shape[idx] &gt; to_tensor.shape[idx]:
-        # print(&#34;HERE&#34;, from_tensor.shape, to_tensor.shape)
         if len(dims) == 0:
             out_channels = list(enumerate(from_tensor))
         else: 
@@ -340,17 +355,17 @@ class GreatestWeightsTransfer(TransferMethod):
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="iatransfer.toolkit.methods" href="index.html">iatransfer.toolkit.methods</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer" href="index.html">iatransfer.toolkit.transfer</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer" href="#iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer">GreatestWeightsTransfer</a></code></h4>
+<h4><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer">MagnitudeTransfer</a></code></h4>
 <ul class="">
-<li><code><a title="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.get_slices" href="#iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.get_slices">get_slices</a></code></li>
-<li><code><a title="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_matched" href="#iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_matched">transfer_matched</a></code></li>
-<li><code><a title="iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_with_greatest_weights" href="#iatransfer.toolkit.methods.greatest_weights_transfer.GreatestWeightsTransfer.transfer_with_greatest_weights">transfer_with_greatest_weights</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.get_slices" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.get_slices">get_slices</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice">update_slice</a></code></li>
 </ul>
 </li>
 </ul>
