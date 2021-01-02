@@ -11,9 +11,9 @@ class Matching(ABC):
 
     @abstractmethod
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-            -> List[Tuple[nn.Module, List[nn.Module]]]:
+            -> List[Tuple[nn.Module, nn.Module]]:
         pass
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-            -> List[Tuple[nn.Module, List[nn.Module]]]:
+            -> List[Tuple[nn.Module, nn.Module]]:
         return self.match(from_module, to_module, *args, **kwargs)
