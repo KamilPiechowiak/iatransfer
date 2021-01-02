@@ -1,3 +1,15 @@
+# Inter-Architecture Knowledge Transfer
+
+![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
+![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
+---
+![Release](https://img.shields.io/badge/toolkit-1.0.0-red)
+![Release](https://img.shields.io/badge/research-1.0.0-red)
+![Platform](https://img.shields.io/badge/platform-linux--64-blue)
+![Python](https://img.shields.io/badge/python-x64%203.8.5-blue)
+![Pytorch](https://img.shields.io/badge/torch-1.7.1-blue)
+
+
 ## Modele początkowe
 
 Modele początkowe definujemy są w `models.py` w `training_tuples`. Aby wytrenować modele początkowe, należy uruchomić `pretrain_models.py`.
