@@ -10,6 +10,7 @@ from iatransfer.research.data.data import TrainingTuple, get_dataset, get_datase
 from iatransfer.research.models.models import training_tuples
 from iatransfer.research.train.train_model import train_model
 from iatransfer.research.transfer.transfer_flags import FLAGS
+from iatransfer.toolkit.base_transfer import Transfer
 
 
 def create_pretrained_models_dict() -> Dict[str, TrainingTuple]:
@@ -22,7 +23,7 @@ def create_pretrained_models_dict() -> Dict[str, TrainingTuple]:
 SERIAL_EXEC = xmp.MpSerialExecutor()
 
 
-def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Callable[[nn.Module, nn.Module], None]):
+def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Transfer) -> None:
     def _mp_fn(rank, transfer_tuples):
         # print(xm.xrt_world_size()) #check number of nodes
         device = xm.xla_device()
@@ -66,7 +67,7 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Ca
 
 
 def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
-                          transfer: Callable[[nn.Module, nn.Module], None]):
+                          transfer: Transfer) -> None:
     pretrained_models = create_pretrained_models_dict()
     for t, from_model_name in transfer_tuples:
         from_model: nn.Module = pretrained_models[from_model_name].model()
@@ -75,7 +76,7 @@ def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
 
 
 if __name__ == '__main__':
-    from iatransfer.toolkit.transfer import transfer
+    from iatransfer.toolkit.transfer.clip_transfer import ClipTransfer
     from iatransfer.research.models.models import transfer_tuples
 
-    test_transfer(transfer_tuples, transfer)
+    test_transfer(transfer_tuples, ClipTransfer())
