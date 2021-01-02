@@ -1,7 +1,12 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import sys
+sys.path.append(".")
+from iatransfer.toolkit.methods import CentersTransfer, GreatestWeightsTransfer
 
+transfer_method = GreatestWeightsTransfer()
+# transfer_method = CentersTransfer()
 
 def transfer(from_model, to_model):
     def flatten_with_blocks(model):
@@ -108,39 +113,17 @@ def transfer(from_model, to_model):
         matched_indices.reverse()
         return dp[n][m], matched, matched_indices
 
-    def _transfer_tensors(from_tensor, to_tensor):
-        if from_tensor is None or to_tensor is None:
-            return
-        from_slices, to_slices = [], []
-        for a, b in zip(from_tensor.shape, to_tensor.shape):
-            if a < b:
-                from_slices.append(slice(0, a))
-                to_slices.append(slice((b - a) // 2, -((b - a + 1) // 2)))
-            elif a > b:
-                from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
-                to_slices.append(slice(0, b))
-            else:
-                from_slices.append(slice(0, a))
-                to_slices.append(slice(0, b))
-        to_tensor[tuple(to_slices)] = from_tensor[tuple(from_slices)]
-
-    def _transfer(matched):
-        with torch.no_grad():
-            for matching in matched:
-                if isinstance(matching, list):
-                    _transfer(matching)
-                elif matching[0] is not None and matching[1] is not None:
-                    _transfer_tensors(matching[0].weight, matching[1].weight)
-                    _transfer_tensors(matching[0].bias, matching[1].bias)
+    
 
     _, _, flattened_from_model = flatten_with_blocks(from_model)
     _, _, flattened_to_model = flatten_with_blocks(to_model)
     _, matched, _ = match_models(flattened_from_model, flattened_to_model)
-    _transfer(matched)
+    # print(matched)
+    transfer_method.transfer_matched(matched)
 
 
 def get_stats(model):
-    return [layer.float().abs().mean() for layer in model.state_dict().values()]
+    return [(layer[1].float().abs().mean()) for layer in model.state_dict().items()]
 
 
 if __name__ == '__main__':
@@ -149,9 +132,9 @@ if __name__ == '__main__':
     amodel = EfficientNet.from_pretrained('efficientnet-b0')
     bmodel = EfficientNet.from_pretrained('efficientnet-b3')
 
-    stats_before = get_stats(bmodel)
-    transfer(amodel, bmodel)
-    stats_after = get_stats(bmodel)
+    stats_before = get_stats(amodel)
+    transfer(bmodel, amodel)
+    stats_after = get_stats(amodel)
     print('\n'.join(
         [str((x, y)) for x, y in zip(stats_before, stats_after)]
     ))
