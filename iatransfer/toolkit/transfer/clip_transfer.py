@@ -49,9 +49,12 @@ class ClipTransfer(Transfer):
 
 if __name__ == '__main__':
     from efficientnet_pytorch import EfficientNet
+    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 
-    amodel = EfficientNet.from_pretrained('efficientnet-b0')
-    bmodel = EfficientNet.from_pretrained('efficientnet-b3')
+    amodel = EfficientNet.from_pretrained('efficientnet-b3')
+    bmodel = EfficientNet.from_pretrained('efficientnet-b0')
+    amodel = Cifar10Resnet(3, no_channels=24)
+    bmodel = Cifar10Resnet(2, no_channels=16)
 
     stats_before = get_absmeans(bmodel)
     ClipTransfer()(amodel, bmodel)

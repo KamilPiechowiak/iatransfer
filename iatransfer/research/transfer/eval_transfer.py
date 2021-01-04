@@ -1,5 +1,6 @@
 import pickle
 from typing import Dict, Callable, Tuple, List
+import os
 
 import torch
 import torch_xla.core.xla_model as xm
@@ -51,6 +52,7 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Tr
                         non_transfer_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}"
                         dscore = get_best_accuracy(to_path)/get_best_accuracy(non_transfer_path)
                         print(f"{from_model_name} -> {t.name}: {dscore}")
+                        os.system(f"echo \"{from_model_name} -> {t.name}: {dscore}\" >> scores.out")
                         score+=dscore
                     iterations+=1
         xm.master_print(f"Score: {score/iterations}")
@@ -77,6 +79,8 @@ def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
 
 if __name__ == '__main__':
     from iatransfer.toolkit.transfer.clip_transfer import ClipTransfer
+    from iatransfer.toolkit.transfer.trace_transfer import TraceTransfer
     from iatransfer.research.models.models import transfer_tuples
 
-    test_transfer(transfer_tuples, ClipTransfer())
+    # test_transfer(transfer_tuples, ClipTransfer())
+    test_transfer(transfer_tuples, TraceTransfer(reverse_priority=True))

@@ -50,7 +50,7 @@ class MagnitudeTransfer(Transfer):
 
     def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Tuple[Tuple[Union[List[int], slice]]]:
         if from_tensor is None or to_tensor is None:
-            return
+            return None
         n = len(from_tensor.shape)
         from_slices, to_slices = [], []
         self.update_slice(from_tensor, to_tensor, 0, from_slices, to_slices)
@@ -83,7 +83,7 @@ class MagnitudeTransfer(Transfer):
                     self._transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
                     to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
-                    import sys
+                    # import sys
                     # print(to_slices, "<=", from_slices, file=sys.stderr)
                     if matching[1].weight is not None and matching[0].weight is not None:
                         # print(matching[1].weight[to_slices].shape)
