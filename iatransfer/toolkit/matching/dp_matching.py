@@ -13,7 +13,7 @@ class DPMatching(Matching):
             -> List[Tuple[nn.Module, nn.Module]]:
         _, _, flattened_from_module = flatten_with_blocks(from_module)
         _, _, flattened_to_module = flatten_with_blocks(to_module)
-        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
+        score, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
         return matched
 
     def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
@@ -45,7 +45,7 @@ class DPMatching(Matching):
         m = len(flat_from_module)
         n = len(flat_to_module)
         dp = np.zeros((n + 1, m + 1))
-        transition = np.zeros((n + 1, m + 1))  #
+        transition = np.zeros((n + 1, m + 1, 2))  #
         scores = np.zeros((n + 1, m + 1))
         # reduction_coeff = 0.7
         for i in range(1, n + 1):
@@ -54,9 +54,12 @@ class DPMatching(Matching):
 
         for i in range(1, n + 1):
             for j in range(1, m + 1):
-                dp[i, j] = dp[i, j - 1]
-                transition[i, j] = i
-                current_reduction = 1
+                if dp[i - 1, j] > dp[i, j - 1]:
+                    dp[i, j] = dp[i - 1, j]
+                    transition[i, j] = [i - 1, j]
+                else:
+                    dp[i, j] = dp[i, j - 1]
+                    transition[i, j] = [i, j - 1]
                 cumulative_sum = 0
                 for k in range(i, 0, -1):
                     cumulative_sum += scores[k, j]
@@ -69,7 +72,7 @@ class DPMatching(Matching):
                     # thanks to it we encourage dynamic programming not to choose single layer all the time
                     if score > dp[i, j]:
                         dp[i, j] = score
-                        transition[i, j] = k - 1
+                        transition[i, j] = [k - 1, j - 1]
                     # current_reduction*=reduction_coeff
 
         matched = []
@@ -77,7 +80,12 @@ class DPMatching(Matching):
         i, j = n, m
 
         while i > 0:
-            t = transition[i, j]
+            if transition[i, j, 1] == j:
+                i -= 1
+                matched.append((None, flat_to_module[i]))
+                matched_indices.append((None, i))
+                continue
+            t = transition[i, j, 0]
             j -= 1
             from_model_layer_included = False
             while t < i:
@@ -98,8 +106,6 @@ class DPMatching(Matching):
             if not from_model_layer_included:
                 matched_indices.append((j, None))
                 matched.append((flat_from_module[j], None))
-        #     print(dp)
-        #     print(transition)
         matched.reverse()
         matched_indices.reverse()
         return dp[n][m], matched, matched_indices
