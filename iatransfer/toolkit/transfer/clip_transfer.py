@@ -3,17 +3,14 @@ from typing import List, Tuple
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.matching.dp_matching import DPMatching
+from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
-class ClipTransfer(Transfer):
+class ClipTransfer(MatchedTransfer):
 
-    def __init__(self, matching_strategy: Matching = DPMatching(), **kwargs) -> None:
-        self.matching_strategy = matching_strategy
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -> TransferStats:

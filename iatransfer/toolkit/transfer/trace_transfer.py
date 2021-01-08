@@ -1,20 +1,17 @@
-from typing import List, Tuple, Any, Optional, Union
 import re
+from typing import List, Tuple, Any, Optional, Union
 
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.matching.dp_matching import DPMatching
+from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
-class TraceTransfer(Transfer):
+class TraceTransfer(MatchedTransfer):
 
-    def __init__(self, matching_strategy: Matching = DPMatching(), reverse_priority: bool = False, **kwargs) -> None:
-        self.matching_strategy = matching_strategy
+    def __init__(self, reverse_priority: bool = False, **kwargs) -> None:
         if reverse_priority:
             self.sgn = +1
         else:
@@ -44,14 +41,17 @@ class TraceTransfer(Transfer):
         """
             substitutes every call to torch library
         """
+
         def __getattr__(self, attr: Any) -> Any:
             def f(*args, **kwargs):
                 return args[0] if len(args) > 0 else None
+
             return f
 
     class Module:
 
-        def __init__(self, trace: 'torch.jit._trace.TracedModule', module: nn.Module, outer_class: 'TraceTransfer') -> None:
+        def __init__(self, trace: 'torch.jit._trace.TracedModule', module: nn.Module,
+                     outer_class: 'TraceTransfer') -> None:
             self.trace = trace
             self.module = module
             self.outer_class = outer_class
@@ -60,11 +60,12 @@ class TraceTransfer(Transfer):
             if attr == "torch":
                 return self.outer_class.TorchSubstitute()
             return self.__class__(getattr(self.trace, attr), getattr(self.module, attr), self.outer_class)
-        
+
         def forward(self, ids: Optional[List[int]] = None):
-            if len(list(self.module.children())) == 0 or any([isinstance(self.module, clazz) for clazz in self.outer_class.layers_classes]):
+            if len(list(self.module.children())) == 0 or any(
+                    [isinstance(self.module, clazz) for clazz in self.outer_class.layers_classes]):
                 # print("ids: ", ids)
-                return self._transfer(self.module,  ids)
+                return self._transfer(self.module, ids)
             else:
                 instructions: str = self.trace.code
                 instructions = re.sub(r"forward[^\(]*\(", "forward(", instructions)
@@ -76,7 +77,7 @@ class TraceTransfer(Transfer):
                 while i < len(instructions) and instructions[i].find("return") == -1:
                     # print(instructions[i].strip(), "\n")
                     exec(instructions[i].strip())
-                    i+=1
+                    i += 1
                 if i < len(instructions):
                     return eval(re.search(r"return(.+)", instructions[i]).group(1).strip())
                 return None
@@ -89,24 +90,26 @@ class TraceTransfer(Transfer):
             else:
                 return slice(0, a), slice(0, b)
 
-        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Tuple[Union[List[int], slice]]:
+        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Tuple[
+            Union[List[int], slice]]:
             dims = [i for i in range(1, len(from_tensor.shape))]
             if from_tensor.shape[0] > to_tensor.shape[0]:
                 if len(dims) == 0:
                     out_channels = list(enumerate(from_tensor))
-                else: 
+                else:
                     out_channels = list(enumerate(from_tensor.abs().sum(dim=dims)))
-                out_channels.sort(key=lambda w : self.outer_class.sgn*w[1])
+                out_channels.sort(key=lambda w: self.outer_class.sgn * w[1])
                 c = to_tensor.shape[0]
                 from_ids = sorted([w[0] for w in out_channels[:c]])
                 return torch.tensor(from_ids), slice(0, c)
             else:
                 return self._get_center_slices(from_tensor.shape[0], to_tensor.shape[0])
-        
-        def _get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, ids: Optional[List[int]]) -> Tuple[Tuple[Union[List[int], slice]]]:
+
+        def _get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, ids: Optional[List[int]]) -> Tuple[
+            Tuple[Union[List[int], slice]]]:
             n = len(from_tensor.shape)
-            from_slices, to_slices = [None]*n, [None]*n
-            if n > 1: # use input ids to choose input channels
+            from_slices, to_slices = [None] * n, [None] * n
+            if n > 1:  # use input ids to choose input channels
                 a, b = from_tensor.shape[1], to_tensor.shape[1]
                 # if ids is not None and a > b and len(ids) != b:
                 #     print("HERE")
@@ -125,21 +128,21 @@ class TraceTransfer(Transfer):
             # choose centers on the remaining channels
             for i in range(2, n):
                 from_slices[i], to_slices[i] = self._get_center_slices(from_tensor.shape[i], to_tensor.shape[i])
-            
+
             total_unsqueeze = 0
-            for i in range(len(from_slices)-1, -1, -1):
+            for i in range(len(from_slices) - 1, -1, -1):
                 if isinstance(from_slices[i], torch.Tensor):
                     # print(i)
                     for _ in range(total_unsqueeze):
                         from_slices[i] = from_slices[i].unsqueeze(-1)
-                    total_unsqueeze+=1
+                    total_unsqueeze += 1
             # print('total_unsqueeze: ', total_unsqueeze)
-            
+
             return tuple(from_slices), tuple(to_slices)
 
         def _transfer(self, to_module: nn.Module, ids: Optional[List[int]]) -> Optional[List[int]]:
             if to_module not in self.outer_class.layers_mapping:
-                return ids #for example non-linearity - then pass ids
+                return ids  # for example non-linearity - then pass ids
             from_module = self.outer_class.layers_mapping[to_module]
             if from_module is None:
                 return ids
@@ -173,8 +176,8 @@ class TraceTransfer(Transfer):
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
             module.forward()
 
+
 if __name__ == '__main__':
-    from efficientnet_pytorch import EfficientNet
     from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 
     # amodel = EfficientNet.from_pretrained('efficientnet-b3')
