@@ -31,17 +31,14 @@
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.matching.dp_matching import DPMatching
+from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
-class ClipTransfer(Transfer):
+class ClipTransfer(MatchedTransfer):
 
-    def __init__(self, matching_strategy: Matching = DPMatching(), **kwargs) -&gt; None:
-        self.matching_strategy = matching_strategy
+    def __init__(self, **kwargs) -&gt; None:
         super().__init__(**kwargs)
 
     def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
@@ -103,7 +100,7 @@ if __name__ == &#39;__main__&#39;:
 <dl>
 <dt id="iatransfer.toolkit.transfer.clip_transfer.ClipTransfer"><code class="flex name class">
 <span>class <span class="ident">ClipTransfer</span></span>
-<span>(</span><span>matching_strategy: <a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a> = &lt;iatransfer.toolkit.matching.dp_matching.DPMatching object&gt;, **kwargs)</span>
+<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -112,10 +109,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ClipTransfer(Transfer):
+<pre><code class="python">class ClipTransfer(MatchedTransfer):
 
-    def __init__(self, matching_strategy: Matching = DPMatching(), **kwargs) -&gt; None:
-        self.matching_strategy = matching_strategy
+    def __init__(self, **kwargs) -&gt; None:
         super().__init__(**kwargs)
 
     def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
@@ -150,6 +146,7 @@ inheritance.</p></div>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li>iatransfer.toolkit.transfer._matched_transfer.MatchedTransfer</li>
 <li><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></li>
 <li>abc.ABC</li>
 </ul>
