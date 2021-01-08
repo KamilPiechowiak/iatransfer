@@ -4,17 +4,27 @@ import numpy as np
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.utils import flatten_with_blocks
+from iatransfer.toolkit.base_standardization import Standardization
+from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
 class DPMatching(Matching):
 
+    def __init__(self, standardization: Standardization = BlocksStandardization()):
+        self.standardization = standardization
+
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -> List[Tuple[nn.Module, nn.Module]]:
-        _, _, flattened_from_module = flatten_with_blocks(from_module)
-        _, _, flattened_to_module = flatten_with_blocks(to_module)
-        score, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
+        flattened_from_module = self.standardization.standardize(from_module)
+        flattened_to_module = self.standardization.standardize(to_module)
+        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
         return matched
+
+    def sim(self, from_module: nn.Module, to_module: nn.Module):
+        flattened_from_module = self.standardization.standardize(from_module)
+        flattened_to_module = self.standardization.standardize(to_module)
+        score, _, _ = self._match_models(flattened_from_module, flattened_to_module)
+        return score / self._match_models(flattened_to_module, flattened_to_module)[0]
 
     def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
         def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -> bool:
@@ -109,3 +119,18 @@ class DPMatching(Matching):
         matched.reverse()
         matched_indices.reverse()
         return dp[n][m], matched, matched_indices
+
+if __name__ == "__main__":
+    import timm
+    from torchvision import models
+    from pprint import pprint
+    from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
+    m1 = DPMatching()
+    m2 = DPMatching(standardization=GraphStandardization())
+    amodel = timm.create_model("efficientnet_b3")
+    bmodel = timm.create_model("efficientnet_b0")
+    # amodel = timm.create_model("resnet18d")
+    # bmodel = models.MobileNetV2()
+    print(m1.sim(amodel, bmodel))
+    print(m2.sim(amodel, bmodel))
+    # pprint(matching)
