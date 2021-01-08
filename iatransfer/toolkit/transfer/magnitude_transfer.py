@@ -3,20 +3,19 @@ from typing import List, Tuple, Union
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.matching.dp_matching import DPMatching
+from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
-class MagnitudeTransfer(Transfer):
+class MagnitudeTransfer(MatchedTransfer):
     """
         :param reverse_priority: if set to True, choose channels with smallest weights' sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     """
-    def __init__(self, matching_strategy: Matching = DPMatching(), reverse_priority = False, input_constrained_by_output = True, **kwargs) -> None:
-        self.matching_strategy = matching_strategy
+
+    def __init__(self, reverse_priority=False,
+                 input_constrained_by_output=True, **kwargs) -> None:
         if reverse_priority:
             self.sgn = +1
         else:
@@ -29,15 +28,16 @@ class MagnitudeTransfer(Transfer):
         self._transfer(matched)
         return TransferStats()
 
-    def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -> None:
+    def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int,
+                     from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -> None:
         dims = [i for i in range(len(from_tensor.shape))]
         dims.remove(idx)
         if from_tensor.shape[idx] > to_tensor.shape[idx]:
             if len(dims) == 0:
                 out_channels = list(enumerate(from_tensor))
-            else: 
+            else:
                 out_channels = list(enumerate(from_tensor.abs().sum(dim=dims)))
-            out_channels.sort(key=lambda w : self.sgn*w[1])
+            out_channels.sort(key=lambda w: self.sgn * w[1])
             c = to_tensor.shape[idx]
             from_ids = sorted([w[0] for w in out_channels[:c]])
             from_slices.append(from_ids)
@@ -68,12 +68,12 @@ class MagnitudeTransfer(Transfer):
                 from_slices.append(slice(0, a))
                 to_slices.append(slice(0, b))
         total_unsqueeze = 0
-        for i in range(len(from_slices)-1, -1, -1):
+        for i in range(len(from_slices) - 1, -1, -1):
             if isinstance(from_slices[i], list):
                 from_slices[i] = torch.tensor(from_slices[i])
                 for _ in range(total_unsqueeze):
                     from_slices[i] = from_slices[i].unsqueeze(-1)
-                total_unsqueeze+=1
+                total_unsqueeze += 1
         return tuple(to_slices), tuple(from_slices)
 
     def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -> None:

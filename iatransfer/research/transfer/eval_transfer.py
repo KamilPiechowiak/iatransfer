@@ -1,6 +1,6 @@
-import pickle
-from typing import Dict, Callable, Tuple, List
 import os
+import pickle
+from typing import Dict, Tuple, List
 
 import torch
 import torch_xla.core.xla_model as xm
@@ -42,7 +42,8 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Tr
             for from_model_name in from_model_names:
                 for i in range(FLAGS['repeat']):
                     from_path = f"{FLAGS['path']}/{from_model_name}_{get_dataset_name(t.dataset_tuple)}_{i}"
-                    from_model: nn.Module = pretrained_models[f"{from_model_name}_{get_dataset_name(t.dataset_tuple)}"].model()
+                    from_model: nn.Module = pretrained_models[
+                        f"{from_model_name}_{get_dataset_name(t.dataset_tuple)}"].model()
                     from_model.load_state_dict(torch.load(f"{from_path}/best.pt")['model'])
                     to_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}"
                     to_model = t.model()
@@ -50,12 +51,12 @@ def test_transfer(transfer_tuples: List[Tuple[TrainingTuple, str]], transfer: Tr
                     train_model(FLAGS, device, to_model, to_path, train_dataset, val_dataset)
                     if xm.is_master_ordinal():
                         non_transfer_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}"
-                        dscore = get_best_accuracy(to_path)/get_best_accuracy(non_transfer_path)
+                        dscore = get_best_accuracy(to_path) / get_best_accuracy(non_transfer_path)
                         print(f"{from_model_name} -> {t.name}: {dscore}")
                         os.system(f"echo \"{from_model_name} -> {t.name}: {dscore}\" >> scores.out")
-                        score+=dscore
-                    iterations+=1
-        xm.master_print(f"Score: {score/iterations}")
+                        score += dscore
+                    iterations += 1
+        xm.master_print(f"Score: {score / iterations}")
 
     def get_best_accuracy(path):
         with open(f'{path}/stats.pickle', 'rb') as f:
@@ -78,7 +79,6 @@ def test_transfer_locally(transfer_tuples: List[Tuple[TrainingTuple, str]],
 
 
 if __name__ == '__main__':
-    from iatransfer.toolkit.transfer.clip_transfer import ClipTransfer
     from iatransfer.toolkit.transfer.trace_transfer import TraceTransfer
     from iatransfer.research.models.models import transfer_tuples
 
