@@ -1,2 +1,3 @@
 efficientnet-pytorch>=0.7.0
 timm>=0.3.3
+graphviz>=0.16

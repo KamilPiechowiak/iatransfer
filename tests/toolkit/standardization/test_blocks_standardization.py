@@ -3,7 +3,8 @@ from typing import List
 from torch import nn
 from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
-class TestBlocksStandardization(unittest.TestCase):
+
+class BlocksStandardizationTest(unittest.TestCase):
 
     def check_arr_length(self, models: List[nn.Module], expected_lengths: List[int]):
         for model, expected_length in zip(models, expected_lengths):
@@ -37,6 +38,3 @@ class TestBlocksStandardization(unittest.TestCase):
             [models.MobileNetV2()],
             [25]
         )
-
-if __name__ == "__main__":
-    unittest.main()

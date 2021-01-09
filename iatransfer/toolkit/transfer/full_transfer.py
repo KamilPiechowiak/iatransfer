@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.matching.dp_matching import DPMatching
 from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.toolkit.transfer.transfer_stats import get_absmeans

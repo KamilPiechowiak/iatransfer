@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from iatransfer.toolkit.base_standardization import Standardization
 
+
 class BlocksStandardization(Standardization):
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
@@ -32,33 +33,33 @@ class BlocksStandardization(Standardization):
             if len(children) == 1:
                 next_level = level
             else:
-                next_level = level+1
+                next_level = level + 1
             for child in module.children():
                 child_depth, child_dimensional_layers_num, child_layers = self.flatten_with_blocks(child, next_level)
-                dimensional_layers_num += child_dimensional_layers_num 
+                dimensional_layers_num += child_dimensional_layers_num
                 if child_depth > 1 or (isinstance(child_layers, list) and child_dimensional_layers_num < 2):
                     for child_layer in child_layers:
                         if isinstance(child_layer, list):
-                            blocks+=1
+                            blocks += 1
                         else:
-                            single_layers+=1
-                        layers+=[child_layer]
+                            single_layers += 1
+                        layers += [child_layer]
                 else:
                     if isinstance(child_layers, list):
-                        blocks+=1
+                        blocks += 1
                     else:
-                        single_layers+=1
-                    layers+=[child_layers]
-            
+                        single_layers += 1
+                    layers += [child_layers]
+
             # print("before: ", layers)
-            
+
             if single_layers > blocks and level > 0:
                 new_layers = []
                 for child_layers in layers:
                     if isinstance(child_layers, list):
-                        new_layers+=child_layers
+                        new_layers += child_layers
                     else:
-                        new_layers+=[child_layers]
+                        new_layers += [child_layers]
                 layers = new_layers
                 depth = 1
             else:
@@ -74,24 +75,24 @@ class BlocksStandardization(Standardization):
                 layers = module
 
             # print("after: ", layers)
-        
+
         if level == 0 and isinstance(layers, list) == False:
             layers = [layers]
 
         return depth, dimensional_layers_num, layers
 
+
 if __name__ == "__main__":
-    from efficientnet_pytorch import EfficientNet
     import timm
-    from torchvision import models
-    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
     from pprint import pprint
+
 
     def test(model):
         print(model)
         layers = BlocksStandardization().standardize(model)
         print(len(layers))
         pprint(layers)
+
 
     # test(Cifar10Resnet(2, 10, 10))
     # test(timm.create_model("efficientnet_b0"))

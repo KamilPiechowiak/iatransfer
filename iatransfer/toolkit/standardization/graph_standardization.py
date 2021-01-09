@@ -1,15 +1,14 @@
+import random
+from collections import Counter
 from typing import List, Tuple, Union, Dict
 
-from collections import Counter
-import random
 import torch
 import torch.nn as nn
+from graphviz import Digraph
 from torch.autograd import Variable
 
 from iatransfer.toolkit.base_standardization import Standardization
 
-from pprint import pprint
-from graphviz import Digraph
 
 class GraphStandardization(Standardization):
 
@@ -146,7 +145,6 @@ class GraphStandardization(Standardization):
 
         return dot, lmap, hmap, clist, elist
 
-
     def get_graph(self, model: nn.Module):
         # FIXME: warning about 'torchviz'
         try:
@@ -158,19 +156,22 @@ class GraphStandardization(Standardization):
             x = torch.randn(32, 1, 31, 31)
             g, lmap, hmap, clist, elist = self.make_dot(model(x), params=dict(model.named_parameters()))
         return g, lmap, hmap, clist, elist
-    
+
     def get_layers(self, model: nn.Module) -> Dict[str, nn.Module]:
         layers_dict = {}
+
         def dfs(model: nn.Module, name_prefix: List[str]):
             has_children = False
             for child_name, child in model.named_children():
-                dfs(child, name_prefix+[child_name])
+                dfs(child, name_prefix + [child_name])
                 has_children = True
             layers_dict[".".join(name_prefix)] = model
+
         dfs(model, [])
         return layers_dict
 
-    def sort_graph(self, graph: 'Graph', clusters_edges: List[Tuple[str, str]], nodes_edges: List[Tuple[str, str]]) -> 'Graph':
+    def sort_graph(self, graph: 'Graph', clusters_edges: List[Tuple[str, str]],
+                   nodes_edges: List[Tuple[str, str]]) -> 'Graph':
 
         def topological_sort(edges: List[Tuple[str, str]]) -> Dict[str, int]:
             def dfs(a: 'Node'):
@@ -181,8 +182,8 @@ class GraphStandardization(Standardization):
                     if not b['vis']:
                         dfs(b)
                 a['postorder'] = postorder
-                postorder+=1
-                        
+                postorder += 1
+
             nodes = set([e[0] for e in edges]) | set([e[1] for e in edges])
             nodes = dict([
                 (node, {'id': node, 'e': [], 'postorder': -1, 'vis': False}) for node in nodes
@@ -195,10 +196,9 @@ class GraphStandardization(Standardization):
                     dfs(node)
             ordered_nodes = sorted(list(nodes.values()), key=lambda node: -node['postorder'])
             return dict([(node['id'], i) for i, node in enumerate(ordered_nodes)])
-        
+
         def count_ancestors(edges: List[Tuple[str, str]]) -> Dict[str, int]:
-            return 
-                
+            return
 
         def sort_cluster(cluster: List['Node']) -> List['Node']:
             def cmp(node: 'Node') -> int:
@@ -209,6 +209,7 @@ class GraphStandardization(Standardization):
                     return nodes_order[a]
                 else:
                     return nodes_order[node["id"]]
+
             return sorted(cluster, key=cmp)
 
         clusters_order = topological_sort(clusters_edges)
@@ -237,8 +238,11 @@ class GraphStandardization(Standardization):
             layers.append(layers_in_block)
         return layers
 
+
 if __name__ == "__main__":
     import os
+
+
     def show_graph(model, path="__tli_debug"):
         # FIXME: warning about 'torchviz'
         x = torch.randn(32, 3, 32, 32)
@@ -247,9 +251,10 @@ if __name__ == "__main__":
         os.system(f"rm {path}__v1")
         print("saved to file")
 
+
     import timm
     from pprint import pprint
-    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
+
     # model = Cifar10Resnet(3)
     model = timm.create_model("regnetx_002")
     # model = timm.create_model("mobilenetv2_110d")
@@ -261,7 +266,7 @@ if __name__ == "__main__":
     print(model)
     s = GraphStandardization()
     pprint(s.get_graph(model)[1])
-    layers = s.standardize(model) 
+    layers = s.standardize(model)
     pprint(layers)
     print(len(layers))
 

@@ -1,8 +1,9 @@
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import torch.nn as nn
 
 from iatransfer.toolkit.base_standardization import Standardization
+
 
 class FlattenStandardization(Standardization):
 
@@ -15,7 +16,7 @@ class FlattenStandardization(Standardization):
         ]
         if any([isinstance(module, clazz) for clazz in classes]):
             return [module]
-        
+
         layers = []
         for child in module.children():
             layers += self.standardize(child)
@@ -23,9 +24,10 @@ class FlattenStandardization(Standardization):
             layers = [module]
         return layers
 
+
 if __name__ == "__main__":
     import timm
-    from pprint import pprint
+
     model = timm.create_model("efficientnet_b0")
     layers = FlattenStandardization().standardize(model)
     for layer in layers:

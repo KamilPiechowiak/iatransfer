@@ -125,8 +125,8 @@ if __name__ == "__main__":
     from torchvision import models
     from pprint import pprint
     from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
-    m1 = DPMatching()
-    m2 = DPMatching(standardization=GraphStandardization())
+    m1 = Matching()
+    m2 = Matching(standardization=GraphStandardization())
     amodel = timm.create_model("efficientnet_b3")
     bmodel = timm.create_model("efficientnet_b0")
     # amodel = timm.create_model("resnet18d")
