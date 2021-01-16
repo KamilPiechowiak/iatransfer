@@ -23,12 +23,3 @@ class FlattenStandardization(Standardization):
         if len(layers) == 0:
             layers = [module]
         return layers
-
-
-if __name__ == "__main__":
-    import timm
-
-    model = timm.create_model("efficientnet_b0")
-    layers = FlattenStandardization().standardize(model)
-    for layer in layers:
-        print(layer.weight.shape)

@@ -119,18 +119,3 @@ class DPMatching(Matching):
         matched.reverse()
         matched_indices.reverse()
         return dp[n][m], matched, matched_indices
-
-if __name__ == "__main__":
-    import timm
-    from torchvision import models
-    from pprint import pprint
-    from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
-    m1 = Matching()
-    m2 = Matching(standardization=GraphStandardization())
-    amodel = timm.create_model("efficientnet_b3")
-    bmodel = timm.create_model("efficientnet_b0")
-    # amodel = timm.create_model("resnet18d")
-    # bmodel = models.MobileNetV2()
-    print(m1.sim(amodel, bmodel))
-    print(m2.sim(amodel, bmodel))
-    # pprint(matching)

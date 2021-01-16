@@ -76,28 +76,8 @@ class BlocksStandardization(Standardization):
 
             # print("after: ", layers)
 
-        if level == 0 and isinstance(layers, list) == False:
+        if level == 0 and isinstance(layers, list) is False:
             layers = [layers]
 
         return depth, dimensional_layers_num, layers
-
-
-if __name__ == "__main__":
-    import timm
-    from pprint import pprint
-
-
-    def test(model):
-        print(model)
-        layers = BlocksStandardization().standardize(model)
-        print(len(layers))
-        pprint(layers)
-
-
-    # test(Cifar10Resnet(2, 10, 10))
-    # test(timm.create_model("efficientnet_b0"))
-    test(timm.create_model("regnetx_002"))
-    # test(EfficientNet.from_name("efficientnet-b3"))
-    # test(timm.create_model("mixnet_m"))
-    # test(models.MobileNetV2())
-    # pprint(flatten(Cifar10Resnet(2, 10, 10)))
+        

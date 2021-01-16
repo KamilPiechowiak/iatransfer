@@ -41,7 +41,6 @@ class Food101(VisionDataset):
 
         with open(downloaded_list) as f:
             for file_name in tqdm(f.read().split('\n')[:-1]):
-                # print(os.path.join(self.root, self.base_folder, 'images', f'{file_name}.jpg'))
                 self.data.append(
                     copy.deepcopy(Image.open(os.path.join(self.root, self.base_folder, 'images', f'{file_name}.jpg'))))
                 self.targets.append(classes[file_name.split('/')[0]])

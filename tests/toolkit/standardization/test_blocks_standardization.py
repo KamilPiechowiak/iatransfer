@@ -1,6 +1,9 @@
 import unittest
 from typing import List
 from torch import nn
+import timm
+from pprint import pprint
+
 from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
@@ -19,7 +22,6 @@ class BlocksStandardizationTest(unittest.TestCase):
         )
 
     def test_efficientnet_timm(self):
-        import timm
         self.check_arr_length(
             [timm.create_model(f"efficientnet_b{i}") for i in range(4)],
             [24, 31, 31, 34]
@@ -38,3 +40,9 @@ class BlocksStandardizationTest(unittest.TestCase):
             [models.MobileNetV2()],
             [25]
         )
+    def test_model(self):
+        model = timm.create_model("regnetx_002")
+        bs = BlocksStandardization()
+        layers = bs.standardize(model)
+        print(len(layers))
+        pprint(layers)

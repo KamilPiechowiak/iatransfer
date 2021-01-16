@@ -1,4 +1,4 @@
-from typing import Tuple, List, Any, Union, Optional
+from typing import Tuple, List, Any, Optional
 
 import numpy as np
 import torch.nn as nn
@@ -7,7 +7,7 @@ from iatransfer.toolkit.base_matching import Matching
 from iatransfer.toolkit.standardization.flatten_standardization import FlattenStandardization
 
 
-class DPMatching(Matching):
+class DPFlatMatching(Matching):
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -> List[Tuple[nn.Module, nn.Module]]:
@@ -37,16 +37,15 @@ class DPMatching(Matching):
         return score
 
     def _penalty(self, x):
-        return -(x+1)/2 if x >= 0 else 0
+        return -(x + 1) / 2 if x >= 0 else 0
 
     def _match_modules(self, from_module: List[nn.Module], to_module: List[nn.Module]) -> List[Tuple[Optional[nn.Module]]]:
         n = len(to_module)
         m = len(from_module)
-        dp = np.zeros((n+1, m+1))
-        transition = np.zeros((n+1, m+1, 2), dtype=int)
-        for i in range(1, n+1):
-            print(i)
-            for j in range(1, m+1):
+        dp = np.zeros((n + 1, m + 1))
+        transition = np.zeros((n + 1, m + 1, 2), dtype=int)
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
                 score = self._compute_score(from_module[j-1], to_module[i-1])
                 if dp[i, j-1] > dp[i-1, j]:
                     dp[i, j] = dp[i, j-1]
@@ -54,7 +53,7 @@ class DPMatching(Matching):
                 else:
                     dp[i, j] = dp[i-1, j]
                     transition[i, j] = [i-1, j]
-                for k in range(0, m+1): # row
+                for k in range(0, m+1):  # row
                     value = dp[i-1, k] + score + self._penalty(k-j)
                     if value > dp[i, j]:
                         dp[i, j] = value
@@ -77,31 +76,12 @@ class DPMatching(Matching):
         while i > 0:
             matched.append((None, to_module[i-1]))
             matched_indices.append((None, i-1))
-            i-=1
+            i -= 1
         while j > 0:
             matched.append((to_module[j-1], None))
             matched_indices.append((j-1, None))
-            j-=1
+            j -= 1
 
         matched.reverse()
         matched_indices.reverse()
-        print(dp[n][m])
-        print(matched_indices)
         return dp[n][m], matched, matched_indices
-
-if __name__ == "__main__":
-    import timm
-    from efficientnet_pytorch import EfficientNet
-    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
-    from pprint import pprint
-
-    # amodel = EfficientNet.from_pretrained('efficientnet-b3')
-    # amodel = EfficientNet.from_pretrained('efficientnet-b0')
-    # bmodel = EfficientNet.from_pretrained('efficientnet-b0')
-    # amodel = timm.create_model('efficientnet_b0', pretrained=True)
-    # amodel = timm.create_model('efficientnet_b0', pretrained=True)
-    # bmodel = timm.create_model('efficientnet_b3', pretrained=True)
-    amodel = Cifar10Resnet(3, no_channels=24)
-    bmodel = Cifar10Resnet(2, no_channels=16)
-
-    pprint(DPMatching().match(amodel, bmodel))

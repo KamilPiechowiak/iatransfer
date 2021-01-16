@@ -162,10 +162,8 @@ class GraphStandardization(Standardization):
         layers_dict = {}
 
         def dfs(model: nn.Module, name_prefix: List[str]):
-            has_children = False
             for child_name, child in model.named_children():
                 dfs(child, name_prefix + [child_name])
-                has_children = True
             layers_dict[".".join(name_prefix)] = model
 
         dfs(model, [])
@@ -238,37 +236,3 @@ class GraphStandardization(Standardization):
                     layers_in_block.append(layers_dict[name])
             layers.append(layers_in_block)
         return layers
-
-
-if __name__ == "__main__":
-    import os
-
-
-    def show_graph(model, path="__tli_debug"):
-        # FIXME: warning about 'torchviz'
-        x = torch.randn(32, 3, 32, 32)
-        v1, _, _, _, _ = GraphStandardization().make_dot(model(x), params=dict(model.named_parameters()))
-        v1.render(filename=path + "__v1")
-        os.system(f"rm {path}__v1")
-        print("saved to file")
-
-
-    import timm
-    from pprint import pprint
-
-    # model = Cifar10Resnet(3)
-    model = timm.create_model("regnetx_002")
-    # model = timm.create_model("mobilenetv2_110d")
-    # model = timm.create_model("efficientnet_b0")
-    # for name, p in model.named_parameters():
-    #     print(name)
-    # for key, value in model.state_dict().items():
-    #     print(key)
-    print(model)
-    s = GraphStandardization()
-    pprint(s.get_graph(model)[1])
-    layers = s.standardize(model)
-    pprint(layers)
-    print(len(layers))
-
-    # show_graph(model)

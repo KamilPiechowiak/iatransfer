@@ -37,21 +37,16 @@ def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics
         a2 += t2 - t1
         a3 += t3 - t2
         i += 1
-    # print('Total iter', i)
     a1 /= i
     a2 /= i
     a3 /= i
-    # print(a1, a2, a3)
 
     metric_keys = list(metric_values.keys())
     metric_list = []
     for metric in metric_keys:
-        # print(type(metric_values[metric][0]), metric_values[metric][0].device)
         metric_list.append(torch.tensor(metric_values[metric], device=device).mean())
 
-    # print(xm.get_ordinal(), metric_list)
     xm.all_reduce(xm.REDUCE_SUM, metric_list)
-    # print(xm.get_ordinal(), metric_list)
     i = 0
     for metric in metric_keys:
         metric_values[metric] = (metric_list[i] / xm.xrt_world_size()).item()
@@ -61,7 +56,6 @@ def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics
 
     end_time = datetime.now()
     xm.master_print(end_time - start_time)
-    # print(metric_values)
     return metric_values[gradeBy]
 
 

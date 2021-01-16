@@ -5,7 +5,6 @@ import torch.nn as nn
 
 from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
-from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
 class ClipTransfer(MatchedTransfer):
@@ -42,20 +41,3 @@ class ClipTransfer(MatchedTransfer):
                 elif matching[0] is not None and matching[1] is not None:
                     self._transfer_tensors(matching[0].weight, matching[1].weight)
                     self._transfer_tensors(matching[0].bias, matching[1].bias)
-
-
-if __name__ == '__main__':
-    from efficientnet_pytorch import EfficientNet
-    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
-
-    amodel = EfficientNet.from_pretrained('efficientnet-b3')
-    bmodel = EfficientNet.from_pretrained('efficientnet-b0')
-    amodel = Cifar10Resnet(3, no_channels=24)
-    bmodel = Cifar10Resnet(2, no_channels=16)
-
-    stats_before = get_absmeans(bmodel)
-    ClipTransfer()(amodel, bmodel)
-    stats_after = get_absmeans(bmodel)
-    print('\n'.join(
-        [str((x, y)) for x, y in zip(stats_before, stats_after)]
-    ))

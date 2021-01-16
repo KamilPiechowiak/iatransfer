@@ -6,7 +6,6 @@ import torch.nn as nn
 
 from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
-from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
 class TraceTransfer(MatchedTransfer):
@@ -175,20 +174,3 @@ class TraceTransfer(MatchedTransfer):
             to_module.eval()
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
             module.forward()
-
-
-if __name__ == '__main__':
-    from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
-
-    # amodel = EfficientNet.from_pretrained('efficientnet-b3')
-    # bmodel = EfficientNet.from_pretrained('efficientnet-b0')
-    bmodel = Cifar10Resnet(3, no_channels=10)
-    amodel = Cifar10Resnet(2)
-    # amodel.model[8].block[0].weight[32:] = 0
-
-    stats_before = get_absmeans(bmodel)
-    TraceTransfer()(amodel, bmodel)
-    stats_after = get_absmeans(bmodel)
-    print('\n'.join(
-        [str((x, y)) for x, y in zip(stats_before, stats_after)]
-    ))

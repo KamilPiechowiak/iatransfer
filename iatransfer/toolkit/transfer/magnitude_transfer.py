@@ -5,7 +5,6 @@ import torch.nn as nn
 
 from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
-from iatransfer.toolkit.transfer.transfer_stats import get_absmeans
 
 
 class MagnitudeTransfer(MatchedTransfer):
@@ -83,15 +82,9 @@ class MagnitudeTransfer(MatchedTransfer):
                     self._transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
                     to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
-                    # import sys
-                    # print(to_slices, "<=", from_slices, file=sys.stderr)
                     if matching[1].weight is not None and matching[0].weight is not None:
-                        # print(matching[1].weight[to_slices].shape)
-                        # print(matching[0].weight.shape)
                         matching[1].weight[to_slices] = matching[0].weight[from_slices]
                     if matching[1].bias is not None and matching[0].bias is not None:
-                        # print(matching[0].bias.shape)
-                        # print(matching[1].bias.shape)
                         to_ids = to_slices[0]
                         from_ids = from_slices[0]
                         if isinstance(to_ids, torch.Tensor):
@@ -99,17 +92,3 @@ class MagnitudeTransfer(MatchedTransfer):
                         if isinstance(from_ids, torch.Tensor):
                             from_ids = from_ids.flatten()
                         matching[1].bias[to_ids] = matching[0].bias[from_ids]
-
-
-if __name__ == '__main__':
-    from efficientnet_pytorch import EfficientNet
-
-    amodel = EfficientNet.from_pretrained('efficientnet-b0')
-    bmodel = EfficientNet.from_pretrained('efficientnet-b3')
-
-    stats_before = get_absmeans(amodel)
-    MagnitudeTransfer()(bmodel, amodel)
-    stats_after = get_absmeans(amodel)
-    print('\n'.join(
-        [str((x, y)) for x, y in zip(stats_before, stats_after)]
-    ))
