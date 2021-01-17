@@ -27,5 +27,5 @@ class TransferMethodsFactory:
             matching_kwargs["standardization"] = self.standardization_classes[config["standardization"]]()
         transfer_kwargs = {}
         if "matching" in config:
-            transfer_kwargs["matching"] = self.matching_classes[config["matching"]](**matching_kwargs)
+            transfer_kwargs["matching_strategy"] = self.matching_classes[config["matching"]](**matching_kwargs)
         return self.transfer_classes[config["transfer"]](**transfer_kwargs)

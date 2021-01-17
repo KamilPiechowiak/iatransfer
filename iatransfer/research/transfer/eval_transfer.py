@@ -42,7 +42,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
             FLAGS['batch_size'] = t.batch_size
             if not xm.is_master_ordinal():
                 xm.rendezvous('download_only_once')
-            train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+            train_dataset, val_dataset = get_dataset(t.dataset_tuple, FLAGS)
             train_dataset = train_dataset()
             val_dataset = val_dataset()
             if xm.is_master_ordinal():
@@ -60,7 +60,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                             from_model.load_state_dict(
                                 torch.load(f"{from_path}/{checkpoint_filename}")['model'])
                             
-                            to_path = f"{FLAGS['path']}/{get_transfer_method_name(transfer_method)}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
+                            to_path = f"{FLAGS['path']}/{get_transfer_method_name(transfer_method)}/{t.name}_{t.dataset_tuple.name}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
                             to_model = t.model()
 
                             transfer(from_model, to_model)
@@ -68,7 +68,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                                         train_dataset, val_dataset)
 
                             if xm.is_master_ordinal():
-                                non_transfer_path = f"{FLAGS['path']}/{t.name}_{get_dataset_name(t.dataset_tuple)}_{i}"
+                                non_transfer_path = f"{FLAGS['path']}/{t.name}_{t.dataset_tuple.name}_{i}"
                                 dscore = get_best_accuracy(
                                     to_path) / get_best_accuracy(non_transfer_path)
                                 print(

@@ -5,6 +5,7 @@ from torchvision import transforms, datasets
 import timm
 
 from iatransfer.research.data import Flowers102, FGVCAircraft, Food101
+from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 
 
 class DatasetTuple(NamedTuple):
@@ -19,13 +20,13 @@ class TrainingTuple(NamedTuple):
     batch_size: int
 
     @staticmethod
-    def from_json(json: Dict) -> TrainingTuple:
+    def from_json(json: Dict) -> 'TrainingTuple':
         if json["model"]["supplier"] == "Cifar10Resnet":
             supplier = Cifar10Resnet
         else:
             supplier = timm.create_model
         def model():
-            return supplier(*json["model"]["args"], **json["model"]["kwargs"]),
+            return supplier(*json["model"]["args"], **json["model"]["kwargs"])
         return TrainingTuple(
             model,
             json["model"]["name"],
@@ -34,7 +35,7 @@ class TrainingTuple(NamedTuple):
         )
 
 
-def get_dataset(dataset_tuple: DatasetTuple):
+def get_dataset(dataset_tuple: DatasetTuple, FLAGS: Dict):
     def prepare_dataset(name: str, train: bool, resolution: int):
         if name == 'FASHION_MNIST':
             normalize = transforms.Normalize(mean=0.2860, std=0.3530)

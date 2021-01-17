@@ -19,7 +19,7 @@ def train_models(training_tuples: List[Dict], FLAGS: Dict) -> None:
             FLAGS['batch_size'] = t.batch_size
             if not xm.is_master_ordinal():
                 xm.rendezvous('download_only_once')
-            train_dataset, val_dataset = get_dataset(t.dataset_tuple)
+            train_dataset, val_dataset = get_dataset(t.dataset_tuple, FLAGS)
             train_dataset = train_dataset()
             val_dataset = val_dataset()
             if xm.is_master_ordinal():
