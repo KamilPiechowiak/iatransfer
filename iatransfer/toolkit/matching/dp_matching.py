@@ -14,7 +14,7 @@ class DPMatching(Matching):
         self.standardization = standardization
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
-            -> List[Tuple[nn.Module, nn.Module]]:
+            -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
         flattened_from_module = self.standardization.standardize(from_module)
         flattened_to_module = self.standardization.standardize(to_module)
         _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
