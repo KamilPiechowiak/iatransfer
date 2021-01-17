@@ -1,7 +1,7 @@
 import unittest
+from pprint import pprint
 
 import timm
-from pprint import pprint
 
 from iatransfer.toolkit.matching.bipartite_matching import BipartiteMatching
 

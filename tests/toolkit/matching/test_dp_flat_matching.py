@@ -1,10 +1,11 @@
 import unittest
-
-import timm
 from pprint import pprint
 
-from iatransfer.toolkit.matching.dp_flat_matching import DPFlatMatching
+import timm
+
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
+from iatransfer.toolkit.matching.dp_flat_matching import DPFlatMatching
+
 
 class DPFlatMatchingTest(unittest.TestCase):
 

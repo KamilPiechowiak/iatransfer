@@ -1,8 +1,9 @@
 import unittest
-from typing import List
-from torch import nn
-import timm
 from pprint import pprint
+from typing import List
+
+import timm
+from torch import nn
 
 from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
@@ -26,7 +27,7 @@ class BlocksStandardizationTest(unittest.TestCase):
             [timm.create_model(f"efficientnet_b{i}") for i in range(4)],
             [24, 31, 31, 34]
         )
-    
+
     def test_cifar_resnets(self):
         from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
         self.check_arr_length(
@@ -40,6 +41,7 @@ class BlocksStandardizationTest(unittest.TestCase):
             [models.MobileNetV2()],
             [25]
         )
+
     def test_model(self):
         model = timm.create_model("regnetx_002")
         bs = BlocksStandardization()

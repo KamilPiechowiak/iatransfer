@@ -1,7 +1,6 @@
 import unittest
-from torch import nn
+
 import timm
-from pprint import pprint
 
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 from iatransfer.toolkit.transfer.full_transfer import FullTransfer

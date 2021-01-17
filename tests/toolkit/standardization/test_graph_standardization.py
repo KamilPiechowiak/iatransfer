@@ -1,8 +1,7 @@
 import unittest
-from typing import List
-from torch import nn
-import timm
 from pprint import pprint
+
+import timm
 
 from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
 
