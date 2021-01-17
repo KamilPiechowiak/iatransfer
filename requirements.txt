@@ -5,3 +5,4 @@ typing-extensions>=3.7.4.3
 timm>=0.3.3
 networkx>=2.5
 graphviz>=0.16
+efficientnet_pytorch>=0.7
