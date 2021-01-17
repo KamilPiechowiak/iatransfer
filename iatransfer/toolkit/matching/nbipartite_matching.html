@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>iatransfer.toolkit.matching.dp_matching API documentation</title>
+<title>iatransfer.toolkit.matching.nbipartite_matching API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,15 +19,16 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>iatransfer.toolkit.matching.dp_matching</code></h1>
+<h1 class="title">Module <code>iatransfer.toolkit.matching.nbipartite_matching</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Tuple, List, Any, Union
+<pre><code class="python">from typing import Tuple, List, Union, Any
 
+import networkx as nx
 import numpy as np
 import torch.nn as nn
 
@@ -36,13 +37,17 @@ from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
-class DPMatching(Matching):
+class NBipartiteMatching(Matching):
+    &#34;&#34;&#34;
+    Nested Bipartide Matching
+    &#34;&#34;&#34;
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
+    def __init__(self, standardization: Standardization = BlocksStandardization(), **kwargs):
         self.standardization = standardization
+        super().__init__(**kwargs)
 
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
-            -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; List[Tuple[nn.Module, nn.Module]]:
         flattened_from_module = self.standardization.standardize(from_module)
         flattened_to_module = self.standardization.standardize(to_module)
         _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
@@ -82,71 +87,37 @@ class DPMatching(Matching):
             -&gt; Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
         m = len(flat_from_module)
         n = len(flat_to_module)
-        dp = np.zeros((n + 1, m + 1))
-        transition = np.zeros((n + 1, m + 1, 2))  #
-        scores = np.zeros((n + 1, m + 1))
-        # reduction_coeff = 0.7
-        for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                scores[i, j] = self._compute_score(flat_from_module[j - 1], flat_to_module[i - 1])
+        scores = np.zeros((n, m))
 
-        for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                if dp[i - 1, j] &gt; dp[i, j - 1]:
-                    dp[i, j] = dp[i - 1, j]
-                    transition[i, j] = [i - 1, j]
-                else:
-                    dp[i, j] = dp[i, j - 1]
-                    transition[i, j] = [i, j - 1]
-                cumulative_sum = 0
-                for k in range(i, 0, -1):
-                    cumulative_sum += scores[k, j]
-                    # score = cumulative_sum*current_reduction+dp[k-1,j-1]
-                    score = cumulative_sum / (i - k + 1) ** 0.5 + dp[k - 1, j - 1]
-                    # let d be the number of layers matched in flat_to_module to the current layer in flat_from_module
-                    # max possible score = d*f(d)
-                    # we want d*f(d) to be increasing - adding more matchings should give better score
-                    # we want f(d) to be decreasing - adding more matchings should give lower score per layer,
-                    # thanks to it we encourage dynamic programming not to choose single layer all the time
-                    if score &gt; dp[i, j]:
-                        dp[i, j] = score
-                        transition[i, j] = [k - 1, j - 1]
-                    # current_reduction*=reduction_coeff
+        graph = nx.Graph()
 
+        for i in range(n):
+            for j in range(m):
+                dist_score = 1 - (abs(i / n - j / m) ** 2)
+                scores[i, j] = dist_score * self._compute_score(flat_from_module[j], flat_to_module[i])
+                graph.add_edge(f&#39;x{i}&#39;, f&#39;{j}&#39;, weight=scores[i, j])
+
+        max_scores = np.max(scores, axis=0).sum()
+
+        matching = nx.algorithms.matching.max_weight_matching(graph)
+        matching = map(lambda x: x if x[0].startswith(&#39;x&#39;) else (x[1], x[0]), matching)
+
+        matched_indices = [(self._convert(vertex_a), self._convert(vertex_b)) for vertex_a, vertex_b in matching]
+        matched_indices_arr = np.array(matched_indices).transpose()
+
+        final_score = scores[matched_indices_arr[0], matched_indices_arr[1]].sum() / max_scores
         matched = []
-        matched_indices = []
-        i, j = n, m
+        for vertex_a, vertex_b in matched_indices:
+            if isinstance(flat_from_module[vertex_b], list) and isinstance(flat_to_module[vertex_a], list):
+                matched.append(self._match_models(flat_from_module[vertex_b], flat_to_module[vertex_a])[1])
+            else:
+                matched.append((flat_from_module[vertex_b], flat_to_module[vertex_a]))
 
-        while i &gt; 0:
-            if transition[i, j, 1] == j:
-                i -= 1
-                matched.append((None, flat_to_module[i]))
-                matched_indices.append((None, i))
-                continue
-            t = transition[i, j, 0]
-            j -= 1
-            from_model_layer_included = False
-            while t &lt; i:
-                i -= 1
-                if scores[i + 1, j + 1] &gt; 0:
-                    if isinstance(flat_from_module[j], list) and isinstance(flat_to_module[i], list):
-                        _, sub_matched, sub_matched_indices = self._match_models(flat_from_module[j], flat_to_module[i])
-                        matched.append(sub_matched)
-                        matched_indices.append(sub_matched_indices)
-                        matched_indices.append((j, i))
-                    else:
-                        matched.append((flat_from_module[j], flat_to_module[i]))
-                        matched_indices.append((j, i))
-                    from_model_layer_included = True
-                else:
-                    matched.append((None, flat_to_module[i]))
-                    matched_indices.append((None, i))
-            if not from_model_layer_included:
-                matched_indices.append((j, None))
-                matched.append((flat_from_module[j], None))
-        matched.reverse()
-        matched_indices.reverse()
-        return dp[n][m], matched, matched_indices</code></pre>
+        return final_score, matched, matched_indices
+
+    @staticmethod
+    def _convert(vertex: str) -&gt; int:
+        return int(vertex[1:]) if vertex.startswith(&#39;x&#39;) else int(vertex)</code></pre>
 </details>
 </section>
 <section>
@@ -158,24 +129,27 @@ class DPMatching(Matching):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="iatransfer.toolkit.matching.dp_matching.DPMatching"><code class="flex name class">
-<span>class <span class="ident">DPMatching</span></span>
-<span>(</span><span>standardization: <a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a> = &lt;iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization object&gt;)</span>
+<dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching"><code class="flex name class">
+<span>class <span class="ident">NBipartiteMatching</span></span>
+<span>(</span><span>standardization: <a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a> = &lt;iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization object&gt;, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Nested Bipartide Matching</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DPMatching(Matching):
+<pre><code class="python">class NBipartiteMatching(Matching):
+    &#34;&#34;&#34;
+    Nested Bipartide Matching
+    &#34;&#34;&#34;
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
+    def __init__(self, standardization: Standardization = BlocksStandardization(), **kwargs):
         self.standardization = standardization
+        super().__init__(**kwargs)
 
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
-            -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; List[Tuple[nn.Module, nn.Module]]:
         flattened_from_module = self.standardization.standardize(from_module)
         flattened_to_module = self.standardization.standardize(to_module)
         _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
@@ -215,86 +189,47 @@ inheritance.</p></div>
             -&gt; Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
         m = len(flat_from_module)
         n = len(flat_to_module)
-        dp = np.zeros((n + 1, m + 1))
-        transition = np.zeros((n + 1, m + 1, 2))  #
-        scores = np.zeros((n + 1, m + 1))
-        # reduction_coeff = 0.7
-        for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                scores[i, j] = self._compute_score(flat_from_module[j - 1], flat_to_module[i - 1])
+        scores = np.zeros((n, m))
 
-        for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                if dp[i - 1, j] &gt; dp[i, j - 1]:
-                    dp[i, j] = dp[i - 1, j]
-                    transition[i, j] = [i - 1, j]
-                else:
-                    dp[i, j] = dp[i, j - 1]
-                    transition[i, j] = [i, j - 1]
-                cumulative_sum = 0
-                for k in range(i, 0, -1):
-                    cumulative_sum += scores[k, j]
-                    # score = cumulative_sum*current_reduction+dp[k-1,j-1]
-                    score = cumulative_sum / (i - k + 1) ** 0.5 + dp[k - 1, j - 1]
-                    # let d be the number of layers matched in flat_to_module to the current layer in flat_from_module
-                    # max possible score = d*f(d)
-                    # we want d*f(d) to be increasing - adding more matchings should give better score
-                    # we want f(d) to be decreasing - adding more matchings should give lower score per layer,
-                    # thanks to it we encourage dynamic programming not to choose single layer all the time
-                    if score &gt; dp[i, j]:
-                        dp[i, j] = score
-                        transition[i, j] = [k - 1, j - 1]
-                    # current_reduction*=reduction_coeff
+        graph = nx.Graph()
 
+        for i in range(n):
+            for j in range(m):
+                dist_score = 1 - (abs(i / n - j / m) ** 2)
+                scores[i, j] = dist_score * self._compute_score(flat_from_module[j], flat_to_module[i])
+                graph.add_edge(f&#39;x{i}&#39;, f&#39;{j}&#39;, weight=scores[i, j])
+
+        max_scores = np.max(scores, axis=0).sum()
+
+        matching = nx.algorithms.matching.max_weight_matching(graph)
+        matching = map(lambda x: x if x[0].startswith(&#39;x&#39;) else (x[1], x[0]), matching)
+
+        matched_indices = [(self._convert(vertex_a), self._convert(vertex_b)) for vertex_a, vertex_b in matching]
+        matched_indices_arr = np.array(matched_indices).transpose()
+
+        final_score = scores[matched_indices_arr[0], matched_indices_arr[1]].sum() / max_scores
         matched = []
-        matched_indices = []
-        i, j = n, m
+        for vertex_a, vertex_b in matched_indices:
+            if isinstance(flat_from_module[vertex_b], list) and isinstance(flat_to_module[vertex_a], list):
+                matched.append(self._match_models(flat_from_module[vertex_b], flat_to_module[vertex_a])[1])
+            else:
+                matched.append((flat_from_module[vertex_b], flat_to_module[vertex_a]))
 
-        while i &gt; 0:
-            if transition[i, j, 1] == j:
-                i -= 1
-                matched.append((None, flat_to_module[i]))
-                matched_indices.append((None, i))
-                continue
-            t = transition[i, j, 0]
-            j -= 1
-            from_model_layer_included = False
-            while t &lt; i:
-                i -= 1
-                if scores[i + 1, j + 1] &gt; 0:
-                    if isinstance(flat_from_module[j], list) and isinstance(flat_to_module[i], list):
-                        _, sub_matched, sub_matched_indices = self._match_models(flat_from_module[j], flat_to_module[i])
-                        matched.append(sub_matched)
-                        matched_indices.append(sub_matched_indices)
-                        matched_indices.append((j, i))
-                    else:
-                        matched.append((flat_from_module[j], flat_to_module[i]))
-                        matched_indices.append((j, i))
-                    from_model_layer_included = True
-                else:
-                    matched.append((None, flat_to_module[i]))
-                    matched_indices.append((None, i))
-            if not from_model_layer_included:
-                matched_indices.append((j, None))
-                matched.append((flat_from_module[j], None))
-        matched.reverse()
-        matched_indices.reverse()
-        return dp[n][m], matched, matched_indices</code></pre>
+        return final_score, matched, matched_indices
+
+    @staticmethod
+    def _convert(vertex: str) -&gt; int:
+        return int(vertex[1:]) if vertex.startswith(&#39;x&#39;) else int(vertex)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching" href="bipartite_matching.html#iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching">BipartiteMatching</a></li>
-<li>matching.bipartite_matching.BipartiteMatching</li>
-</ul>
 <h3>Methods</h3>
 <dl>
-<dt id="iatransfer.toolkit.matching.dp_matching.DPMatching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Union[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module], List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]]]</span>
+<dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match"><code class="name flex">
+<span>def <span class="ident">match</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -302,15 +237,15 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
-        -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+<pre><code class="python">def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+        -&gt; List[Tuple[nn.Module, nn.Module]]:
     flattened_from_module = self.standardization.standardize(from_module)
     flattened_to_module = self.standardization.standardize(to_module)
     _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
     return matched</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.matching.dp_matching.DPMatching.sim"><code class="name flex">
+<dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim"><code class="name flex">
 <span>def <span class="ident">sim</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module)</span>
 </code></dt>
 <dd>
@@ -345,10 +280,10 @@ inheritance.</p></div>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></code></h4>
+<h4><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching">NBipartiteMatching</a></code></h4>
 <ul class="">
-<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.match" href="#iatransfer.toolkit.matching.dp_matching.DPMatching.match">match</a></code></li>
-<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.sim" href="#iatransfer.toolkit.matching.dp_matching.DPMatching.sim">sim</a></code></li>
+<li><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match">match</a></code></li>
+<li><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim">sim</a></code></li>
 </ul>
 </li>
 </ul>

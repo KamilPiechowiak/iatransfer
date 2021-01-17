@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>iatransfer.toolkit.transfer.transfer_stats API documentation</title>
+<title>iatransfer.toolkit.transfer.full_transfer API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,20 +19,67 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>iatransfer.toolkit.transfer.transfer_stats</code></h1>
+<h1 class="title">Module <code>iatransfer.toolkit.transfer.full_transfer</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import NamedTuple, List
+<pre><code class="python">from typing import List, Tuple
 
-from torch import nn
+import torch
+import torch.nn as nn
+
+from iatransfer.toolkit.base_matching import Matching
+from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
+from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
-class TransferStats(NamedTuple):
-    pass</code></pre>
+class FullTransfer(MatchedTransfer):
+
+    def __init__(self, **kwargs) -&gt; None:
+        super().__init__(**kwargs)
+
+    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+        matched = self.matching_strategy(from_module, to_module)
+        self._transfer(matched)
+        return TransferStats()
+
+    def _transfer_tensors(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; None:
+        if from_tensor is None or to_tensor is None:
+            return
+        from_slices, to_slices = [], []
+        for a, b in zip(from_tensor.shape, to_tensor.shape):
+            if a &lt; b:
+                # from_slices.append(slice(0, a))
+                # to_slices.append(slice((b - a) // 2, -((b - a + 1) // 2)))
+                ids = torch.randint(a, (b,))
+                ids[slice((b - a) // 2, -((b - a + 1) // 2))] = torch.arange(a)
+                from_slices.append(ids)
+            elif a &gt; b:
+                from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
+            else:
+                from_slices.append(slice(0, a))
+            to_slices.append(slice(0, b))
+
+        total_unsqueeze = 0
+        for i in range(len(from_slices)-1, -1, -1):
+            if isinstance(from_slices[i], torch.Tensor):
+                for _ in range(total_unsqueeze):
+                    from_slices[i] = from_slices[i].unsqueeze(-1)
+                total_unsqueeze+=1
+
+        to_tensor[tuple(to_slices)] = from_tensor[tuple(from_slices)]
+
+    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -&gt; None:
+        with torch.no_grad():
+            for matching in matched:
+                if isinstance(matching, list):
+                    self._transfer(matching)
+                elif matching[0] is not None and matching[1] is not None:
+                    self._transfer_tensors(matching[0].weight, matching[1].weight)
+                    self._transfer_tensors(matching[0].bias, matching[1].bias)</code></pre>
 </details>
 </section>
 <section>
@@ -44,22 +91,86 @@ class TransferStats(NamedTuple):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats"><code class="flex name class">
-<span>class <span class="ident">TransferStats</span></span>
+<dt id="iatransfer.toolkit.transfer.full_transfer.FullTransfer"><code class="flex name class">
+<span>class <span class="ident">FullTransfer</span></span>
+<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TransferStats()</p></div>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TransferStats(NamedTuple):
-    pass</code></pre>
+<pre><code class="python">class FullTransfer(MatchedTransfer):
+
+    def __init__(self, **kwargs) -&gt; None:
+        super().__init__(**kwargs)
+
+    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+        matched = self.matching_strategy(from_module, to_module)
+        self._transfer(matched)
+        return TransferStats()
+
+    def _transfer_tensors(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; None:
+        if from_tensor is None or to_tensor is None:
+            return
+        from_slices, to_slices = [], []
+        for a, b in zip(from_tensor.shape, to_tensor.shape):
+            if a &lt; b:
+                # from_slices.append(slice(0, a))
+                # to_slices.append(slice((b - a) // 2, -((b - a + 1) // 2)))
+                ids = torch.randint(a, (b,))
+                ids[slice((b - a) // 2, -((b - a + 1) // 2))] = torch.arange(a)
+                from_slices.append(ids)
+            elif a &gt; b:
+                from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
+            else:
+                from_slices.append(slice(0, a))
+            to_slices.append(slice(0, b))
+
+        total_unsqueeze = 0
+        for i in range(len(from_slices)-1, -1, -1):
+            if isinstance(from_slices[i], torch.Tensor):
+                for _ in range(total_unsqueeze):
+                    from_slices[i] = from_slices[i].unsqueeze(-1)
+                total_unsqueeze+=1
+
+        to_tensor[tuple(to_slices)] = from_tensor[tuple(from_slices)]
+
+    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -&gt; None:
+        with torch.no_grad():
+            for matching in matched:
+                if isinstance(matching, list):
+                    self._transfer(matching)
+                elif matching[0] is not None and matching[1] is not None:
+                    self._transfer_tensors(matching[0].weight, matching[1].weight)
+                    self._transfer_tensors(matching[0].bias, matching[1].bias)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>builtins.tuple</li>
+<li>iatransfer.toolkit.transfer._matched_transfer.MatchedTransfer</li>
+<li><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></li>
+<li>abc.ABC</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="iatransfer.toolkit.transfer.full_transfer.FullTransfer.transfer"><code class="name flex">
+<span>def <span class="ident">transfer</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
+    matched = self.matching_strategy(from_module, to_module)
+    self._transfer(matched)
+    return TransferStats()</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -78,7 +189,10 @@ class TransferStats(NamedTuple):
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></code></h4>
+<h4><code><a title="iatransfer.toolkit.transfer.full_transfer.FullTransfer" href="#iatransfer.toolkit.transfer.full_transfer.FullTransfer">FullTransfer</a></code></h4>
+<ul class="">
+<li><code><a title="iatransfer.toolkit.transfer.full_transfer.FullTransfer.transfer" href="#iatransfer.toolkit.transfer.full_transfer.FullTransfer.transfer">transfer</a></code></li>
+</ul>
 </li>
 </ul>
 </li>

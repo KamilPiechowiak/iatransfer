@@ -22,11 +22,27 @@
 <h1 class="title">Package <code>iatransfer.toolkit</code></h1>
 </header>
 <section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import pkgutil
+
+__all__ = []
+for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
+    __all__.append(module_name)
+    _module = loader.find_module(module_name).load_module(module_name)
+    globals()[module_name] = _module</code></pre>
+</details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
 <dt><code class="name"><a title="iatransfer.toolkit.base_matching" href="base_matching.html">iatransfer.toolkit.base_matching</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="iatransfer.toolkit.base_standardization" href="base_standardization.html">iatransfer.toolkit.base_standardization</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -38,11 +54,15 @@
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="iatransfer.toolkit.standardization" href="standardization/index.html">iatransfer.toolkit.standardization</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="iatransfer.toolkit.transfer" href="transfer/index.html">iatransfer.toolkit.transfer</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="iatransfer.toolkit.utils" href="utils.html">iatransfer.toolkit.utils</a></code></dt>
+<dt><code class="name"><a title="iatransfer.toolkit.transfer_methods_factory" href="transfer_methods_factory.html">iatransfer.toolkit.transfer_methods_factory</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -64,10 +84,12 @@
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
 <li><code><a title="iatransfer.toolkit.base_matching" href="base_matching.html">iatransfer.toolkit.base_matching</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_standardization" href="base_standardization.html">iatransfer.toolkit.base_standardization</a></code></li>
 <li><code><a title="iatransfer.toolkit.base_transfer" href="base_transfer.html">iatransfer.toolkit.base_transfer</a></code></li>
 <li><code><a title="iatransfer.toolkit.matching" href="matching/index.html">iatransfer.toolkit.matching</a></code></li>
+<li><code><a title="iatransfer.toolkit.standardization" href="standardization/index.html">iatransfer.toolkit.standardization</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer" href="transfer/index.html">iatransfer.toolkit.transfer</a></code></li>
-<li><code><a title="iatransfer.toolkit.utils" href="utils.html">iatransfer.toolkit.utils</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer_methods_factory" href="transfer_methods_factory.html">iatransfer.toolkit.transfer_methods_factory</a></code></li>
 </ul>
 </li>
 </ul>
