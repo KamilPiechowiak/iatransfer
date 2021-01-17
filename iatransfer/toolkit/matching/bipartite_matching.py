@@ -51,7 +51,13 @@ class BipartiteMatching(DPMatching):
         matched_indices_arr = np.array(matched_indices).transpose()
 
         final_score = scores[matched_indices_arr[0], matched_indices_arr[1]].sum() / max_scores
-        matched = [(flat_from_module[vertex_b], flat_to_module[vertex_a]) for vertex_a, vertex_b in matched_indices]
+        matched = []
+        for vertex_a, vertex_b in matched_indices:
+            if isinstance(flat_from_module[vertex_b], list) and isinstance(flat_to_module[vertex_a], list):
+                matched.append(self._match_models(flat_from_module[vertex_b], flat_to_module[vertex_a])[1])
+            else:
+                matched.append((flat_from_module[vertex_b], flat_to_module[vertex_a]))
+
         return final_score, matched, matched_indices
 
     @staticmethod
