@@ -1,0 +1,43 @@
+{
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b0"],
+                "kwargs": {"num_classes": 10},
+                "name": "efficientnet-b0"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b1"],
+                "kwargs": {"num_classes": 10},
+                "name": "efficientnet-b1"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 240
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b2"],
+                "kwargs": {"num_classes": 10},
+                "name": "efficientnet-b2"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 260
+            },
+            "batch_size": 32
+        }
+    ]
+}

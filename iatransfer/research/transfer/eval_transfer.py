@@ -60,8 +60,8 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                                 f"{from_model_name}_{t.dataset_tuple.name}"].model()
                             from_model.load_state_dict(
                                 torch.load(f"{from_path}/{checkpoint_filename}")['model'])
-
-                            to_path = f"{FLAGS['path']}/{get_transfer_method_name(transfer_method)}/{t.name}_{t.dataset_tuple.name}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
+                            
+                            to_path = f"{FLAGS['path']}/{get_transfer_method_name(transfer_method)}_{t.name}_{t.dataset_tuple.name}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
                             to_model = t.model()
 
                             transfer(from_model, to_model)

@@ -1,0 +1,29 @@
+{
+    "methods": [
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "FlattenStandardization",
+            "matching": "DPFlatMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "GraphStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "GraphStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "GraphStandardization",
+            "matching": "NBipartiteMatching",
+            "transfer": "ClipTransfer"
+        }
+    ]
+}

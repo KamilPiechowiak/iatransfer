@@ -1,0 +1,12 @@
+{
+    "learning_rate": 1e-3,
+    "epochs": 20,
+    "scheduler_mocked_epochs": 50,
+    "persist_state_every": 5,
+    "repeat": 3,
+    "path": "res",
+    "bucket_path": "gs://weights-transfer/transfer",
+    "num_workers": 4,
+    "datasets_path": "data",
+    "num_cores": 8
+}
