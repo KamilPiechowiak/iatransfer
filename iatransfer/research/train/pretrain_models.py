@@ -8,6 +8,7 @@ from iatransfer.research.train.train_model import train_model
 
 SERIAL_EXEC = xmp.MpSerialExecutor()
 
+
 def train_models(training_tuples: List[Dict], FLAGS: Dict) -> None:
     # Start training processes
     def _mp_fn(rank: int, training_tuples: List[Dict]) -> None:

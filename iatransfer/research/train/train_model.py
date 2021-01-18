@@ -1,13 +1,16 @@
-import torch
-from torch import nn, optim
-from torch.utils.data import Dataset
-import torch_xla.core.xla_model as xm
-import torch_xla.distributed.parallel_loader as pl
+import math
+import os
+import shutil
 from datetime import datetime
 from time import time
-import os, shutil
+
+import torch
+import torch_xla.core.xla_model as xm
+import torch_xla.distributed.parallel_loader as pl
+from torch import nn, optim
+from torch.utils.data import Dataset
+
 from iatransfer.research.metrics.stats_reporter import StatsReporter
-import math
 
 
 def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics={}, gradeBy='bce'):

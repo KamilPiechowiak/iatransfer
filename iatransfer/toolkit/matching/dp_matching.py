@@ -13,7 +13,7 @@ class DPMatching(Matching):
     def __init__(self, standardization: Standardization = BlocksStandardization()):
         self.standardization = standardization
 
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
+    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
         flattened_from_module = self.standardization.standardize(from_module)
         flattened_to_module = self.standardization.standardize(to_module)

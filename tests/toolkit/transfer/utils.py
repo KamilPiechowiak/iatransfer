@@ -2,13 +2,14 @@ from typing import List
 
 from torch import nn
 
-from iatransfer.toolkit.base_transfer import Transfer
+from iatransfer.toolkit.iat import IAT
 
 
 def get_absmeans(module: nn.Module) -> List[float]:
     return [layer.float().abs().mean() for layer in module.state_dict().values()]
 
-def run_transfer(amodel: nn.Module, bmodel: nn.Module, transfer: Transfer):
+
+def run_transfer(amodel: nn.Module, bmodel: nn.Module, transfer: IAT):
     stats_before = get_absmeans(bmodel)
     transfer(amodel, bmodel)
     stats_after = get_absmeans(bmodel)

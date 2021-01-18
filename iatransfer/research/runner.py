@@ -1,8 +1,8 @@
-from typing import Dict, List
-
 import argparse
 import os
 import random
+from typing import List
+
 import numpy as np
 import torch
 

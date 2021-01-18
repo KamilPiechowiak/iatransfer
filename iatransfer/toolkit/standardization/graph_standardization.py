@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import random
 from collections import Counter
 from typing import List, Tuple, Union, Dict
@@ -50,7 +51,6 @@ class GraphStandardization(Standardization):
             return "(" + (", ").join(["%d" % v for v in size]) + ")"
 
         mod_op = ["AddBackward0", "MulBackward0", "CatBackward"]
-        # mod_op = ["AddBackward0", "CatBackward"]
 
         lmap, emap, hmap = {}, {}, {}
         elist, clist = [], []
@@ -133,8 +133,6 @@ class GraphStandardization(Standardization):
                 add_nodes(v.grad_fn)
         else:
             add_nodes(var.grad_fn)
-
-        # resize_graph(dot)
 
         for c, edges in emap.items():
             with dot.subgraph(name=f"cluster_{idx}_{c}") as _c:

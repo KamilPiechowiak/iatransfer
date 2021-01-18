@@ -1,14 +1,10 @@
+import os
+import pickle
 from typing import Dict
 
-import os
-from subprocess import Popen
-import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from torch import nn
-
-from iatransfer.research.data import data
-from iatransfer.research.data.data import TrainingTuple
 
 
 def get_stats_from_file(path: str, key: str):
@@ -17,11 +13,12 @@ def get_stats_from_file(path: str, key: str):
     while os.path.exists(path.replace('#', str(i))):
         with open(path.replace('#', str(i)), "rb") as f:
             stats += [pickle.load(f)[key]]
-        i+=1
+        i += 1
     stats = np.array(stats).mean(axis=0)
     return stats
 
-def draw_models_plot(data: Dict[str, str], base_path: str, key: str="acc_val"):
+
+def draw_models_plot(data: Dict[str, str], base_path: str, key: str = "acc_val"):
     model = data['to_model']
     dataset = data['dataset']
     lines = [(model, get_stats_from_file(f"{base_path}/stats/{model}_{dataset}_#/stats.pickle", key))]
@@ -32,7 +29,7 @@ def draw_models_plot(data: Dict[str, str], base_path: str, key: str="acc_val"):
         lines += [(from_model, stats)]
     plt.clf()
     for line in lines:
-        plt.plot(np.arange(n)+1, line[1][:n], label=line[0])
+        plt.plot(np.arange(n) + 1, line[1][:n], label=line[0])
     os.makedirs("plots", exist_ok=True)
     plot_path = f"plots/{model}_{dataset}"
     if "append_to_name" in data:
@@ -40,14 +37,15 @@ def draw_models_plot(data: Dict[str, str], base_path: str, key: str="acc_val"):
     plt.legend()
     plt.savefig(plot_path)
 
+
 def create_models_plots(base_path: str):
     plots = [
         {
-            'to_model': 'resnet_14', 'dataset': 'CIFAR10', 
+            'to_model': 'resnet_14', 'dataset': 'CIFAR10',
             'from_models': ['resnet_20', 'resnet_26', 'resnet_32']
         },
         {
-            'to_model': 'resnet_14', 'dataset': 'CIFAR10', 
+            'to_model': 'resnet_14', 'dataset': 'CIFAR10',
             'from_models': ['resnet_narrow_14', 'resnet_wide_14', 'resnet_narrow_20', 'resnet_wide_20'],
             'append_to_name': 'width'
         },
@@ -103,22 +101,24 @@ def create_models_plots(base_path: str):
         #     'from_models': ['resnet_14', 'resnet_narrow_14']
         # },
         {
-            'to_model': 'efficientnet-b0', 'dataset': 'CIFAR10', 
+            'to_model': 'efficientnet-b0', 'dataset': 'CIFAR10',
             'from_models': ['efficientnet-b1', 'efficientnet-b2']
         },
         {
-            'to_model': 'efficientnet-b2', 'dataset': 'CIFAR10', 
+            'to_model': 'efficientnet-b2', 'dataset': 'CIFAR10',
             'from_models': ['efficientnet-b0', 'efficientnet-b1']
         },
     ]
     for plot in plots:
         draw_models_plot(plot, base_path)
 
+
 def get_module_size(model: nn.Module) -> int:
     size = 0.0
     for p in model.parameters():
         size += p.numel()
     return size
+
 
 # def create_pretrained_models_dict() -> Dict[str, TrainingTuple]:
 #     pretrained_models: Dict[str, TrainingTuple] = {}

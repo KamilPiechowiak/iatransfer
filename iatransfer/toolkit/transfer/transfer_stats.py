@@ -1,9 +1,5 @@
-from typing import NamedTuple, List
-
-from torch import nn
+from typing import NamedTuple
 
 
 class TransferStats(NamedTuple):
     pass
-
-

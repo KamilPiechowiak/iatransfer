@@ -1,15 +1,14 @@
-import os
 import pickle
-from typing import Dict, Tuple, List
+from typing import Dict, List
 
 import torch
 import torch_xla.core.xla_model as xm
 import torch_xla.distributed.xla_multiprocessing as xmp
+from iatransfer.toolkit.iat import IAT
 from torch import nn
 
 from iatransfer.research.data.data import TrainingTuple, get_dataset
 from iatransfer.research.train.train_model import train_model
-from iatransfer.toolkit.transfer_methods_factory import TransferMethodsFactory
 
 
 def create_pretrained_models_dict(training_tuples: List[Dict]) -> Dict[str, TrainingTuple]:
@@ -22,6 +21,7 @@ def create_pretrained_models_dict(training_tuples: List[Dict]) -> Dict[str, Trai
 
 SERIAL_EXEC = xmp.MpSerialExecutor()
 
+
 def get_transfer_method_name(transfer_method: Dict) -> str:
     name = [transfer_method["transfer"]]
     if "matching" in transfer_method:
@@ -30,13 +30,14 @@ def get_transfer_method_name(transfer_method: Dict) -> str:
         name.append(transfer_method["standardization"])
     return "-".join(name)
 
-def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAGS: Dict, transfer_methods: List[Dict]) -> None:
+
+def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAGS: Dict,
+                  transfer_methods: List[Dict]) -> None:
     def _mp_fn(rank: int, transfer_tuples: List[Dict]) -> None:
         # print(xm.xrt_world_size()) #check number of nodes
         device = xm.xla_device()
         score = 0.0
         iterations = 0
-        transfer_methods_factory = TransferMethodsFactory()
         for t_json in transfer_tuples:
             t = TrainingTuple.from_json(t_json)
             FLAGS['batch_size'] = t.batch_size
@@ -51,7 +52,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                 t_json["checkpoints"] = ["best.pt"]
             for from_model_name in t_json["teachers"]:
                 for transfer_method in transfer_methods:
-                    transfer = transfer_methods_factory.get_transfer_method(transfer_method)
+                    transfer = IAT(**transfer_method)
                     for checkpoint_filename in t_json["checkpoints"]:
                         for i in range(FLAGS['repeat']):
                             from_path = f"{FLAGS['path']}/{from_model_name}_{t.dataset_tuple.name}_{i}"
@@ -59,7 +60,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                                 f"{from_model_name}_{t.dataset_tuple.name}"].model()
                             from_model.load_state_dict(
                                 torch.load(f"{from_path}/{checkpoint_filename}")['model'])
-                            
+
                             to_path = f"{FLAGS['path']}/{get_transfer_method_name(transfer_method)}/{t.name}_{t.dataset_tuple.name}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
                             to_model = t.model()
 

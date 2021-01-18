@@ -4,11 +4,11 @@ from typing import List, Tuple, Any, Optional, Union
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
+from iatransfer.toolkit.base_transfer import Transfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
-class TraceTransfer(MatchedTransfer):
+class TraceTransfer(Transfer):
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -> None:
         if reverse_priority:
@@ -16,11 +16,6 @@ class TraceTransfer(MatchedTransfer):
         else:
             self.sgn = -1
         super().__init__(**kwargs)
-
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -> TransferStats:
-        matched = self.matching_strategy(from_module, to_module)
-        self._transfer(matched, to_module)
-        return TransferStats()
 
     layers_classes = [
         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
@@ -66,7 +61,7 @@ class TraceTransfer(MatchedTransfer):
                 # print("ids: ", ids)
                 return self._transfer(self.module, ids)
             else:
-                instructions: str = self.trace.code
+                instructions = self.trace.code
                 instructions = re.sub(r"forward[^\(]*\(", "forward(", instructions)
                 instructions = instructions.replace("torch", "self.torch")
                 instructions = instructions.split("\n")
@@ -81,7 +76,7 @@ class TraceTransfer(MatchedTransfer):
                     return eval(re.search(r"return(.+)", instructions[i]).group(1).strip())
                 return None
 
-        def _get_center_slices(self, a: int, b: int) -> Tuple[slice]:
+        def _get_center_slices(self, a: int, b: int) -> Tuple[slice, slice]:
             if a < b:
                 return slice(0, a), slice((b - a) // 2, -((b - a + 1) // 2))
             elif a > b:
@@ -89,8 +84,8 @@ class TraceTransfer(MatchedTransfer):
             else:
                 return slice(0, a), slice(0, b)
 
-        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Tuple[
-            Union[List[int], slice]]:
+        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Union[
+            Tuple[torch.Tensor, slice], Tuple[slice, slice]]:
             dims = [i for i in range(1, len(from_tensor.shape))]
             if from_tensor.shape[0] > to_tensor.shape[0]:
                 if len(dims) == 0:
@@ -105,7 +100,7 @@ class TraceTransfer(MatchedTransfer):
                 return self._get_center_slices(from_tensor.shape[0], to_tensor.shape[0])
 
         def _get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, ids: Optional[List[int]]) -> Tuple[
-            Tuple[Union[List[int], slice]]]:
+            Tuple[None, ...], Tuple[None, ...]]:
             n = len(from_tensor.shape)
             from_slices, to_slices = [None] * n, [None] * n
             if n > 1:  # use input ids to choose input channels
@@ -168,9 +163,13 @@ class TraceTransfer(MatchedTransfer):
             # print("out: ", output_ids)
             return output_ids.flatten()
 
-    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]], to_module: nn.Module) -> None:
+    def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -> None:
+        to_module = args[0] if len(args) > 0 else kwargs['to_module']
         with torch.no_grad():
             self.create_layers_mapping(matched)
             to_module.eval()
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
             module.forward()
+
+    def transfer_tensor(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> TransferStats:
+        raise ValueError("Not implemented")

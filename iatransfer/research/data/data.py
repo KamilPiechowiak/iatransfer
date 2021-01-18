@@ -1,8 +1,8 @@
 from typing import NamedTuple, Callable, Dict
 
+import timm
 from torch import nn
 from torchvision import transforms, datasets
-import timm
 
 from iatransfer.research.data import Flowers102, FGVCAircraft, Food101
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
@@ -25,8 +25,10 @@ class TrainingTuple(NamedTuple):
             supplier = Cifar10Resnet
         else:
             supplier = timm.create_model
+
         def model():
             return supplier(*json["model"]["args"], **json["model"]["kwargs"])
+
         return TrainingTuple(
             model,
             json["model"]["name"],
@@ -78,6 +80,6 @@ def get_dataset(dataset_tuple: DatasetTuple, FLAGS: Dict):
     return prepare_dataset(dataset_tuple.name,
                            True,
                            dataset_tuple.resolution), \
-        prepare_dataset(dataset_tuple.name,
-                        False,
-                        dataset_tuple.resolution)
+           prepare_dataset(dataset_tuple.name,
+                           False,
+                           dataset_tuple.resolution)
