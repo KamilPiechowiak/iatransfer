@@ -112,7 +112,7 @@ class TraceTransfer(MatchedTransfer):
                 a, b = from_tensor.shape[1], to_tensor.shape[1]
                 # if ids is not None and a > b and len(ids) != b:
                 #     print("HERE")
-                if ids is not None and a > b and len(ids) == b:
+                if ids is not None and a > b and len(ids) == b and torch.max(ids) < from_tensor.shape[1]:
                     # print("ENTERED")
                     from_slices[1] = ids
                     to_slices[1] = slice(0, b)

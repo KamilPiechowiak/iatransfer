@@ -10,6 +10,7 @@ from torch import nn
 from iatransfer.research.data.data import TrainingTuple, get_dataset
 from iatransfer.research.train.train_model import train_model
 from iatransfer.toolkit.transfer_methods_factory import TransferMethodsFactory
+from iatransfer.research.transfer.utils import get_transfer_method_name
 
 
 def create_pretrained_models_dict(training_tuples: List[Dict]) -> Dict[str, TrainingTuple]:
@@ -21,14 +22,6 @@ def create_pretrained_models_dict(training_tuples: List[Dict]) -> Dict[str, Trai
 
 
 SERIAL_EXEC = xmp.MpSerialExecutor()
-
-def get_transfer_method_name(transfer_method: Dict) -> str:
-    name = [transfer_method["transfer"]]
-    if "matching" in transfer_method:
-        name.append(transfer_method["matching"])
-    if "standardization" in transfer_method:
-        name.append(transfer_method["standardization"])
-    return "-".join(name)
 
 def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAGS: Dict, transfer_methods: List[Dict]) -> None:
     def _mp_fn(rank: int, transfer_tuples: List[Dict]) -> None:

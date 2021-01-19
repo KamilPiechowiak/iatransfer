@@ -8,28 +8,22 @@ import numpy as np
 from torch import nn
 
 from iatransfer.research.data import data
+from iatransfer.research.paper.utils import get_stats_from_file
 from iatransfer.research.data.data import TrainingTuple
 
 
-def get_stats_from_file(path: str, key: str):
-    i = 0
-    stats = []
-    while os.path.exists(path.replace('#', str(i))):
-        with open(path.replace('#', str(i)), "rb") as f:
-            stats += [pickle.load(f)[key]]
-        i+=1
-    stats = np.array(stats).mean(axis=0)
-    return stats
-
-def draw_models_plot(data: Dict[str, str], base_path: str, key: str="acc_val"):
-    model = data['to_model']
-    dataset = data['dataset']
+def draw_epochs_plot(data: Dict[str, str], method: str, base_path: str, key: str="acc_val"):
+    model = data['model']['name']
+    dataset = data['dataset']['name']
     lines = [(model, get_stats_from_file(f"{base_path}/stats/{model}_{dataset}_#/stats.pickle", key))]
     n = len(lines[0][1])
+    if data.get('checkpoints', None) is None:
+        data['checkpoints'] = ['best.pt']
     for from_model in data['from_models']:
-        stats = get_stats_from_file(f"{base_path}/transfer/{model}_{dataset}_#_from_{from_model}/stats.pickle", key)
-        n = min(n, len(stats))
-        lines += [(from_model, stats)]
+        for checkpoint_filename in data['checkpoints']:
+            stats = get_stats_from_file(f"{base_path}/transfer/{method}_{model}_{dataset}_#_from_{from_model}_{checkpoint_filename.replace('.pt', '')}/stats.pickle", key)
+            n = min(n, len(stats))
+            lines += [(from_model, stats)]
     plt.clf()
     for line in lines:
         plt.plot(np.arange(n)+1, line[1][:n], label=line[0])
@@ -39,80 +33,6 @@ def draw_models_plot(data: Dict[str, str], base_path: str, key: str="acc_val"):
         plot_path += f"_{data['append_to_name']}"
     plt.legend()
     plt.savefig(plot_path)
-
-def create_models_plots(base_path: str):
-    plots = [
-        {
-            'to_model': 'resnet_14', 'dataset': 'CIFAR10', 
-            'from_models': ['resnet_20', 'resnet_26', 'resnet_32']
-        },
-        {
-            'to_model': 'resnet_14', 'dataset': 'CIFAR10', 
-            'from_models': ['resnet_narrow_14', 'resnet_wide_14', 'resnet_narrow_20', 'resnet_wide_20'],
-            'append_to_name': 'width'
-        },
-        # {
-        #     'to_model': 'resnet_20', 'dataset': 'CIFAR10', 
-        #     'from_models': ['resnet_14', 'resnet_26', 'resnet_32']
-        # },
-        # {
-        #     'to_model': 'resnet_20', 'dataset': 'CIFAR10', 
-        #     'from_models': ['resnet_narrow_14', 'resnet_wide_14', 'resnet_narrow_20', 'resnet_wide_20'],
-        #     'append_to_name': 'width'
-        # },
-        # {
-        #     'to_model': 'resnet_32', 'dataset': 'CIFAR10', 
-        #     'from_models': ['resnet_14', 'resnet_20', 'resnet_26']
-        # },
-        # {
-        #     'to_model': 'resnet_narrow_14', 'dataset': 'CIFAR10', 
-        #     'from_models': ['resnet_14', 'resnet_wide_14']
-        # },
-        # {
-        #     'to_model': 'resnet_wide_14', 'dataset': 'CIFAR10', 
-        #     'from_models': ['resnet_14', 'resnet_narrow_14']
-        # },
-        # {
-        #     'to_model': 'resnet_14', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_20', 'resnet_26', 'resnet_32']
-        # },
-        # {
-        #     'to_model': 'resnet_14', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_narrow_14', 'resnet_wide_14', 'resnet_narrow_20', 'resnet_wide_20'],
-        #     'append_to_name': 'width'
-        # },
-        # {
-        #     'to_model': 'resnet_20', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_14', 'resnet_26', 'resnet_32']
-        # },
-        # {
-        #     'to_model': 'resnet_20', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_narrow_14', 'resnet_wide_14', 'resnet_narrow_20', 'resnet_wide_20'],
-        #     'append_to_name': 'width'
-        # },
-        # {
-        #     'to_model': 'resnet_32', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_14', 'resnet_20', 'resnet_26']
-        # },
-        # {
-        #     'to_model': 'resnet_narrow_14', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_14', 'resnet_wide_14']
-        # },
-        # {
-        #     'to_model': 'resnet_wide_14', 'dataset': 'CIFAR100', 
-        #     'from_models': ['resnet_14', 'resnet_narrow_14']
-        # },
-        {
-            'to_model': 'efficientnet-b0', 'dataset': 'CIFAR10', 
-            'from_models': ['efficientnet-b1', 'efficientnet-b2']
-        },
-        {
-            'to_model': 'efficientnet-b2', 'dataset': 'CIFAR10', 
-            'from_models': ['efficientnet-b0', 'efficientnet-b1']
-        },
-    ]
-    for plot in plots:
-        draw_models_plot(plot, base_path)
 
 def get_module_size(model: nn.Module) -> int:
     size = 0.0

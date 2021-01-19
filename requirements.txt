@@ -6,3 +6,4 @@ timm>=0.3.3
 networkx>=2.5
 graphviz>=0.16
 efficientnet_pytorch>=0.7
+karateclub>=1.0.22

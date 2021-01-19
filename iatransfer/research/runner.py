@@ -8,7 +8,7 @@ import torch
 
 from iatransfer.research.train.pretrain_models import train_models
 from iatransfer.research.transfer.eval_transfer import eval_transfer
-from iatransfer.research.utils import read_json
+from iatransfer.utils.file_utils import read_json
 
 os.environ['XLA_USE_BF16'] = '1'  # use bfloat16 on tpu
 

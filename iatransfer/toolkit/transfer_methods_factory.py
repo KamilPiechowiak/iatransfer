@@ -21,7 +21,7 @@ class TransferMethodsFactory:
                 classes.append(c)
         return subclasses
 
-    def get_transfer_method(self, config: Dict):
+    def get_transfer_method(self, config: Dict) -> Transfer:
         matching_kwargs = {}
         if "standardization" in config:
             matching_kwargs["standardization"] = self.standardization_classes[config["standardization"]]()
