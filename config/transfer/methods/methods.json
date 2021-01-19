@@ -24,6 +24,20 @@
             "standardization": "GraphStandardization",
             "matching": "NBipartiteMatching",
             "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "NBipartiteMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "matching": "GraphMatching",
+            "transfer": "ClipTransfer"
         }
     ]
 }
