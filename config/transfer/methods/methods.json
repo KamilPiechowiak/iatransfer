@@ -38,6 +38,40 @@
         {
             "matching": "GraphMatching",
             "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "FullTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "FullTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "TraceTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "TraceTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "MagnitudeTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "MagnitudeTransfer"
+        },
+        {
+            "matching": "GraphNewMatching",
+            "transfer": "ClipTransfer"
         }
     ]
 }

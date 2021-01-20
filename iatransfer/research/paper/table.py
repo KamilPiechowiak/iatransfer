@@ -18,15 +18,25 @@ def create_table(models: List[Dict], methods: List[Dict], base_path: str) -> Non
     efficiency = np.zeros((len(methods_names), len(transfer_pairs_names)))
     
     j = 0
+    max_epochs = 1
     for student in models:
         org_stats = get_stats_from_file(f"{base_path}/stats/{student['model']['name']}_{student['dataset']['name']}_#/stats.pickle")
         for teacher in student["teachers"]:
             for i, method in enumerate(methods_names):
                 transfer_stats = get_stats_from_file(f"{base_path}/transfer-test/{method}_{student['model']['name']}_{student['dataset']['name']}_#_from_{teacher}_best/stats.pickle")
-                efficiency[i, j] = np.max(transfer_stats)/np.max(org_stats[:4])
+                efficiency[i, j] = np.max(transfer_stats[:max_epochs])/np.max(org_stats[:max_epochs])
             j+=1
-
-    res = pd.DataFrame(data=efficiency, index=methods_names, columns=transfer_pairs_names)
+    efficiency_copy = efficiency.copy()
+    efficiency_copy[efficiency_copy < 1] = 1
+    res = pd.DataFrame(
+        data=np.concatenate((
+            efficiency.mean(axis=1, keepdims=True),
+            efficiency_copy.mean(axis=1, keepdims=True),
+            efficiency
+        ), axis=1),
+        index=methods_names,
+        columns=["mean"] + ["mean_with_1_as_min"]+ transfer_pairs_names
+    )
     res.to_csv("plots/methods.csv")
 
     for i, method in enumerate(methods_names):
