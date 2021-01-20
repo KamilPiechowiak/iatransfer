@@ -6,11 +6,11 @@ import torch.nn as nn
 from iatransfer.toolkit.base_matching import Matching
 from iatransfer.toolkit.tli import transfer, get_graph, Graph
 
-class GraphMatching(Matching):
+class GraphNewMatching(Matching):
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
-        remap, teacher_graph, student_graph = transfer(from_module, to_module)
+        _, remap, teacher_graph, student_graph = transfer(from_module, to_module)
         teacher_ids_to_layers_mapping = self.get_ids_to_layers_mapping(from_module, teacher_graph)
         student_ids_to_layers_mapping = self.get_ids_to_layers_mapping(to_module, student_graph)
         matching = []
@@ -34,6 +34,9 @@ class GraphMatching(Matching):
                 pass
         print("Matched: ", matched/total)
         return matching
+    
+    def sim(self, from_module: nn.Module, to_module: nn.Module) -> float:
+        return transfer(from_module, to_module)[0]
 
     def get_ids_to_layers_mapping(self, model: nn.Module, graph: Graph) -> Dict[int, nn.Module]:
         graph = get_graph(model)

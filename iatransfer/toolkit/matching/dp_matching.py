@@ -20,7 +20,7 @@ class DPMatching(Matching):
         _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
         return matched
 
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
+    def sim(self, from_module: nn.Module, to_module: nn.Module) -> float:
         flattened_from_module = self.standardization.standardize(from_module)
         flattened_to_module = self.standardization.standardize(to_module)
         score, _, _ = self._match_models(flattened_from_module, flattened_to_module)

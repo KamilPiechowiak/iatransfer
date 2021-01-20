@@ -55,6 +55,9 @@ import collections
 import os
 import random
 import sys
+# FIXME: repair config "reinit" case
+from copy import copy
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -69,9 +72,27 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from torch.autograd import Variable
 
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+
 ################################################################################
 # API
 ################################################################################
+
+
+def apply_tli(model, teacher=None):
+    # print(f"[TLI]   model={model}")
+    # print(f"[TLI] teacher={teacher}")
+    model_teacher = str_to_model(teacher)
+    transfer(model_teacher, model)
+    return model
+
+
+def get_tli_score(model_from, model_to):
+    model_a = str_to_model(model_from)
+    model_b = str_to_model(model_to)
+    sim, _, _, _ = transfer(model_a, model_b)
+    return sim
 
 
 def get_model_timm(name="dla46x_c"):
@@ -95,22 +116,16 @@ def str_to_model(name):
     return model
 
 
-def apply_tli(model, teacher=None):
-    model_teacher = str_to_model(teacher)
-    transfer(model_teacher, model)
-    return model
-
-
-def get_tli_score(model_from, model_to):
-    model_a = str_to_model(model_from)
-    model_b = str_to_model(model_to)
-    score_ab = transfer(model_a, model_b)
-    score_ba = transfer(model_b, model_a)
-    sim = (score_ab + score_ba) / 2
-    print(
-        f"[score_ab={round(score_ab, 2):6} score_ba={round(score_ba, 2):6} | sim={round(sim, 2):6}]"
-    )
-    return sim
+# def get_tli_score(model_from, model_to):
+#     model_a = str_to_model(model_from)
+#     model_b = str_to_model(model_to)
+#     score_ab = transfer(model_a, model_b)
+#     score_ba = transfer(model_b, model_a)
+#     sim = (score_ab + score_ba) / 2
+#     print(
+#         f"[score_ab={round(score_ab, 2):6} score_ba={round(score_ba, 2):6} | sim={round(sim, 2):6}]"
+#     )
+#     return sim
 
 
 ################################################################################
@@ -118,7 +133,7 @@ def get_tli_score(model_from, model_to):
 ################################################################################
 
 
-def apply_reset(model):
+def apply_hard_reset(model):
     for layer in model.modules():
         if hasattr(layer, "reset_parameters"):
             nn.init.zeros_(layer.weight)
@@ -476,27 +491,33 @@ class TLIConfig(object):
         self.__dict__.update(adict)
 
 
-embedding_dim = 5  # FIXME: was 9, how to find?
+embedding_dim = 3  # best 6, 5 / FIXME: was 9, how to find?
 CONFIG = TLIConfig(
     {
         # FIXME: move outsite? --> lazy_load?
         "node_embedding_attributed": FeatherNode(
-            eval_points=3, order=3, reduction_dimensions=32
+            eval_points=2, order=2, reduction_dimensions=32
         ),
         "node_embedding_neighbourhood": NetMF(
             dimensions=embedding_dim
         ),  # FIXME: use xNetMF
         "autoencoder": MLPRegressor(
-            max_iter=50,
+            max_iter=100 // 3,  # FIXME: best 50
             early_stopping=False,
             activation="relu",
             solver="adam",
-            hidden_layer_sizes=(100,),
+            tol=0.0001,
+            ##############################################
+            # n_iter_no_change=100, # FIXME: is that good?
+            ##############################################
+            hidden_layer_sizes=(125, 25,),  # 125, 25
+            warm_start=True,
+            learning_rate_init=0.001,
             alpha=0.001,
             verbose=True,
         ),
-        "test_size": 0.1,  # FIXME: this is important!
-        "samples_per_tensor": 10,
+        "test_size": 0.05,  # FIXME: this is important!
+        "samples_per_tensor": 5,
     }
 )
 
@@ -515,7 +536,7 @@ def E_nodes(edges, attr=None):
 
     graph = get_networkx(norm_graph, dag=False)
     if attr:
-        model.fit(graph, norm_attr)
+        model.fit(graph, np.array(norm_attr))
         X = model.get_embedding()
     else:
         model.fit(graph)
@@ -529,7 +550,7 @@ def E_nodes(edges, attr=None):
     return encoded_nodes
 
 
-def F_architecture(graph):
+def F_architecture(graph, mlb=None):
     ### POSITION ENCODING ###
     edges = []
     cluster_feature = {}
@@ -556,15 +577,36 @@ def F_architecture(graph):
 
     ### NODE ENCODING ###
     N = {}  # FIXME: move to fn_node_encoder?
-    for idx, node in graph.nodes.items():  # FIXME: better way? [pad len 4]
+    vec = []
+    for idx, node in graph.nodes.items():
+        # FIXME: ??? encode type of layer ??? class
+        _vec = list(node.name.replace(".weight", "").replace(".bias", ""))
+        _lvl = [s for s in _vec if s.isdigit()]
+        _lvl = "".join(_lvl)
+        if _lvl:
+            _vec.append(_lvl)
+        vec.append(_vec)
+        # vec.append(list(node.name.replace(".weight", "").replace(".bias", "")))
+        # vec.append(node.name.split("."))
+    vec = mlb.transform(vec)
+    for i, (idx, node) in enumerate(
+        graph.nodes.items()
+    ):  # FIXME: better way? [pad len 4]
         _shape4 = nn.ConstantPad1d((0, 4 - len(node.size)), 0.0)(
             torch.tensor(node.size)
         )
-        shape = _shape4.type(torch.FloatTensor) / torch.max(1 + _shape4)
+        shape = __shape_score(_shape4.type(torch.FloatTensor), (100, 1, 1, 1))
+        shape4 = _shape4.type(torch.FloatTensor) / torch.max(1 + _shape4)
         _level_rev = (graph.max_level - node.level) / graph.max_level
         _cluster_rev = (graph.max_idx - node.cluster_idx) / graph.max_idx
         _type = 0 if ".bias" in node.name else 1
-        N[idx] = np.array(shape.tolist() + [_cluster_rev, _level_rev, _type])
+        N[idx] = np.array(
+            [shape]
+            + shape4.tolist()
+            + [_cluster_rev, _level_rev, _type]
+            + vec[i].tolist()
+            #   shape.tolist() + [_cluster_rev, _level_rev, _type] + vec[i].tolist()
+        )
 
     print("(encode_graph ended)")
     return P, S, N
@@ -574,17 +616,18 @@ def __q(a, b):
     return np.concatenate((a, b), axis=0)
 
 
+def __shape_score(s1, s2):
+    if len(s1) != len(s2):
+        return 0
+    score = 1
+    for x, y in zip(s1, s2):
+        score *= min(x / y, y / x)
+    return score
+
+
 # gen_dataset / `self-learn`
 def gen_dataset(graph, P, S, N):
     X, y = [], []
-
-    def __shape_score(s1, s2):
-        if len(s1) != len(s2):
-            return 0
-        score = 1
-        for x, y in zip(s1, s2):
-            score *= min(x / y, y / x)
-        return score
 
     # FIXME: move to encoder settings? / encoder definition
     for idx, node in graph.nodes.items():
@@ -592,6 +635,10 @@ def gen_dataset(graph, P, S, N):
         #    continue
 
         cluster_idx = node.cluster_idx
+        # FIXME
+        # print("Q1", node, cluster_idx)
+        # print("Q2", graph.cluster_map.keys())
+        # print("Q3", P)
 
         # FIXME: make it pretty
         # FIXME: encoder score for [N]
@@ -635,17 +682,17 @@ def gen_dataset(graph, P, S, N):
 
             q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
 
-            # N_bonus = 0
-            # N_dist = np.linalg.norm(N[idx] - N[r_idx])
+            N_bonus = 0
+            N_dist = np.linalg.norm(N[idx] - N[r_idx])
 
-            # if N_dist <= 0.1:
-            #     N_bonus = 0.25
+            if N_dist <= 1:
+                N_bonus = (1 - N_dist) / 4
 
             X.append(__q(q_src, q_dst))
             y.append(
-                # N_bonus +
-                0.25
-                + 0.5 * __shape_score(graph.nodes[idx].size, graph.nodes[r_idx].size)
+                N_bonus
+                + 0.25
+                + +0.5 * __shape_score(graph.nodes[idx].size, graph.nodes[r_idx].size)
             )
 
         # === CASE 3: other cluster, W
@@ -659,25 +706,22 @@ def gen_dataset(graph, P, S, N):
 
             q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
 
-            # N_bonus = 0
-            # N_dist = np.linalg.norm(N[idx] - N[r_idx])
+            N_bonus = 0
+            N_dist = np.linalg.norm(N[idx] - N[r_idx])
 
-            # if N_dist <= 0.1:
-            #     N_bonus = 0.25
+            if N_dist <= 1:
+                N_bonus = (1 - N_dist) / 4
 
             S_bonus = 0
             S_dist = np.linalg.norm(S[idx] - S[r_idx])
 
-            # if S_dist <= 1:
-            #     S_bonus = (1-S_dist)/4
-
-            if S_dist <= 0.001:
-                S_bonus = 0.25
+            if S_dist <= 1:
+                S_bonus = (1 - S_dist) / 4
 
             X.append(__q(q_src, q_dst))
             y.append(
-                # N_bonus +
-                S_bonus
+                N_bonus / 2
+                + S_bonus / 2
                 + 0.25 * __shape_score(graph.nodes[idx].size, graph.nodes[r_idx].size)
             )
 
@@ -698,15 +742,48 @@ def gen_dataset(graph, P, S, N):
     return X, y
 
 
-def transfer(model_src, model_dst, debug=False):
+def transfer(model_src, model_dst=None, teacher=None, debug=False):
+    # FIXME: replace str to model if needed
+    if model_src and model_dst:
+        # API: v2
+        pass
+    elif not model_dst and teacher:
+        # API: v1
+        model_src, model_dst = teacher, model_src
+    else:
+        raise Exception("where is teacher?! is this a joke?")
+
     graph_src = get_graph(model_src)
     graph_dst = get_graph(model_dst)
 
-    # show_graph(graph_src, ver=3, path="__tli_src")
-    # show_graph(graph_dst, ver=3, path="__tli_dst")
+    # src_ids_to_layers_mapping = get_idx_to_layers_mapping(model_src,
+    #                                                           graph_src)
+    # dst_ids_to_layers_mapping = get_idx_to_layers_mapping(model_dst,
+    #                                                           graph_dst)
 
-    P_src, S_src, N_src = F_architecture(graph_src)
-    P_dst, S_dst, N_dst = F_architecture(graph_dst)
+    if debug:
+        show_graph(graph_src, ver=3, path="__tli_src")
+        show_graph(graph_dst, ver=3, path="__tli_dst")
+
+    from sklearn.preprocessing import MultiLabelBinarizer
+
+    mlb = MultiLabelBinarizer()
+
+    vec = []
+    for idx, node in graph_src.nodes.items():
+        _vec = list(node.name.replace(".weight", "").replace(".bias", ""))
+        _lvl = [s for s in _vec if s.isdigit()]
+        _lvl = "".join(_lvl)
+        if _lvl:
+            _vec.append(_lvl)
+        vec.append(_vec)
+        # vec.append(list(node.name.replace(".weight", "").replace(".bias", "")))
+    # for idx, node in graph_dst.nodes.items():
+    #     vec.append(node.name.split("."))
+    mlb.fit(vec)
+
+    P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb)
+    P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb)
 
     X1, y1 = gen_dataset(graph_src, P_src, S_src, N_src)
     X2, y2 = gen_dataset(graph_dst, P_dst, S_dst, N_dst)
@@ -719,7 +796,11 @@ def transfer(model_src, model_dst, debug=False):
 
     ### AUTOENCODER ###
 
-    model = CONFIG.autoencoder
+    # https://scikit-learn.org/stable/modules/generated/sklearn.semi_supervised.SelfTrainingClassifier.html#sklearn.semi_supervised.SelfTrainingClassifier
+
+    model = copy(CONFIG.autoencoder)
+    model.fit(X1, y1)
+    model.fit(X2, y2)
     model.fit(X_train, y_train)
 
     y_hat = model.predict(X_test)
@@ -733,13 +814,36 @@ def transfer(model_src, model_dst, debug=False):
 
     ### MATCHING ###
 
+    # FIXME: move to [fn_matcher, fn_scorer]
+
+    def __norm_weights(graph):
+        arr, imap, i = [], {}, 0
+        for _, (idx, node) in enumerate(graph.nodes.items()):
+            if node.type != "W":
+                continue
+            arr.append(idx)
+            imap[idx] = i
+            i += 1
+        return arr, imap
+
+    src_arr, src_map = __norm_weights(graph_src)
+    dst_arr, dst_map = __norm_weights(graph_dst)
+
     remap = {}
-    seen = set()
-    error_n, error_sum = 0, 0
-    for idx_dst, node_dst in graph_dst.nodes.items():
-        if node_dst.type != "W":
-            continue
+
+    n, m = len(src_arr), len(dst_arr)
+    scores = np.zeros((n, m))
+
+    # classes = [
+    #         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
+    #         nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+    #         nn.Linear
+    # ]
+
+    for dst_j, idx_dst in enumerate(dst_arr):
+        node_dst = graph_dst.nodes[idx_dst]
         dst_type = node_dst.name.split(".")[-1]
+
         q_dst = (
             list(P_dst[node_dst.cluster_idx])
             + list(S_dst[idx_dst])
@@ -747,31 +851,53 @@ def transfer(model_src, model_dst, debug=False):
         )
 
         q_arr = []
-        q_arr_idx_src = []
-
-        for idx_src, node_src in graph_src.nodes.items():
-            if node_src.type != "W":
-                continue
+        for src_i, idx_src in enumerate(src_arr):
+            node_src = graph_src.nodes[idx_src]
             src_type = node_src.name.split(".")[-1]
-            if src_type != dst_type:
-                continue
+
             q_src = (
                 list(P_src[node_src.cluster_idx])
                 + list(S_src[idx_src])
                 + list(N_src[idx_src])
             )
             q_arr.append(__q(q_src, q_dst))
-            q_arr_idx_src.append(idx_src)
-            # FIXME: left-right?
-            q_arr.append(__q(q_dst, q_src))
-            q_arr_idx_src.append(idx_src)
+            scores[src_i, dst_j] = __shape_score(node_dst.size, node_src.size)
+
+            # src_layer = src_ids_to_layers_mapping[idx_src]
+            # dst_layer = dst_ids_to_layers_mapping[idx_dst]
+
+            # not_same_class = True
+            # for classname in classes:
+            #     if isinstance(src_layer, classname) and \
+            #         isinstance(dst_layer, classname):
+            #             not_same_class = False
+            #             break
+
+            if dst_type != src_type:  # or not_same_class:
+                scores[src_i, dst_j] = 0
 
         y_hat = model.predict(q_arr)
-        # for i, idx_src in enumerate(q_arr_idx_src):
-        #     print(f"\t idx_src = {idx_src:5} | score = {y_hat[i]}")
+        scores[:, dst_j] *= y_hat
 
-        i = np.argmax(y_hat)
-        idx_src = q_arr_idx_src[i]
+    ##############################################
+
+    for dst_j, idx_dst in enumerate(dst_arr):
+        i = np.argmax(scores[:, dst_j])
+        idx_src = src_arr[i]
+        remap[idx_dst] = idx_src
+
+    ##############################################
+
+    seen = set()
+    all_scores = []
+    error_n, error_sum = 0, 0
+    for j, idx_dst in enumerate(dst_arr):
+        node_dst = graph_dst.nodes[idx_dst]
+
+        idx_src = remap[idx_dst]
+        score = scores[src_map[idx_src], j]  # src_i, dst_i
+        all_scores.append(score)
+
         name_src = graph_src.nodes[idx_src].name
         name_dst = node_dst.name
         color_code = "\x1b[1;37;40m"
@@ -782,29 +908,50 @@ def transfer(model_src, model_dst, debug=False):
         color_end = "\x1b[0m"
         print(
             f"src= {idx_src:3} | dst= {idx_dst:3} | "
-            + f"S= {round(y_hat[i], 2):4} | {color_code}{name_src:30}{color_end} / "
+            + f"S= {round(score, 2):4} | {color_code}{name_src:30}{color_end} / "
             + f"{name_dst:10}"
         )
-        remap[idx_dst] = idx_src
+
         seen.add(idx_src)
         error_n += 1
 
-        # FIXME: save topk matches --> for each set (best bipartie)
-        # for top_i in (-y_hat).argsort()[:3]:
-        #    idx = q_arr_idx_src[top_i]
-        #    name = graph_src.nodes[idx].name
-        #    print(f"--> idx= {idx} | {name:30} | score= {round(y_hat[top_i], 2)}")
+    sim = max(0, min(1, np.mean(all_scores)))
 
     print("=== MATCH =================")
     print(f" LOSS --> {loss}")
     n = len(graph_src.nodes.keys())
-    print(f" SEEN --> {len(seen):5}/{n:5} | {round(len(seen)/n,2)}")
-    print(f"ERROR --> {error_sum:5}/{error_n:5} | {round(error_sum/error_n,2)}")
+    print(f"  SIM --> \x1b[0;34;40m{round(sim, 4)}\x1b[0m")
+    print(f" SEEN --> {len(seen):5} / {n:5} | {round(len(seen)/n,2)}")
+    print(f"ERROR --> {error_sum:5} / {error_n:5} | {round(error_sum/error_n,2)}")
     print("===========================")
 
-    show_remap(graph_src, graph_dst, remap, path="__tli_remap")
+    #############################################
 
-    return remap, graph_src, graph_dst
+    # FIXME: dwa razy odpalone?
+    # FIXME: choose bigger model to smaller? --> argmax [matrix]
+    # FIXME: wes argmax dla wiekszego modelu?
+    # FIXME: [(maximum cover, max flow, biparte)]
+
+    if debug:
+        # FIXME: do pracy dodac rysunek z sieci typu "debug"
+        show_remap(graph_src, graph_dst, remap, path="__tli_remap")
+
+    p_src_ref = {}
+    for name, param in model_src.named_parameters():
+        p_src_ref[name] = param
+    p_dst_ref = {}
+    for name, param in model_dst.named_parameters():
+        p_dst_ref[name] = param
+
+    with torch.no_grad():
+        for idx_dst, idx_src in remap.items():
+            node_src = graph_src.nodes[idx_src]
+            node_dst = graph_dst.nodes[idx_dst]
+            p_src = p_src_ref[node_src.name]
+            p_dst = p_dst_ref[node_dst.name]
+            fn_inject(p_src, p_dst)
+
+    return sim, remap, graph_src, graph_dst
 
 
 ################################################################################
@@ -966,13 +1113,16 @@ def make_graph(var, params=None) -> Graph:
             __bfs(v.grad_fn)
     else:
         # FIXME: option to choose method? (degree=None)
-        nodes, edges, max_level = __bfs(var.grad_fn)
+        # FIXME: add to config
+        nodes, edges, max_level = __bfs(var.grad_fn)  # , degree=None)
 
     graph.nodes = nodes
     graph.edges = edges
 
     # make clusters
     graph.cluster_map, graph.cluster_links = make_clusters(graph)
+    if len(graph.cluster_map.keys()) <= 1:
+        graph.cluster_links.append([0, 0])
 
     # graph meta
     graph.max_level = max_level
@@ -1001,10 +1151,41 @@ def make_clusters(graph):
 
 def get_graph(model, input=None):
     # FIXME: (automatic) find `input` size (just arr?) / (32, 1, 31, 31)
-    input_shape = input if input else (3, 32, 32)
-    x = torch.randn(32, *input_shape)
-    graph = make_graph(model(x), params=dict(model.named_parameters()))
+    graph = None
+    input_shape = [input] if input else [(3, 32, 32), (1, 31, 31), (3, 224, 224)]
+    for _input_shape in input_shape:
+        x = torch.randn(32, *_input_shape)
+        try:
+            x = x.to(device) # FIXME: more pretty?
+            model = model.to(device)
+            graph = make_graph(model(x), params=dict(model.named_parameters()))
+            break
+        except Exception as err:
+            print("ERROR", err)
+            continue
+    if not graph:
+        raise Exception("something really wrong!")
     return graph
+
+
+def get_idx_to_layers_mapping(model: nn.Module, graph: Graph) -> Dict[int, nn.Module]:
+    names_to_layers_mapping = {}
+
+    def dfs(model: nn.Module, name_prefix: List[str]):
+        for child_name, child in model.named_children():
+            dfs(child, name_prefix + [child_name])
+        names_to_layers_mapping[".".join(name_prefix)] = model
+
+    dfs(model, [])
+
+    ids_to_layers_mapping = {}
+    for node in graph.nodes.values():
+        if node.type == "W":
+            node_name = node.name.replace(".weight", "").replace(".bias", "")
+            layer = names_to_layers_mapping[node_name]
+            ids_to_layers_mapping[node.idx] = layer
+
+    return ids_to_layers_mapping
 
 
 ################################################################################
@@ -1157,14 +1338,15 @@ def show_remap(g1, g2, remap, path="__tli_debug"):
     ###
     dot_g2.graph_attr.update(compound="True")
     dot_g1.graph_attr.update(compound="True")
-    dot.graph_attr.update(compound="True")
+    dot.graph_attr.update(compound="True")  # , peripheries="0")
     dot.subgraph(dot_g2)
     dot.subgraph(dot_g1)
     from matplotlib.colors import to_hex
     import matplotlib.pyplot as plt
-    cmap = plt.get_cmap('rainbow')
+
+    cmap = plt.get_cmap("gist_rainbow")
     colors = cmap(np.linspace(0, 1, len(g1.cluster_map.keys())))
-    colors_map = {} # FIXME: sorted?
+    colors_map = {}  # FIXME: sorted?
     for (cluster_idx, color) in zip(g1.cluster_map.keys(), colors):
         colors_map[cluster_idx] = color
     for idx_dst, idx_src in remap.items():
@@ -1194,15 +1376,51 @@ if __name__ == "__main__":
         model_debug = get_model_debug(seed=3, channels=3, classes=10)
         model_unet = ResNetUNet(n_class=6)
 
-    # model_A = get_model_timm("regnetx_002")
-    # model_B = get_model_timm("efficientnet_lite0")
+    if False:  # 8 / 158
+        model_A = get_model_timm("efficientnet_lite1")
+        model_B = get_model_timm("mnasnet_100")
 
-    # model_A = get_model_timm("mixnet_m")
-    # model_B = get_model_timm("mixnet_s")
+    if False:  # 0 / 149
+        model_A = get_model_timm("efficientnet_lite1")
+        model_B = get_model_timm("efficientnet_lite0")
 
-    # lite0->lite1 | 52/194
-    # lite1->lite0 | 27/149
-    model_A = get_model_timm("efficientnet_lite1")
-    model_B = get_model_timm("efficientnet_lite0")
+    if False:  # 45 / 194
+        model_A = get_model_timm("efficientnet_lite0")
+        model_B = get_model_timm("efficientnet_lite1")
+
+    if False:  # 0 / 194
+        model_A = get_model_timm("efficientnet_lite1")
+        model_B = get_model_timm("efficientnet_lite1")
+
+    if False:  # 1 / 149
+        model_A = get_model_timm("efficientnet_lite0")
+        model_B = get_model_timm("efficientnet_lite0")
+
+    if False:  # 7 / 249
+        model_A = get_model_timm("mixnet_s")
+        model_B = get_model_timm("mixnet_s")
+
+    if False:  # 100 / 300
+        model_A = get_model_timm("mixnet_s")
+        model_B = get_model_timm("mixnet_m")
+
+    if False:  # 28 / 249
+        model_A = get_model_timm("mixnet_m")
+        model_B = get_model_timm("mixnet_s")
+
+    if True:  # 103 / 213
+        model_A = get_model_timm("efficientnet_lite1")
+        model_B = get_model_timm("tf_efficientnet_b0_ap")
+
+    if False:  # not comparable
+        model_A = get_model_timm("regnetx_002")
+        model_B = get_model_timm("efficientnet_lite0")
 
     transfer(model_A, model_B, debug=True)  # tli sie
+
+    # FIXME: normalize score [0, 1], maybe mean?
+    # model_A = get_model_timm("efficientnet_lite0")
+    # model_B = get_model_timm("efficientnet_lite1")
+    # sim_ab = get_tli_score(model_A, model_B)
+    # sim_ba = get_tli_score(model_B, model_A)
+    # print(f"sim_ab = {round(sim_ab, 4)} | sim_ba = {round(sim_ba, 4)}")
