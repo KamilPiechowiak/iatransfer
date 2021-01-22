@@ -4,13 +4,12 @@ from typing import Dict, List
 import torch
 import torch_xla.core.xla_model as xm
 import torch_xla.distributed.xla_multiprocessing as xmp
-from iatransfer.toolkit.iat import IAT
 from torch import nn
 
 from iatransfer.research.data.data import TrainingTuple, get_dataset
 from iatransfer.research.train.train_model import train_model
-from iatransfer.toolkit.transfer_methods_factory import TransferMethodsFactory
 from iatransfer.research.transfer.utils import get_transfer_method_name
+from iatransfer.toolkit.iat import IAT
 
 
 def create_pretrained_models_dict(training_tuples: List[Dict]) -> Dict[str, TrainingTuple]:
