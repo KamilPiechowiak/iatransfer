@@ -32,11 +32,11 @@ from typing import List, Tuple, Any, Optional, Union
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
+from iatransfer.toolkit.base_transfer import Transfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
-class TraceTransfer(MatchedTransfer):
+class TraceTransfer(Transfer):
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -&gt; None:
         if reverse_priority:
@@ -44,11 +44,6 @@ class TraceTransfer(MatchedTransfer):
         else:
             self.sgn = -1
         super().__init__(**kwargs)
-
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
-        matched = self.matching_strategy(from_module, to_module)
-        self._transfer(matched, to_module)
-        return TransferStats()
 
     layers_classes = [
         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
@@ -94,7 +89,7 @@ class TraceTransfer(MatchedTransfer):
                 # print(&#34;ids: &#34;, ids)
                 return self._transfer(self.module, ids)
             else:
-                instructions: str = self.trace.code
+                instructions = self.trace.code
                 instructions = re.sub(r&#34;forward[^\(]*\(&#34;, &#34;forward(&#34;, instructions)
                 instructions = instructions.replace(&#34;torch&#34;, &#34;self.torch&#34;)
                 instructions = instructions.split(&#34;\n&#34;)
@@ -109,7 +104,7 @@ class TraceTransfer(MatchedTransfer):
                     return eval(re.search(r&#34;return(.+)&#34;, instructions[i]).group(1).strip())
                 return None
 
-        def _get_center_slices(self, a: int, b: int) -&gt; Tuple[slice]:
+        def _get_center_slices(self, a: int, b: int) -&gt; Tuple[slice, slice]:
             if a &lt; b:
                 return slice(0, a), slice((b - a) // 2, -((b - a + 1) // 2))
             elif a &gt; b:
@@ -117,8 +112,8 @@ class TraceTransfer(MatchedTransfer):
             else:
                 return slice(0, a), slice(0, b)
 
-        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Tuple[
-            Union[List[int], slice]]:
+        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Union[
+            Tuple[torch.Tensor, slice], Tuple[slice, slice]]:
             dims = [i for i in range(1, len(from_tensor.shape))]
             if from_tensor.shape[0] &gt; to_tensor.shape[0]:
                 if len(dims) == 0:
@@ -133,14 +128,14 @@ class TraceTransfer(MatchedTransfer):
                 return self._get_center_slices(from_tensor.shape[0], to_tensor.shape[0])
 
         def _get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, ids: Optional[List[int]]) -&gt; Tuple[
-            Tuple[Union[List[int], slice]]]:
+            Tuple[None, ...], Tuple[None, ...]]:
             n = len(from_tensor.shape)
             from_slices, to_slices = [None] * n, [None] * n
             if n &gt; 1:  # use input ids to choose input channels
                 a, b = from_tensor.shape[1], to_tensor.shape[1]
                 # if ids is not None and a &gt; b and len(ids) != b:
                 #     print(&#34;HERE&#34;)
-                if ids is not None and a &gt; b and len(ids) == b:
+                if ids is not None and a &gt; b and len(ids) == b and torch.max(ids) &lt; from_tensor.shape[1]:
                     # print(&#34;ENTERED&#34;)
                     from_slices[1] = ids
                     to_slices[1] = slice(0, b)
@@ -196,12 +191,16 @@ class TraceTransfer(MatchedTransfer):
             # print(&#34;out: &#34;, output_ids)
             return output_ids.flatten()
 
-    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]], to_module: nn.Module) -&gt; None:
+    def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        to_module = args[0] if len(args) &gt; 0 else kwargs[&#39;context&#39;][&#39;to_module&#39;]
         with torch.no_grad():
             self.create_layers_mapping(matched)
             to_module.eval()
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
-            module.forward()</code></pre>
+            module.forward()
+
+    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -&gt; TransferStats:
+        raise ValueError(&#34;Not implemented&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -224,7 +223,7 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TraceTransfer(MatchedTransfer):
+<pre><code class="python">class TraceTransfer(Transfer):
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -&gt; None:
         if reverse_priority:
@@ -232,11 +231,6 @@ inheritance.</p></div>
         else:
             self.sgn = -1
         super().__init__(**kwargs)
-
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
-        matched = self.matching_strategy(from_module, to_module)
-        self._transfer(matched, to_module)
-        return TransferStats()
 
     layers_classes = [
         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
@@ -282,7 +276,7 @@ inheritance.</p></div>
                 # print(&#34;ids: &#34;, ids)
                 return self._transfer(self.module, ids)
             else:
-                instructions: str = self.trace.code
+                instructions = self.trace.code
                 instructions = re.sub(r&#34;forward[^\(]*\(&#34;, &#34;forward(&#34;, instructions)
                 instructions = instructions.replace(&#34;torch&#34;, &#34;self.torch&#34;)
                 instructions = instructions.split(&#34;\n&#34;)
@@ -297,7 +291,7 @@ inheritance.</p></div>
                     return eval(re.search(r&#34;return(.+)&#34;, instructions[i]).group(1).strip())
                 return None
 
-        def _get_center_slices(self, a: int, b: int) -&gt; Tuple[slice]:
+        def _get_center_slices(self, a: int, b: int) -&gt; Tuple[slice, slice]:
             if a &lt; b:
                 return slice(0, a), slice((b - a) // 2, -((b - a + 1) // 2))
             elif a &gt; b:
@@ -305,8 +299,8 @@ inheritance.</p></div>
             else:
                 return slice(0, a), slice(0, b)
 
-        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Tuple[
-            Union[List[int], slice]]:
+        def _get_output_channels(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -&gt; Union[
+            Tuple[torch.Tensor, slice], Tuple[slice, slice]]:
             dims = [i for i in range(1, len(from_tensor.shape))]
             if from_tensor.shape[0] &gt; to_tensor.shape[0]:
                 if len(dims) == 0:
@@ -321,14 +315,14 @@ inheritance.</p></div>
                 return self._get_center_slices(from_tensor.shape[0], to_tensor.shape[0])
 
         def _get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, ids: Optional[List[int]]) -&gt; Tuple[
-            Tuple[Union[List[int], slice]]]:
+            Tuple[None, ...], Tuple[None, ...]]:
             n = len(from_tensor.shape)
             from_slices, to_slices = [None] * n, [None] * n
             if n &gt; 1:  # use input ids to choose input channels
                 a, b = from_tensor.shape[1], to_tensor.shape[1]
                 # if ids is not None and a &gt; b and len(ids) != b:
                 #     print(&#34;HERE&#34;)
-                if ids is not None and a &gt; b and len(ids) == b:
+                if ids is not None and a &gt; b and len(ids) == b and torch.max(ids) &lt; from_tensor.shape[1]:
                     # print(&#34;ENTERED&#34;)
                     from_slices[1] = ids
                     to_slices[1] = slice(0, b)
@@ -384,16 +378,19 @@ inheritance.</p></div>
             # print(&#34;out: &#34;, output_ids)
             return output_ids.flatten()
 
-    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]], to_module: nn.Module) -&gt; None:
+    def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        to_module = args[0] if len(args) &gt; 0 else kwargs[&#39;context&#39;][&#39;to_module&#39;]
         with torch.no_grad():
             self.create_layers_mapping(matched)
             to_module.eval()
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
-            module.forward()</code></pre>
+            module.forward()
+
+    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -&gt; TransferStats:
+        raise ValueError(&#34;Not implemented&#34;)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>iatransfer.toolkit.transfer._matched_transfer.MatchedTransfer</li>
 <li><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></li>
 <li>abc.ABC</li>
 </ul>
@@ -436,7 +433,7 @@ inheritance.</p></div>
 </details>
 </dd>
 <dt id="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+<span>def <span class="ident">transfer</span></span>(<span>self, matched: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> NoneType</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -444,10 +441,26 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -&gt; TransferStats:
-    matched = self.matching_strategy(from_module, to_module)
-    self._transfer(matched, to_module)
-    return TransferStats()</code></pre>
+<pre><code class="python">def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+    to_module = args[0] if len(args) &gt; 0 else kwargs[&#39;context&#39;][&#39;to_module&#39;]
+    with torch.no_grad():
+        self.create_layers_mapping(matched)
+        to_module.eval()
+        module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
+        module.forward()</code></pre>
+</details>
+</dd>
+<dt id="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer"><code class="name flex">
+<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -&gt; TransferStats:
+    raise ValueError(&#34;Not implemented&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -477,6 +490,7 @@ inheritance.</p></div>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_classes" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_classes">layers_classes</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_mapping" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_mapping">layers_mapping</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer">transfer_layer</a></code></li>
 </ul>
 </li>
 </ul>

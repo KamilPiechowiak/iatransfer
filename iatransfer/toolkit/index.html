@@ -32,7 +32,9 @@ __all__ = []
 for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
     __all__.append(module_name)
     _module = loader.find_module(module_name).load_module(module_name)
-    globals()[module_name] = _module</code></pre>
+    globals()[module_name] = _module
+
+from .iat import IAT</code></pre>
 </details>
 </section>
 <section>
@@ -50,6 +52,10 @@ for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="iatransfer.toolkit.iat" href="iat.html">iatransfer.toolkit.iat</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="iatransfer.toolkit.matching" href="matching/index.html">iatransfer.toolkit.matching</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -57,6 +63,13 @@ for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
 <dt><code class="name"><a title="iatransfer.toolkit.standardization" href="standardization/index.html">iatransfer.toolkit.standardization</a></code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="iatransfer.toolkit.tli" href="tli.html">iatransfer.toolkit.tli</a></code></dt>
+<dd>
+<div class="desc"><p>weryfikacja:
+- [ ] zrobic wizualizacje (reset -&gt; applyied &ndash;&gt; GT) dla KD
+&ndash;&gt; SCORE/LOSS roznicy rozkladu &ndash;&gt; SUMA/MEAN
+&ndash;&gt; histogramy …</p></div>
 </dd>
 <dt><code class="name"><a title="iatransfer.toolkit.transfer" href="transfer/index.html">iatransfer.toolkit.transfer</a></code></dt>
 <dd>
@@ -86,8 +99,10 @@ for loader, module_name, is_pkg in pkgutil.walk_packages(__path__):
 <li><code><a title="iatransfer.toolkit.base_matching" href="base_matching.html">iatransfer.toolkit.base_matching</a></code></li>
 <li><code><a title="iatransfer.toolkit.base_standardization" href="base_standardization.html">iatransfer.toolkit.base_standardization</a></code></li>
 <li><code><a title="iatransfer.toolkit.base_transfer" href="base_transfer.html">iatransfer.toolkit.base_transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.iat" href="iat.html">iatransfer.toolkit.iat</a></code></li>
 <li><code><a title="iatransfer.toolkit.matching" href="matching/index.html">iatransfer.toolkit.matching</a></code></li>
 <li><code><a title="iatransfer.toolkit.standardization" href="standardization/index.html">iatransfer.toolkit.standardization</a></code></li>
+<li><code><a title="iatransfer.toolkit.tli" href="tli.html">iatransfer.toolkit.tli</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer" href="transfer/index.html">iatransfer.toolkit.transfer</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer_methods_factory" href="transfer_methods_factory.html">iatransfer.toolkit.transfer_methods_factory</a></code></li>
 </ul>

@@ -22,42 +22,6 @@
 <h1 class="title">Module <code>iatransfer.toolkit.transfer_methods_factory</code></h1>
 </header>
 <section id="section-intro">
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">from typing import Dict
-
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_transfer import Transfer
-
-class TransferMethodsFactory:
-    
-    def __init__(self):
-        self.standardization_classes = self._get_subclasses(Standardization)
-        self.matching_classes = self._get_subclasses(Matching)
-        self.transfer_classes = self._get_subclasses(Transfer)
-
-    def _get_subclasses(self, clazz: type):
-        subclasses = {}
-        classes = [clazz]
-        while len(classes) &gt; 0:
-            clazz = classes.pop()
-            for c in clazz.__subclasses__():
-                subclasses[c.__name__] = c
-                classes.append(c)
-        return subclasses
-
-    def get_transfer_method(self, config: Dict):
-        matching_kwargs = {}
-        if &#34;standardization&#34; in config:
-            matching_kwargs[&#34;standardization&#34;] = self.standardization_classes[config[&#34;standardization&#34;]]()
-        transfer_kwargs = {}
-        if &#34;matching&#34; in config:
-            transfer_kwargs[&#34;matching_strategy&#34;] = self.matching_classes[config[&#34;matching&#34;]](**matching_kwargs)
-        return self.transfer_classes[config[&#34;transfer&#34;]](**transfer_kwargs)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -66,67 +30,6 @@ class TransferMethodsFactory:
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory"><code class="flex name class">
-<span>class <span class="ident">TransferMethodsFactory</span></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class TransferMethodsFactory:
-    
-    def __init__(self):
-        self.standardization_classes = self._get_subclasses(Standardization)
-        self.matching_classes = self._get_subclasses(Matching)
-        self.transfer_classes = self._get_subclasses(Transfer)
-
-    def _get_subclasses(self, clazz: type):
-        subclasses = {}
-        classes = [clazz]
-        while len(classes) &gt; 0:
-            clazz = classes.pop()
-            for c in clazz.__subclasses__():
-                subclasses[c.__name__] = c
-                classes.append(c)
-        return subclasses
-
-    def get_transfer_method(self, config: Dict):
-        matching_kwargs = {}
-        if &#34;standardization&#34; in config:
-            matching_kwargs[&#34;standardization&#34;] = self.standardization_classes[config[&#34;standardization&#34;]]()
-        transfer_kwargs = {}
-        if &#34;matching&#34; in config:
-            transfer_kwargs[&#34;matching_strategy&#34;] = self.matching_classes[config[&#34;matching&#34;]](**matching_kwargs)
-        return self.transfer_classes[config[&#34;transfer&#34;]](**transfer_kwargs)</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory.get_transfer_method"><code class="name flex">
-<span>def <span class="ident">get_transfer_method</span></span>(<span>self, config: Dict)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_transfer_method(self, config: Dict):
-    matching_kwargs = {}
-    if &#34;standardization&#34; in config:
-        matching_kwargs[&#34;standardization&#34;] = self.standardization_classes[config[&#34;standardization&#34;]]()
-    transfer_kwargs = {}
-    if &#34;matching&#34; in config:
-        transfer_kwargs[&#34;matching_strategy&#34;] = self.matching_classes[config[&#34;matching&#34;]](**matching_kwargs)
-    return self.transfer_classes[config[&#34;transfer&#34;]](**transfer_kwargs)</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -138,16 +41,6 @@ class TransferMethodsFactory:
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="iatransfer.toolkit" href="index.html">iatransfer.toolkit</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory" href="#iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory">TransferMethodsFactory</a></code></h4>
-<ul class="">
-<li><code><a title="iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory.get_transfer_method" href="#iatransfer.toolkit.transfer_methods_factory.TransferMethodsFactory.get_transfer_method">get_transfer_method</a></code></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

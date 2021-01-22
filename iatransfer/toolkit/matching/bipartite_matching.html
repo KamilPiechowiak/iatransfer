@@ -32,31 +32,24 @@ import networkx as nx
 import numpy as np
 import torch.nn as nn
 
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.matching.dp_matching import Matching, DPMatching
-from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
+from iatransfer.toolkit.matching.dp_matching import DPMatching
 
 
 class BipartiteMatching(DPMatching):
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
-        super().__init__(standardization)
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+        _, matched, _ = self._match_bipartite(from_module, to_module)
         return matched
 
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]]):
+        score, _, _ = self._match_bipartite(from_module, to_module)
         return score
 
-    def _match_bipartite(self, flat_from_module: Union[nn.Module, List[nn.Module]],
-                         flat_to_module: Union[nn.Module, List[nn.Module]]) \
+    def _match_bipartite(self, flat_from_module: List[Union[nn.Module, List[nn.Module]]],
+                         flat_to_module: List[Union[nn.Module, List[nn.Module]]]) \
             -&gt; Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
         m = len(flat_from_module)
         n = len(flat_to_module)
@@ -104,7 +97,7 @@ class BipartiteMatching(DPMatching):
 <dl>
 <dt id="iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching"><code class="flex name class">
 <span>class <span class="ident">BipartiteMatching</span></span>
-<span>(</span><span>standardization: <a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a> = &lt;iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization object&gt;)</span>
+<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -115,24 +108,19 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">class BipartiteMatching(DPMatching):
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
-        super().__init__(standardization)
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+        _, matched, _ = self._match_bipartite(from_module, to_module)
         return matched
 
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]]):
+        score, _, _ = self._match_bipartite(from_module, to_module)
         return score
 
-    def _match_bipartite(self, flat_from_module: Union[nn.Module, List[nn.Module]],
-                         flat_to_module: Union[nn.Module, List[nn.Module]]) \
+    def _match_bipartite(self, flat_from_module: List[Union[nn.Module, List[nn.Module]]],
+                         flat_to_module: List[Union[nn.Module, List[nn.Module]]]) \
             -&gt; Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
         m = len(flat_from_module)
         n = len(flat_to_module)
@@ -177,7 +165,7 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
+<span>def <span class="ident">match</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -185,16 +173,15 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+<pre><code class="python">def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+          to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
         -&gt; List[Tuple[nn.Module, nn.Module]]:
-    flattened_from_module = self.standardization.standardize(from_module)
-    flattened_to_module = self.standardization.standardize(to_module)
-    _, matched, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+    _, matched, _ = self._match_bipartite(from_module, to_module)
     return matched</code></pre>
 </details>
 </dd>
 <dt id="iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching.sim"><code class="name flex">
-<span>def <span class="ident">sim</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module)</span>
+<span>def <span class="ident">sim</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]])</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -202,10 +189,9 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sim(self, from_module: nn.Module, to_module: nn.Module):
-    flattened_from_module = self.standardization.standardize(from_module)
-    flattened_to_module = self.standardization.standardize(to_module)
-    score, _, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+          to_module: List[Union[nn.Module, List[nn.Module]]]):
+    score, _, _ = self._match_bipartite(from_module, to_module)
     return score</code></pre>
 </details>
 </dd>

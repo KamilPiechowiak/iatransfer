@@ -27,7 +27,9 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from abc import ABC, abstractmethod
+from typing import List, Tuple
 
+import torch
 import torch.nn as nn
 
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
@@ -38,14 +40,25 @@ class Transfer(ABC):
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
+    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
+            -&gt; TransferStats:
+        with torch.no_grad():
+            for matching in matched_tensors:
+                if isinstance(matching, list):
+                    self.transfer(matching)
+                elif matching[0] is not None and matching[1] is not None:
+                    self.transfer_layer(matching[0].weight, matching[1].weight)
+                    self.transfer_layer(matching[0].bias, matching[1].bias)
+        return TransferStats()
+
     @abstractmethod
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
         pass
 
-    def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
             -&gt; TransferStats:
-        return self.transfer(from_module, to_module, *args, **kwargs)</code></pre>
+        return self.transfer(matched_tensors, *args, **kwargs)</code></pre>
 </details>
 </section>
 <section>
@@ -73,14 +86,25 @@ inheritance.</p></div>
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
+    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
+            -&gt; TransferStats:
+        with torch.no_grad():
+            for matching in matched_tensors:
+                if isinstance(matching, list):
+                    self.transfer(matching)
+                elif matching[0] is not None and matching[1] is not None:
+                    self.transfer_layer(matching[0].weight, matching[1].weight)
+                    self.transfer_layer(matching[0].bias, matching[1].bias)
+        return TransferStats()
+
     @abstractmethod
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
         pass
 
-    def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
             -&gt; TransferStats:
-        return self.transfer(from_module, to_module, *args, **kwargs)</code></pre>
+        return self.transfer(matched_tensors, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -88,13 +112,40 @@ inheritance.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li>iatransfer.toolkit.transfer._matched_transfer.MatchedTransfer</li>
-<li>transfer._matched_transfer.MatchedTransfer</li>
+<li><a title="iatransfer.toolkit.transfer.clip_transfer.ClipTransfer" href="transfer/clip_transfer.html#iatransfer.toolkit.transfer.clip_transfer.ClipTransfer">ClipTransfer</a></li>
+<li><a title="iatransfer.toolkit.transfer.full_transfer.FullTransfer" href="transfer/full_transfer.html#iatransfer.toolkit.transfer.full_transfer.FullTransfer">FullTransfer</a></li>
+<li><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer" href="transfer/magnitude_transfer.html#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer">MagnitudeTransfer</a></li>
+<li><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer" href="transfer/trace_transfer.html#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer">TraceTransfer</a></li>
+<li>transfer.clip_transfer.ClipTransfer</li>
+<li>transfer.full_transfer.FullTransfer</li>
+<li>transfer.magnitude_transfer.MagnitudeTransfer</li>
+<li>transfer.trace_transfer.TraceTransfer</li>
 </ul>
 <h3>Methods</h3>
 <dl>
 <dt id="iatransfer.toolkit.base_transfer.Transfer.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+<span>def <span class="ident">transfer</span></span>(<span>self, matched_tensors: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
+        -&gt; TransferStats:
+    with torch.no_grad():
+        for matching in matched_tensors:
+            if isinstance(matching, list):
+                self.transfer(matching)
+            elif matching[0] is not None and matching[1] is not None:
+                self.transfer_layer(matching[0].weight, matching[1].weight)
+                self.transfer_layer(matching[0].bias, matching[1].bias)
+    return TransferStats()</code></pre>
+</details>
+</dd>
+<dt id="iatransfer.toolkit.base_transfer.Transfer.transfer_layer"><code class="name flex">
+<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.nn.modules.module.Module, tensor_to: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -103,7 +154,7 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
         -&gt; TransferStats:
     pass</code></pre>
 </details>
@@ -130,6 +181,7 @@ def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs
 <h4><code><a title="iatransfer.toolkit.base_transfer.Transfer" href="#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></code></h4>
 <ul class="">
 <li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer" href="#iatransfer.toolkit.base_transfer.Transfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer_layer" href="#iatransfer.toolkit.base_transfer.Transfer.transfer_layer">transfer_layer</a></code></li>
 </ul>
 </li>
 </ul>

@@ -27,6 +27,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from __future__ import annotations
+
 import random
 from collections import Counter
 from typing import List, Tuple, Union, Dict
@@ -78,7 +79,6 @@ class GraphStandardization(Standardization):
             return &#34;(&#34; + (&#34;, &#34;).join([&#34;%d&#34; % v for v in size]) + &#34;)&#34;
 
         mod_op = [&#34;AddBackward0&#34;, &#34;MulBackward0&#34;, &#34;CatBackward&#34;]
-        # mod_op = [&#34;AddBackward0&#34;, &#34;CatBackward&#34;]
 
         lmap, emap, hmap = {}, {}, {}
         elist, clist = [], []
@@ -161,8 +161,6 @@ class GraphStandardization(Standardization):
                 add_nodes(v.grad_fn)
         else:
             add_nodes(var.grad_fn)
-
-        # resize_graph(dot)
 
         for c, edges in emap.items():
             with dot.subgraph(name=f&#34;cluster_{idx}_{c}&#34;) as _c:
@@ -325,7 +323,6 @@ inheritance.</p></div>
             return &#34;(&#34; + (&#34;, &#34;).join([&#34;%d&#34; % v for v in size]) + &#34;)&#34;
 
         mod_op = [&#34;AddBackward0&#34;, &#34;MulBackward0&#34;, &#34;CatBackward&#34;]
-        # mod_op = [&#34;AddBackward0&#34;, &#34;CatBackward&#34;]
 
         lmap, emap, hmap = {}, {}, {}
         elist, clist = [], []
@@ -408,8 +405,6 @@ inheritance.</p></div>
                 add_nodes(v.grad_fn)
         else:
             add_nodes(var.grad_fn)
-
-        # resize_graph(dot)
 
         for c, edges in emap.items():
             with dot.subgraph(name=f&#34;cluster_{idx}_{c}&#34;) as _c:
@@ -628,7 +623,6 @@ inheritance.</p></div>
         return &#34;(&#34; + (&#34;, &#34;).join([&#34;%d&#34; % v for v in size]) + &#34;)&#34;
 
     mod_op = [&#34;AddBackward0&#34;, &#34;MulBackward0&#34;, &#34;CatBackward&#34;]
-    # mod_op = [&#34;AddBackward0&#34;, &#34;CatBackward&#34;]
 
     lmap, emap, hmap = {}, {}, {}
     elist, clist = [], []
@@ -711,8 +705,6 @@ inheritance.</p></div>
             add_nodes(v.grad_fn)
     else:
         add_nodes(var.grad_fn)
-
-    # resize_graph(dot)
 
     for c, edges in emap.items():
         with dot.subgraph(name=f&#34;cluster_{idx}_{c}&#34;) as _c:

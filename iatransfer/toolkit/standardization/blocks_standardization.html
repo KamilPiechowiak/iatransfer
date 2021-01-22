@@ -79,8 +79,6 @@ class BlocksStandardization(Standardization):
                         single_layers += 1
                     layers += [child_layers]
 
-            # print(&#34;before: &#34;, layers)
-
             if single_layers &gt; blocks and level &gt; 0:
                 new_layers = []
                 for child_layers in layers:
@@ -94,21 +92,16 @@ class BlocksStandardization(Standardization):
                 depth = 2
 
             if len(layers) == 1:
-                # print(layers)
                 layers = layers[0]
                 depth = 1
             if isinstance(layers, list) and len(layers) == 0:
-                # print(module)
                 depth = 0
                 layers = module
-
-            # print(&#34;after: &#34;, layers)
 
         if level == 0 and isinstance(layers, list) is False:
             layers = [layers]
 
-        return depth, dimensional_layers_num, layers
-        </code></pre>
+        return depth, dimensional_layers_num, layers</code></pre>
 </details>
 </section>
 <section>
@@ -177,8 +170,6 @@ inheritance.</p></div>
                         single_layers += 1
                     layers += [child_layers]
 
-            # print(&#34;before: &#34;, layers)
-
             if single_layers &gt; blocks and level &gt; 0:
                 new_layers = []
                 for child_layers in layers:
@@ -192,15 +183,11 @@ inheritance.</p></div>
                 depth = 2
 
             if len(layers) == 1:
-                # print(layers)
                 layers = layers[0]
                 depth = 1
             if isinstance(layers, list) and len(layers) == 0:
-                # print(module)
                 depth = 0
                 layers = module
-
-            # print(&#34;after: &#34;, layers)
 
         if level == 0 and isinstance(layers, list) is False:
             layers = [layers]
@@ -263,8 +250,6 @@ inheritance.</p></div>
                     single_layers += 1
                 layers += [child_layers]
 
-        # print(&#34;before: &#34;, layers)
-
         if single_layers &gt; blocks and level &gt; 0:
             new_layers = []
             for child_layers in layers:
@@ -278,15 +263,11 @@ inheritance.</p></div>
             depth = 2
 
         if len(layers) == 1:
-            # print(layers)
             layers = layers[0]
             depth = 1
         if isinstance(layers, list) and len(layers) == 0:
-            # print(module)
             depth = 0
             layers = module
-
-        # print(&#34;after: &#34;, layers)
 
     if level == 0 and isinstance(layers, list) is False:
         layers = [layers]
