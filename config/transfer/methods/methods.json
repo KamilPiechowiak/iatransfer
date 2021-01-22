@@ -1,82 +1,82 @@
 {
     "methods": [
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Clip"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "Flatten",
-            "matching": "DPFlat",
-            "transfer": "Clip"
+            "standardization": "FlattenStandardization",
+            "matching": "DPFlatMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "Graph",
-            "matching": "dp",
-            "transfer": "Clip"
+            "standardization": "GraphStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "Graph",
-            "matching": "Bipartite",
-            "transfer": "Clip"
+            "standardization": "GraphStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "Graph",
-            "matching": "NBipartite",
-            "transfer": "Clip"
+            "standardization": "GraphStandardization",
+            "matching": "NBipartiteMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Clip"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "NBipartite",
-            "transfer": "Clip"
+            "standardization": "BlocksStandardization",
+            "matching": "NBipartiteMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "matching": "Graph",
-            "transfer": "Clip"
+            "matching": "GraphMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Full"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "FullTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Full"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "FullTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Trace"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "TraceTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Trace"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "TraceTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Magnitude"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "MagnitudeTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Magnitude"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "MagnitudeTransfer"
         },
         {
-            "matching": "GraphNew",
-            "transfer": "Clip"
+            "matching": "GraphNewMatching",
+            "transfer": "ClipTransfer"
         },
         {
-            "standardization": "Flatten",
-            "matching": "Random",
-            "transfer": "Clip"
+            "standardization": "FlattenStandardization",
+            "matching": "RandomMatching",
+            "transfer": "ClipTransfer"
         }
     ]
 }

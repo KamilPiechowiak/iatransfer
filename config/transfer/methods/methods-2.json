@@ -1,34 +1,38 @@
 {
     "methods": [
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Full"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "FullTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Trace"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "TraceTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Trace"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "TraceTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "dp",
-            "transfer": "Magnitude"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "MagnitudeTransfer"
         },
         {
-            "standardization": "blocks",
-            "matching": "Bipartite",
-            "transfer": "Magnitude"
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "MagnitudeTransfer"
         },
         {
-            "standardization": "Flatten",
-            "matching": "Random",
-            "transfer": "Clip"
+            "matching": "GraphNewMatching",
+            "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "FlattenStandardization",
+            "matching": "RandomMatching",
+            "transfer": "ClipTransfer"
         }
     ]
 }
