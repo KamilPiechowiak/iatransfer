@@ -4,31 +4,24 @@ import networkx as nx
 import numpy as np
 import torch.nn as nn
 
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.matching.dp_matching import Matching, DPMatching
-from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
+from iatransfer.toolkit.matching.dp_matching import DPMatching
 
 
 class BipartiteMatching(DPMatching):
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
-        super().__init__(standardization)
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -> List[Tuple[nn.Module, nn.Module]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+        _, matched, _ = self._match_bipartite(from_module, to_module)
         return matched
 
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_bipartite(flattened_from_module, flattened_to_module)
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]]):
+        score, _, _ = self._match_bipartite(from_module, to_module)
         return score
 
-    def _match_bipartite(self, flat_from_module: Union[nn.Module, List[nn.Module]],
-                         flat_to_module: Union[nn.Module, List[nn.Module]]) \
+    def _match_bipartite(self, flat_from_module: List[Union[nn.Module, List[nn.Module]]],
+                         flat_to_module: List[Union[nn.Module, List[nn.Module]]]) \
             -> Tuple[float, List[Tuple[nn.Module, nn.Module]], List[Tuple[int, int]]]:
         m = len(flat_from_module)
         n = len(flat_to_module)

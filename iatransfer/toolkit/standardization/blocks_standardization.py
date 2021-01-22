@@ -51,8 +51,6 @@ class BlocksStandardization(Standardization):
                         single_layers += 1
                     layers += [child_layers]
 
-            # print("before: ", layers)
-
             if single_layers > blocks and level > 0:
                 new_layers = []
                 for child_layers in layers:
@@ -66,18 +64,13 @@ class BlocksStandardization(Standardization):
                 depth = 2
 
             if len(layers) == 1:
-                # print(layers)
                 layers = layers[0]
                 depth = 1
             if isinstance(layers, list) and len(layers) == 0:
-                # print(module)
                 depth = 0
                 layers = module
-
-            # print("after: ", layers)
 
         if level == 0 and isinstance(layers, list) is False:
             layers = [layers]
 
         return depth, dimensional_layers_num, layers
-        

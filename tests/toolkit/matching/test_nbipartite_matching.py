@@ -7,7 +7,7 @@ from iatransfer.toolkit.matching.bipartite_matching import BipartiteMatching
 from iatransfer.toolkit.matching.nbipartite_matching import NBipartiteMatching
 
 
-class BipartiteMatchingTest(unittest.TestCase):
+class NBipartiteMatchingTest(unittest.TestCase):
 
     def test_bipartite_matching(self):
         m1 = NBipartiteMatching()
@@ -18,7 +18,7 @@ class BipartiteMatchingTest(unittest.TestCase):
         print(m1.sim(amodel, bmodel))
 
     def test_output_matching(self):
-        m1 = BipartiteMatching()
+        m1 = NBipartiteMatching()
 
         amodel = timm.create_model("efficientnet_b3")
         bmodel = timm.create_model("efficientnet_b0")

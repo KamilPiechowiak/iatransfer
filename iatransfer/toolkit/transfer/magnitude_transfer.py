@@ -1,13 +1,13 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.transfer._matched_transfer import MatchedTransfer
+from iatransfer.toolkit.base_transfer import Transfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
-class MagnitudeTransfer(MatchedTransfer):
+class MagnitudeTransfer(Transfer):
     """
         :param reverse_priority: if set to True, choose channels with smallest weights' sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
@@ -21,11 +21,6 @@ class MagnitudeTransfer(MatchedTransfer):
             self.sgn = -1
         self.cut_from_tensor = input_constrained_by_output
         super().__init__(**kwargs)
-
-    def transfer(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) -> TransferStats:
-        matched = self.matching_strategy(from_module, to_module)
-        self._transfer(matched)
-        return TransferStats()
 
     def update_slice(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int,
                      from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) -> None:
@@ -47,9 +42,10 @@ class MagnitudeTransfer(MatchedTransfer):
             from_slices.append(slice(0, from_tensor.shape[idx]))
             to_slices.append(slice(0, from_tensor.shape[idx]))
 
-    def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) -> Tuple[Tuple[Union[List[int], slice]]]:
+    def get_slices(self, from_tensor: torch.Tensor, to_tensor: torch.Tensor) \
+            -> Tuple[Tuple[slice, ...], Tuple[Union[Union[slice, torch.Tensor], Any], ...]]:
         if from_tensor is None or to_tensor is None:
-            return None
+            raise ValueError()
         n = len(from_tensor.shape)
         from_slices, to_slices = [], []
         self.update_slice(from_tensor, to_tensor, 0, from_slices, to_slices)
@@ -75,20 +71,25 @@ class MagnitudeTransfer(MatchedTransfer):
                 total_unsqueeze += 1
         return tuple(to_slices), tuple(from_slices)
 
-    def _transfer(self, matched: List[Tuple[nn.Module, nn.Module]]) -> None:
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) -> TransferStats:
+        to_slices, from_slices = self.get_slices(tensor_from.weight, tensor_to.weight)
+        if tensor_to.weight is not None and tensor_from.weight is not None:
+            tensor_to.weight[to_slices] = tensor_from.weight[from_slices]
+        if tensor_to.bias is not None and tensor_from.bias is not None:
+            to_ids = to_slices[0]
+            from_ids = from_slices[0]
+            if isinstance(to_ids, torch.Tensor):
+                to_ids = to_ids.flatten()
+            if isinstance(from_ids, torch.Tensor):
+                from_ids = from_ids.flatten()
+            tensor_to.bias[to_ids] = tensor_from.bias[from_ids]
+
+        return TransferStats()
+
+    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -> None:
         with torch.no_grad():
-            for matching in matched:
+            for matching in matched_tensors:
                 if isinstance(matching, list):
-                    self._transfer(matching)
+                    self.transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
-                    to_slices, from_slices = self.get_slices(matching[0].weight, matching[1].weight)
-                    if matching[1].weight is not None and matching[0].weight is not None:
-                        matching[1].weight[to_slices] = matching[0].weight[from_slices]
-                    if matching[1].bias is not None and matching[0].bias is not None:
-                        to_ids = to_slices[0]
-                        from_ids = from_slices[0]
-                        if isinstance(to_ids, torch.Tensor):
-                            to_ids = to_ids.flatten()
-                        if isinstance(from_ids, torch.Tensor):
-                            from_ids = from_ids.flatten()
-                        matching[1].bias[to_ids] = matching[0].bias[from_ids]
+                    self.transfer_layer(matching[0], matching[1])
