@@ -9,7 +9,6 @@ from torch import nn
 
 from iatransfer.research.data.data import TrainingTuple, get_dataset
 from iatransfer.research.train.train_model import train_model
-from iatransfer.toolkit.transfer_methods_factory import TransferMethodsFactory
 from iatransfer.research.transfer.utils import get_transfer_method_name
 
 

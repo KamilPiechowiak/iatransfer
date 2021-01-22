@@ -1,44 +1,44 @@
 {
     "methods": [
         {
-            "standardization": "BlocksStandardization",
-            "matching": "DPMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "blocks",
+            "matching": "dp",
+            "transfer": "Clip"
         },
         {
-            "standardization": "FlattenStandardization",
-            "matching": "DPFlatMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "Flatten",
+            "matching": "DPFlat",
+            "transfer": "Clip"
         },
         {
-            "standardization": "GraphStandardization",
-            "matching": "DPMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "Graph",
+            "matching": "dp",
+            "transfer": "Clip"
         },
         {
-            "standardization": "GraphStandardization",
-            "matching": "BipartiteMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "Graph",
+            "matching": "Bipartite",
+            "transfer": "Clip"
         },
         {
-            "standardization": "GraphStandardization",
-            "matching": "NBipartiteMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "Graph",
+            "matching": "NBipartite",
+            "transfer": "Clip"
         },
         {
-            "standardization": "BlocksStandardization",
-            "matching": "BipartiteMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "blocks",
+            "matching": "Bipartite",
+            "transfer": "Clip"
         },
         {
-            "standardization": "BlocksStandardization",
-            "matching": "NBipartiteMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "blocks",
+            "matching": "NBipartite",
+            "transfer": "Clip"
         },
         {
-            "standardization": "BlocksStandardization",
-            "matching": "DPMatching",
-            "transfer": "FullTransfer"
+            "standardization": "blocks",
+            "matching": "dp",
+            "transfer": "Full"
         }
     ]
 }
