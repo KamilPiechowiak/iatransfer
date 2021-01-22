@@ -1,12 +1,12 @@
+import unittest
 from typing import List, Dict
 
-import unittest
-
-from iatransfer.research.transfer.utils import get_transfer_method_name
 import timm
 
+from iatransfer.research.transfer.utils import get_transfer_method_name
 from iatransfer.toolkit import IAT
 from iatransfer.utils.file_utils import read_json
+
 
 class TransferConfigTest(unittest.TestCase):
 
