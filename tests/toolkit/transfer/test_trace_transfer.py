@@ -22,3 +22,10 @@ class TraceTransferTest(unittest.TestCase):
             Cifar10Resnet(2, no_channels=16),
             IAT(transfer='trace')
         )
+
+    def test_on_mixnet_s_to_efficientnet_b1(self):
+        run_transfer(
+            timm.create_model("mixnet_s"),
+            timm.create_model("efficientnet_b1"),
+            IAT(transfer='trace')
+        )

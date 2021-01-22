@@ -74,7 +74,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_14"
             },
             "dataset": {
@@ -88,7 +88,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [3],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_20"
             },
             "dataset": {
@@ -102,7 +102,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [5],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_32"
             },
             "dataset": {
@@ -116,7 +116,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {"no_channels": 10},
+                "kwargs": {"no_channels": 10, "no_classes": 100},
                 "name": "resnet_narrow_14"
             },
             "dataset": {
@@ -130,7 +130,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {"no_channels": 24},
+                "kwargs": {"no_channels": 24, "no_classes": 100},
                 "name": "resnet_wide_14"
             },
             "dataset": {

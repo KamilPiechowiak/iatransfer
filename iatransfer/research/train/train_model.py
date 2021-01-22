@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from iatransfer.research.metrics.stats_reporter import StatsReporter
 
 
-def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics={}, gradeBy='bce'):
+def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics={}, gradeBy='bce', grad_acc=1):
     start_time = datetime.now()
     assert gradeBy in metrics.keys()
     is_training = (opt is not None)
@@ -25,6 +25,7 @@ def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics
     t3 = time()
     a1, a2, a3 = 0, 0, 0
     for x, y in loader:
+        i += 1
         t1 = time()
         a1 += t1 - t3
         y_pred = model(x)
@@ -34,12 +35,15 @@ def single_epoch(device, model, loader, loss_func, opt=None, stats=None, metrics
             metric_values[metric].append(f(y_pred, y).detach())
         if is_training:
             loss.backward()
-            xm.optimizer_step(opt)
-            opt.zero_grad()
+            if i%grad_acc == 0:
+                xm.optimizer_step(opt)
+                opt.zero_grad()
         t3 = time()
         a2 += t2 - t1
         a3 += t3 - t2
-        i += 1
+    if is_training and i%grad_acc != 0:
+        xm.optimizer_step(opt)
+        opt.zero_grad()
     a1 /= i
     a2 /= i
     a3 /= i
@@ -112,18 +116,18 @@ def train_model(FLAGS, device, model, path, train_dataset, val_dataset):
         xm.master_print(f'EPOCH: {epoch}')
         model.train()
         single_epoch(device, model, pl.ParallelLoader(train_loader, [device]).per_device_loader(device), loss_func, opt,
-                     stats=statsReporter, metrics=metrics, gradeBy='loss')
+                     stats=statsReporter, metrics=metrics, gradeBy='loss', grad_acc=FLAGS.get("grad_acc", 1))
 
         with torch.no_grad():
             model.eval()
             loss = single_epoch(device, model, pl.ParallelLoader(val_loader, [device]).per_device_loader(device),
-                                loss_func, stats=statsReporter, metrics=metrics, gradeBy='loss')
+                                loss_func, stats=statsReporter, metrics=metrics, gradeBy='loss', grad_acc=FLAGS.get("grad_acc", 1))
             if loss < bestLoss:
                 bestLoss = loss
                 save_model(model, opt, scheduler, [f'{path}/best.pt'])
 
         save_model(model, opt, scheduler, [f'{path}/current.pt'])
-        if epoch % FLAGS['persist_state_every'] == FLAGS['persist_state_every'] - 1 and xm.is_master_ordinal():
+        if epoch % FLAGS['persist_state_every'] == FLAGS['persist_state_every'] - 1 and xm.is_master_ordinal() and os.path.exists(f'{path}/best.pt'):
             shutil.copy(f'{path}/best.pt', f'{path}/{epoch}_checkpoint.pt')
 
         scheduler.step()

@@ -147,7 +147,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_14"
             },
             "dataset": {
@@ -160,7 +160,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [3],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_20"
             },
             "dataset": {
@@ -173,7 +173,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [4],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_26"
             },
             "dataset": {
@@ -186,7 +186,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [5],
-                "kwargs": {},
+                "kwargs": {"no_classes": 100},
                 "name": "resnet_32"
             },
             "dataset": {
@@ -199,7 +199,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {"no_channels": 10},
+                "kwargs": {"no_channels": 10, "no_classes": 100},
                 "name": "resnet_narrow_14"
             },
             "dataset": {
@@ -212,7 +212,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [3],
-                "kwargs": {"no_channels": 10},
+                "kwargs": {"no_channels": 10, "no_classes": 100},
                 "name": "resnet_narrow_20"
             },
             "dataset": {
@@ -225,7 +225,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [2],
-                "kwargs": {"no_channels": 24},
+                "kwargs": {"no_channels": 24, "no_classes": 100},
                 "name": "resnet_wide_14"
             },
             "dataset": {
@@ -238,7 +238,7 @@
             "model": {
                 "supplier": "Cifar10Resnet",
                 "args": [3],
-                "kwargs": {"no_channels": 24},
+                "kwargs": {"no_channels": 24, "no_classes": 100},
                 "name": "resnet_wide_20"
             },
             "dataset": {
@@ -308,6 +308,123 @@
             },
             "dataset": {
                 "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b0"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b0"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b1"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b1"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 240
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b2"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b2"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 260
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["semnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "semnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "mnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_s"],
+                "kwargs": {"num_classes": 100},
+                "name": "mixnet_s"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_mobilenetv3_large_minimal_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_mobilenetv3_large_minimal_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnety_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnety_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnetx_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnetx_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
                 "resolution": 224
             },
             "batch_size": 32

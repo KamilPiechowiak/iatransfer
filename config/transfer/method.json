@@ -1,0 +1,9 @@
+{
+    "methods": [
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer"
+        }
+    ]
+}

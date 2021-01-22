@@ -18,9 +18,9 @@ class FullTransfer(Transfer):
                 ids[slice((b - a) // 2, -((b - a + 1) // 2))] = torch.arange(a)
                 from_slices.append(ids)
             elif a > b:
-                from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
+                from_slices.append((a - b) // 2 + torch.arange(b))
             else:
-                from_slices.append(slice(0, a))
+                from_slices.append(torch.arange(a))
             to_slices.append(slice(0, b))
 
         total_unsqueeze = 0

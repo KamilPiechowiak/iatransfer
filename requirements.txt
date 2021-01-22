@@ -8,3 +8,4 @@ graphviz>=0.16
 efficientnet_pytorch>=0.7
 inflection>=0.5.1
 matplotlib>=3.3.3
+karateclub>=1.0.22

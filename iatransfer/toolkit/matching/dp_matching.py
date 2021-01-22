@@ -15,7 +15,7 @@ class DPMatching(Matching):
         return matched
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-            to_module: List[Union[nn.Module, List[nn.Module]]]):
+            to_module: List[Union[nn.Module, List[nn.Module]]]) -> float:
         score, _, _ = self._match_models(from_module, from_module)
         return score / self._match_models(to_module, to_module)[0]
 
