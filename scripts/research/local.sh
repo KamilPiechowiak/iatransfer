@@ -21,4 +21,4 @@ gcloud compute tpus create $TPU_INSTANCE_NAME \
 
 dev/zip.sh
 gcloud compute scp --zone $ZONE iatransfer.zip $VM:
-gcloud compute ssh --zone $ZONE vm
+gcloud compute ssh --zone $ZONE $VM

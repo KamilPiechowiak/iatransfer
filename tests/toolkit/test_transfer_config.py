@@ -25,5 +25,5 @@ class TransferConfigTest(unittest.TestCase):
     
     def test_transfer_methods(self) -> None:
         models = read_json("config/transfer/methods/models-small.json")["models"]
-        methods = read_json("config/transfer/methods/methods-append2.json")["methods"]
+        methods = read_json("config/transfer/methods/methods-append.json")["methods"]
         self.transfer(models, methods)

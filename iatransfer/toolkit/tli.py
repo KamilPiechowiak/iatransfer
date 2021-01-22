@@ -385,6 +385,8 @@ def dag_split(edges, token, root=None):
 def graph_splits(edges, nodes=False):
     G = get_networkx(edges)
     order = list(nx.topological_sort(G))
+    if len(order) == 0:
+        return {}
     idx_src, idx_dst = order[0], order[-1]
     if not nodes:
         nodes = set()
@@ -410,7 +412,7 @@ def graph_norm(edges, attr=None):
             rev_mask[normal_id_iter[0]] = idx
             normal_id_iter[0] += 1
 
-    random.shuffle(edges)
+    # random.shuffle(edges)
 
     for a, b in edges:
         __for_single(a)
@@ -419,6 +421,8 @@ def graph_norm(edges, attr=None):
     norm_edges = []
     for a, b in edges:
         norm_edges.append([normal_id_map[a], normal_id_map[b]])
+
+    # norm_edges = sorted(norm_edges)
 
     norm_attr = []
     if attr:
@@ -469,14 +473,14 @@ def encode_graph(split_map):
     mask, graphs = utils_map_to_mask(split_map)
 
     # FIXME: move to settings
-    from karateclub import FeatherGraph
+    from karateclub import GL2Vec
 
-    model = FeatherGraph(order=1, eval_points=5)
+    model = GL2Vec(dimensions=16) #FeatherGraph(eval_points=2, order=2)
     print("FIT")
     model.fit(graphs)
     print("EMBEDDING")
     X = model.get_embedding()
-    print(X.shape)
+    print("-------------------->", X.shape)
 
     return utils_mask_to_map(mask, X)
 
@@ -490,19 +494,20 @@ class TLIConfig(object):
     def __init__(self, adict):
         self.__dict__.update(adict)
 
-
-embedding_dim = 3  # best 6, 5 / FIXME: was 9, how to find?
+from karateclub import Diff2Vec
+embedding_dim = 5  # best 4, 6, 5 / FIXME: was 9, how to find?
 CONFIG = TLIConfig(
     {
         # FIXME: move outsite? --> lazy_load?
-        "node_embedding_attributed": FeatherNode(
-            eval_points=2, order=2, reduction_dimensions=32
+        "node_embedding_attributed": FeatherNode( # 2, 4
+            eval_points=4, order=4, svd_iterations=100, reduction_dimensions=32
         ),
         "node_embedding_neighbourhood": NetMF(
-            dimensions=embedding_dim
+             dimensions=embedding_dim
         ),  # FIXME: use xNetMF
+                # Diff2Vec(diffusion_number=5, diffusion_cover=5, dimensions=embedding_dim),
         "autoencoder": MLPRegressor(
-            max_iter=100 // 3,  # FIXME: best 50
+            max_iter=100, # 100 // 3,  # FIXME: best 50
             early_stopping=False,
             activation="relu",
             solver="adam",
@@ -510,14 +515,14 @@ CONFIG = TLIConfig(
             ##############################################
             # n_iter_no_change=100, # FIXME: is that good?
             ##############################################
-            hidden_layer_sizes=(125, 25,),  # 125, 25
+            hidden_layer_sizes=(200, 50, 25,),  # 125, 25
             warm_start=True,
-            learning_rate_init=0.001,
+            learning_rate_init=0.0005,
             alpha=0.001,
             verbose=True,
         ),
         "test_size": 0.05,  # FIXME: this is important!
-        "samples_per_tensor": 5,
+        "samples_per_tensor": 10,
     }
 )
 
@@ -550,7 +555,7 @@ def E_nodes(edges, attr=None):
     return encoded_nodes
 
 
-def F_architecture(graph, mlb=None):
+def F_architecture(graph, mlb=None, mfa=None):
     ### POSITION ENCODING ###
     edges = []
     cluster_feature = {}
@@ -579,41 +584,74 @@ def F_architecture(graph, mlb=None):
     N = {}  # FIXME: move to fn_node_encoder?
     vec = []
     for idx, node in graph.nodes.items():
-        # FIXME: ??? encode type of layer ??? class
-        _vec = list(node.name.replace(".weight", "").replace(".bias", ""))
-        _lvl = [s for s in _vec if s.isdigit()]
-        _lvl = "".join(_lvl)
-        if _lvl:
-            _vec.append(_lvl)
-        vec.append(_vec)
+        vec.append(__encode(node.name))
         # vec.append(list(node.name.replace(".weight", "").replace(".bias", "")))
         # vec.append(node.name.split("."))
     vec = mlb.transform(vec)
+    vec = mfa.transform(vec)
+    vec_final = []
     for i, (idx, node) in enumerate(
         graph.nodes.items()
     ):  # FIXME: better way? [pad len 4]
         _shape4 = nn.ConstantPad1d((0, 4 - len(node.size)), 0.0)(
             torch.tensor(node.size)
         )
-        shape = __shape_score(_shape4.type(torch.FloatTensor), (100, 1, 1, 1))
+        #shape_ab = __shape_score(_shape4.type(torch.FloatTensor), (100, 1, 1, 1))
+        #shape_ba = __shape_score(_shape4.type(torch.FloatTensor), (1, 100, 1, 1))
         shape4 = _shape4.type(torch.FloatTensor) / torch.max(1 + _shape4)
+        if shape4[0] > shape4[1]:
+            rot = 1
+        else:
+            rot = 0
+        _idx_rev = (graph.max_idx - node.idx) / graph.max_idx
+        _idx_rev2 = (node.idx) / graph.max_idx
         _level_rev = (graph.max_level - node.level) / graph.max_level
+        _level_rev2 = (node.level) / graph.max_level
         _cluster_rev = (graph.max_idx - node.cluster_idx) / graph.max_idx
+        _cluster_rev2 = (node.cluster_idx) / graph.max_idx
         _type = 0 if ".bias" in node.name else 1
-        N[idx] = np.array(
-            [shape]
+        # dotcount = node.name.count('.')
+        # N[idx] = np.array(
+        vec_final.append(np.array(
+            [rot]
             + shape4.tolist()
-            + [_cluster_rev, _level_rev, _type]
-            + vec[i].tolist()
-            #   shape.tolist() + [_cluster_rev, _level_rev, _type] + vec[i].tolist()
-        )
+            + [(_idx_rev + _cluster_rev+_level_rev)/3,
+               (_idx_rev2+_cluster_rev2+_level_rev2)/3, _type]
+        ))
+        # vec_final.append(np.array(
+        #     # [shape_ab, shape_ba]
+        #     [rot]
+        #     + shape4.tolist()
+        # ))
+    from sklearn import preprocessing
+    # _pp = preprocessing.QuantileTransformer() # BEST
+    # _pp = preprocessing.QuantileTransformer() # 83 / 158
+    # _pp = preprocessing.Normalizer(norm='l2') # 77 / 158
+    # _pp = preprocessing.Normalizer(norm='l1') # 76 / 158
+    # _pp = preprocessing.Normalizer(norm='max') # [78] 79 / 158
+    # _pp = preprocessing.PowerTransformer() # 80 / 158
+    # _pp = preprocessing.MaxAbsScaler() #XXX 20 77 / 158
+    # _pp = preprocessing.RobustScaler() # 78 / 158
+    _pp = preprocessing.StandardScaler() #XXX 85 / 158
+    # _pp = preprocessing.KBinsDiscretizer(n_bins=10, encode='ordinal',
+    #                                      strategy='quantile') # 75
+    vec_final = _pp.fit_transform(vec_final)
+
+    for i, (idx, node) in enumerate(
+        graph.nodes.items()
+    ):
+        # FIXME???????? without vec_final?
+        # print(vec_final[i])
+        N[idx] = np.array(vec_final[i].tolist() + vec[i].tolist())
 
     print("(encode_graph ended)")
     return P, S, N
 
 
 def __q(a, b):
-    return np.concatenate((a, b), axis=0)
+    return np.array(a) + np.array(b)
+    # return np.array(a) * np.array(b) # 60 / 158
+    # return np.concatenate((a, b), axis=0) # 65 / 158
 
 
 def __shape_score(s1, s2):
@@ -626,20 +664,15 @@ def __shape_score(s1, s2):
 
 
 # gen_dataset / `self-learn`
-def gen_dataset(graph, P, S, N):
+def gen_dataset(graph, P, S, N, EG, prefix=""):
     X, y = [], []
 
     # FIXME: move to encoder settings? / encoder definition
     for idx, node in graph.nodes.items():
-        # if node.type != "W":  # FIXME: is it good?
-        #    continue
+        if node.type != "W":  # FIXME: is it good?
+            continue
 
         cluster_idx = node.cluster_idx
-        # FIXME
-        # print("Q1", node, cluster_idx)
-        # print("Q2", graph.cluster_map.keys())
-        # print("Q3", P)
-
         # FIXME: make it pretty
         # FIXME: encoder score for [N]
 
@@ -652,12 +685,15 @@ def gen_dataset(graph, P, S, N):
             s_src = np.array(S[idx])
             r = np.random.uniform(low=-0.05, high=0.05, size=s_src.shape)
             s_src += r
-            q_src = p_src.tolist() + s_src.tolist() + list(N[idx])
+            q_src = p_src.tolist() + s_src.tolist() + list(N[idx]) + \
+                EG[f"{prefix}_{idx}"]["in-tree"].tolist()
             X.append(__q(q_src, q_src))
             # FIXME: verify 0.05, 0.05? maybe add as std/var
             y.append(1 + np.random.uniform(low=-0.05, high=0.05))
 
-        q_src = list(P[cluster_idx]) + list(S[idx]) + list(N[idx])
+        q_src = list(P[cluster_idx]) + list(S[idx]) + list(N[idx]) + \
+            EG[f"{prefix}_{idx}"]["in-tree"].tolist()
+
         X.append(__q(q_src, q_src))
         y.append(1)
 
@@ -680,7 +716,8 @@ def gen_dataset(graph, P, S, N):
             if idx == r_idx:
                 continue
 
-            q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
+            q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx]) + \
+                EG[f"{prefix}_{r_idx}"]["in-tree"].tolist()
 
             N_bonus = 0
             N_dist = np.linalg.norm(N[idx] - N[r_idx])
@@ -692,7 +729,7 @@ def gen_dataset(graph, P, S, N):
             y.append(
                 N_bonus
                 + 0.25
-                + +0.5 * __shape_score(graph.nodes[idx].size, graph.nodes[r_idx].size)
+                + 0.5 * __shape_score(graph.nodes[idx].size, graph.nodes[r_idx].size)
             )
 
         # === CASE 3: other cluster, W
@@ -704,7 +741,8 @@ def gen_dataset(graph, P, S, N):
             if idx == r_idx:
                 continue
 
-            q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
+            q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx]) + \
+                EG[f"{prefix}_{r_idx}"]["in-tree"].tolist()
 
             N_bonus = 0
             N_dist = np.linalg.norm(N[idx] - N[r_idx])
@@ -726,21 +764,48 @@ def gen_dataset(graph, P, S, N):
             )
 
         # === CASE 4: ?, F
-        for _ in range(CONFIG.samples_per_tensor):
-            r_idx = __get_node(cluster_idx=None, type="F")
-            r_cluster_idx = graph.nodes[r_idx].cluster_idx
-            if idx == r_idx:
-                continue
+        # for _ in range(CONFIG.samples_per_tensor):
+        #     r_idx = __get_node(cluster_idx=None, type="F")
+        #     r_cluster_idx = graph.nodes[r_idx].cluster_idx
+        #     if idx == r_idx:
+        #         continue
 
-            q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
+        #     q_dst = list(P[r_cluster_idx]) + list(S[r_idx]) + list(N[r_idx])
 
-            X.append(__q(q_src, q_dst))
-            y.append(0)
+        #     X.append(__q(q_src, q_dst))
+        #     y.append(0)
 
-    print("DATASET", len(y))
+    print("DATASET", np.array(X).shape)#len(y))
 
     return X, y
 
+# _vec = list(x.replace(".weight", "").replace(".bias", ""))
+# # print(_vec)
+# _lvl = [s for s in _vec if s.isdigit()]
+# _lvl = "".join(_lvl)
+# _vec = list(set(_vec))
+# if _lvl:
+#     _vec.append(_lvl)
+
+def __encode(x):
+    x = x.replace(".weight", "").replace(".bias", "")
+    x = x.replace("blocks", "")
+    if "Backward" in x:
+        x = ""
+    # print(x)
+    _vec = list(x) # + [x]
+    # minl, maxl = 1, 2
+    # t = x
+    # _vec = [t[i:i+j] for i in range(len(t)-minl) for j in range(minl,maxl+1)]
+    # print(_vec)
+    _lvl = [s for s in _vec if s.isdigit()]
+    _lvl = "".join(_lvl)
+    _vec = list(set(_vec))
+    if _lvl:
+        _vec.append(_lvl)
+        # for i in range(2, len(_lvl)+1):
+        #     _vec.append(_lvl[0:i])
+    return _vec
 
 def transfer(model_src, model_dst=None, teacher=None, debug=False):
     # FIXME: replace str to model if needed
@@ -766,29 +831,54 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
         show_graph(graph_dst, ver=3, path="__tli_dst")
 
     from sklearn.preprocessing import MultiLabelBinarizer
+    from sklearn.manifold import Isomap
 
     mlb = MultiLabelBinarizer()
 
     vec = []
-    for idx, node in graph_src.nodes.items():
-        _vec = list(node.name.replace(".weight", "").replace(".bias", ""))
-        _lvl = [s for s in _vec if s.isdigit()]
-        _lvl = "".join(_lvl)
-        if _lvl:
-            _vec.append(_lvl)
-        vec.append(_vec)
-        # vec.append(list(node.name.replace(".weight", "").replace(".bias", "")))
-    # for idx, node in graph_dst.nodes.items():
+    # FIXME: mutual
+    for idx, node in graph_dst.nodes.items():
+        # if node.type != "W":
+        #    continue
+        vec.append(__encode(node.name))
+    # for idx, node in graph_src.nodes.items():
+    #     vec.append(__encode(node.name))
     #     vec.append(node.name.split("."))
-    mlb.fit(vec)
+    mlb.fit(vec) # FIXME: 50
+    _l1 = len(graph_dst.nodes.keys())
+    _l2 = len(graph_dst.cluster_map.keys())
+    # print(_l2, _l1)
+    mfa = Isomap(n_components=30, n_neighbors=50, p=3) # 30 best
+    _vec = mlb.transform(vec)
+    mfa.fit(_vec)
 
-    P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb)
-    P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb)
+    P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb, mfa=mfa)
+    P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb, mfa=mfa)
 
-    X1, y1 = gen_dataset(graph_src, P_src, S_src, N_src)
-    X2, y2 = gen_dataset(graph_dst, P_dst, S_dst, N_dst)
+    from pprint import pprint
+    split_map = {}
+    for cluster_idx in graph_src.cluster_map.keys():
+        _split_map = split_cluster_level(graph_src, cluster_idx)
+        for key in _split_map:
+            split_map[f"src_{key}"] = _split_map[key]
+    print("(graph_src ended)")
+    for cluster_idx in graph_dst.cluster_map.keys():
+        _split_map = split_cluster_level(graph_dst, cluster_idx)
+        for key in _split_map:
+            split_map[f"dst_{key}"] = _split_map[key]
+    print("(graph_dst ended)")
+    EG = encode_graph(split_map)
+    # for key in EG:
+    #     print("-------->", key, EG[key]["in-tree"].shape)
+
+    X1, y1 = gen_dataset(graph_src, P_src, S_src, N_src, EG, prefix="src")
+    X2, y2 = gen_dataset(graph_dst, P_dst, S_dst, N_dst, EG, prefix="dst")
     X = X1 + X2
     y = y1 + y2
+
+    print("DATASET FULL", np.array(X).shape)
+    # for x in range(len(X)):
+    #     print(np.array(X[x]).shape)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=CONFIG.test_size, random_state=42
@@ -799,9 +889,11 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
     # https://scikit-learn.org/stable/modules/generated/sklearn.semi_supervised.SelfTrainingClassifier.html#sklearn.semi_supervised.SelfTrainingClassifier
 
     model = copy(CONFIG.autoencoder)
-    model.fit(X1, y1)
-    model.fit(X2, y2)
+    ### model.fit(X1, y1)
+    ### model.fit(X2, y2)
     model.fit(X_train, y_train)
+
+    #########################
 
     y_hat = model.predict(X_test)
     loss = mean_squared_error(y_test, y_hat)
@@ -848,6 +940,7 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
             list(P_dst[node_dst.cluster_idx])
             + list(S_dst[idx_dst])
             + list(N_dst[idx_dst])
+            + list(EG[f"dst_{idx_dst}"]["in-tree"].tolist())
         )
 
         q_arr = []
@@ -859,6 +952,7 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
                 list(P_src[node_src.cluster_idx])
                 + list(S_src[idx_src])
                 + list(N_src[idx_src])
+                + list(EG[f"src_{idx_src}"]["in-tree"].tolist())
             )
             q_arr.append(__q(q_src, q_dst))
             scores[src_i, dst_j] = __shape_score(node_dst.size, node_src.size)
@@ -881,10 +975,34 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
 
     ##############################################
 
-    for dst_j, idx_dst in enumerate(dst_arr):
-        i = np.argmax(scores[:, dst_j])
-        idx_src = src_arr[i]
-        remap[idx_dst] = idx_src
+    # for size in np.arange(0.10, 0.50, 0.10):
+    #     window_size = size
+    #     for _dst_j, idx_dst in enumerate(dst_arr[::-1]):
+    #         dst_j = m - _dst_j - 1
+    #         ith = dst_j / m
+    #         shift = max(int(ith*n - window_size*n), 0)
+    #         i = np.argmax(scores[shift:shift+int(window_size*n), dst_j])+shift
+    #         if idx_dst not in remap and scores[i, dst_j] > 1 - size:
+    #             remap[idx_dst] = src_arr[i]
+
+    beta = 0.5
+    smap = copy(scores)
+    for _ in range(n*m):
+        i, j = np.unravel_index(smap.argmax(), smap.shape)
+        smap[i, :] *= beta
+        # smap[:, j] *= 0.9 # FIXME
+        if dst_arr[j] not in remap:
+            smap[:, j] = 0
+            remap[dst_arr[j]] = src_arr[i]
+
+    window_size = 0.25
+    for _dst_j, idx_dst in enumerate(dst_arr[::-1]):
+        dst_j = m - _dst_j - 1
+        ith = dst_j / m
+        shift = max(int(ith*n - window_size*n), 0)
+        i = np.argmax(smap[shift:, dst_j])+shift
+        if idx_dst not in remap:
+            remap[idx_dst] = src_arr[i]
 
     ##############################################
 
@@ -936,20 +1054,20 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
         # FIXME: do pracy dodac rysunek z sieci typu "debug"
         show_remap(graph_src, graph_dst, remap, path="__tli_remap")
 
-    p_src_ref = {}
-    for name, param in model_src.named_parameters():
-        p_src_ref[name] = param
-    p_dst_ref = {}
-    for name, param in model_dst.named_parameters():
-        p_dst_ref[name] = param
+    # p_src_ref = {}
+    # for name, param in model_src.named_parameters():
+    #     p_src_ref[name] = param
+    # p_dst_ref = {}
+    # for name, param in model_dst.named_parameters():
+    #     p_dst_ref[name] = param
 
-    with torch.no_grad():
-        for idx_dst, idx_src in remap.items():
-            node_src = graph_src.nodes[idx_src]
-            node_dst = graph_dst.nodes[idx_dst]
-            p_src = p_src_ref[node_src.name]
-            p_dst = p_dst_ref[node_dst.name]
-            fn_inject(p_src, p_dst)
+    # with torch.no_grad():
+    #     for idx_dst, idx_src in remap.items():
+    #         node_src = graph_src.nodes[idx_src]
+    #         node_dst = graph_dst.nodes[idx_dst]
+    #         p_src = p_src_ref[node_src.name]
+    #         p_dst = p_dst_ref[node_dst.name]
+    #         fn_inject(p_src, p_dst)
 
     return sim, remap, graph_src, graph_dst
 
@@ -1376,45 +1494,55 @@ if __name__ == "__main__":
         model_debug = get_model_debug(seed=3, channels=3, classes=10)
         model_unet = ResNetUNet(n_class=6)
 
-    if False:  # 8 / 158
+    if False:  # 8, 11, 9
         model_A = get_model_timm("efficientnet_lite1")
         model_B = get_model_timm("mnasnet_100")
 
-    if False:  # 0 / 149
+    if False:  # 0, 5, 0, 2
         model_A = get_model_timm("efficientnet_lite1")
         model_B = get_model_timm("efficientnet_lite0")
 
-    if False:  # 45 / 194
+    if False:  # 47, 53, 49, 45, 47, 45
         model_A = get_model_timm("efficientnet_lite0")
         model_B = get_model_timm("efficientnet_lite1")
 
-    if False:  # 0 / 194
+    if False:  # 9, 9, 4, 2
         model_A = get_model_timm("efficientnet_lite1")
         model_B = get_model_timm("efficientnet_lite1")
 
-    if False:  # 1 / 149
+    if False:  # 2, 5, 0, 0
         model_A = get_model_timm("efficientnet_lite0")
         model_B = get_model_timm("efficientnet_lite0")
 
-    if False:  # 7 / 249
+    if False:  # [5, 15, 4] 5
         model_A = get_model_timm("mixnet_s")
         model_B = get_model_timm("mixnet_s")
 
-    if False:  # 100 / 300
+    if True:  # [83, 77, 85, 78] 82
         model_A = get_model_timm("mixnet_s")
         model_B = get_model_timm("mixnet_m")
 
-    if False:  # 28 / 249
+    if False:  # [26, 23, 26] 22, 21
         model_A = get_model_timm("mixnet_m")
         model_B = get_model_timm("mixnet_s")
 
-    if True:  # 103 / 213
+    if False:  # [81, 74, 73, 71, 69] 68, 70, 64
         model_A = get_model_timm("efficientnet_lite1")
         model_B = get_model_timm("tf_efficientnet_b0_ap")
+
+    if False:  # Q: [66, 26, 24, 31, 25, 24, 29,] 30, 24, 18
+        model_A = get_model_timm("tf_efficientnet_b0_ap")
+        model_B = get_model_timm("mnasnet_100")
+
+    if False: # Q: [76, 61, 60, 58, 57, 57, 62] 57, 57, 55
+        model_A = get_model_timm("mixnet_s")
+        model_B = get_model_timm("mnasnet_100")
 
     if False:  # not comparable
         model_A = get_model_timm("regnetx_002")
         model_B = get_model_timm("efficientnet_lite0")
+
+    # FIXME: automatic report
 
     transfer(model_A, model_B, debug=True)  # tli sie
 

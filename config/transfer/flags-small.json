@@ -3,7 +3,7 @@
     "epochs": 20,
     "scheduler_mocked_epochs": 50,
     "persist_state_every": 5,
-    "repeat": 5,
+    "repeat": 3,
     "path": "res",
     "bucket_path": "gs://weights-transfer/transfer",
     "num_workers": 4,

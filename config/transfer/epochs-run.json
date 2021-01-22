@@ -13,7 +13,7 @@
             },
             "batch_size": 128,
             "teachers": ["resnet_14"],
-            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "best.pt"] 
+            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt"] 
         },
         {
             "model": {
@@ -28,7 +28,7 @@
             },
             "batch_size": 32,
             "teachers": ["efficientnet-b2"],
-            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "best.pt"]
+            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt"]
         }
     ]
 }
