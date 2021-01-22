@@ -12,7 +12,7 @@ class ClipTransfer(Transfer):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def transfer_tensor(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> None:
+    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> None:
         if tensor_from is None or tensor_to is None:
             return
         from_slices, to_slices = [], []

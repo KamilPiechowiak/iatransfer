@@ -25,9 +25,9 @@ class IAT(ABC):
     _standardization_classes = _get_subclasses(Standardization)
     _matching_classes = _get_subclasses(Matching)
     _transfer_classes = _get_subclasses(Transfer)
-    standardization = None
-    matching = None
-    transfer = None
+    standardization: Standardization = None
+    matching: Matching = None
+    transfer: Transfer = None
 
     def __init__(self,
                  standardization: Union[Standardization, str, Tuple[Standardization, Dict], Tuple[str, Dict]]
@@ -65,10 +65,17 @@ class IAT(ABC):
 
     def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> TransferStats:
-        from_paths, to_paths = self.standardization(from_module, to_module)
+        context = {'from_module': from_module, 'to_module': to_module}
+
+        from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         matched_tensors = self.matching(from_paths, to_paths)
-        return self.transfer(matched_tensors)
+        return self.transfer(matched_tensors, context=context)
+
+    def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -> float:
+        from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        return self.matching.sim(from_paths, to_paths)
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> TransferStats:
-        return self.transfer(from_module, to_module, *args, **kwargs)
+        return self.run(from_module, to_module, *args, **kwargs)

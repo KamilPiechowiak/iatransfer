@@ -3,7 +3,7 @@ import unittest
 import timm
 
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
-from iatransfer.toolkit import IAT
+from iatransfer.toolkit.iat import IAT
 from tests.toolkit.transfer.utils import run_transfer
 
 

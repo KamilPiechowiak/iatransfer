@@ -19,12 +19,12 @@ class Transfer(ABC):
                 if isinstance(matching, list):
                     self.transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
-                    self.transfer_tensor(matching[0].weight, matching[1].weight)
-                    self.transfer_tensor(matching[0].bias, matching[1].bias)
+                    self.transfer_layer(matching[0].weight, matching[1].weight)
+                    self.transfer_layer(matching[0].bias, matching[1].bias)
         return TransferStats()
 
     @abstractmethod
-    def transfer_tensor(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) \
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
             -> TransferStats:
         pass
 

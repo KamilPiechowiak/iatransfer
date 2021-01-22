@@ -4,27 +4,20 @@ import numpy as np
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
 class DPMatching(Matching):
 
-    def __init__(self, standardization: Standardization = BlocksStandardization()):
-        self.standardization = standardization
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
+        _, matched, _ = self._match_models(from_module, to_module)
         return matched
 
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_models(flattened_from_module, flattened_to_module)
-        return score / self._match_models(flattened_to_module, flattened_to_module)[0]
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+            to_module: List[Union[nn.Module, List[nn.Module]]]):
+        score, _, _ = self._match_models(from_module, from_module)
+        return score / self._match_models(to_module, to_module)[0]
 
     def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
         def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -> bool:

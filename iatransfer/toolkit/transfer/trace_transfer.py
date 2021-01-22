@@ -164,12 +164,12 @@ class TraceTransfer(Transfer):
             return output_ids.flatten()
 
     def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -> None:
-        to_module = args[0] if len(args) > 0 else kwargs['to_module']
+        to_module = args[0] if len(args) > 0 else kwargs['context']['to_module']
         with torch.no_grad():
             self.create_layers_mapping(matched)
             to_module.eval()
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
             module.forward()
 
-    def transfer_tensor(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> TransferStats:
+    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> TransferStats:
         raise ValueError("Not implemented")
