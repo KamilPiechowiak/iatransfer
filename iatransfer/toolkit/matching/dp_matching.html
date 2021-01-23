@@ -63,9 +63,7 @@ class DPMatching(Matching):
             ]
             for clazz in classes:
                 if are_all_of_this_class(layers, clazz):
-                    score = 1
-                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
-                        score *= min(x / y, y / x)
+                    score = self.score(from_module, to_module)
                     break
 
         return score
@@ -191,9 +189,7 @@ inheritance.</p></div>
             ]
             for clazz in classes:
                 if are_all_of_this_class(layers, clazz):
-                    score = 1
-                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
-                        score *= min(x / y, y / x)
+                    score = self.score(from_module, to_module)
                     break
 
         return score
@@ -277,7 +273,9 @@ inheritance.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching" href="bipartite_matching.html#iatransfer.toolkit.matching.bipartite_matching.BipartiteMatching">BipartiteMatching</a></li>
+<li><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching" href="nbipartite_matching.html#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching">NBipartiteMatching</a></li>
 <li>matching.bipartite_matching.BipartiteMatching</li>
+<li>matching.nbipartite_matching.NBipartiteMatching</li>
 </ul>
 <h3>Methods</h3>
 <dl>

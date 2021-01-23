@@ -876,28 +876,11 @@ def __encode(x):
         #     _vec.append(_lvl[0:i])
     return _vec
 
-def transfer(model_src, model_dst=None, teacher=None, debug=False):
-    # FIXME: replace str to model if needed
-    if model_src and model_dst:
-        # API: v2
-        pass
-    elif not model_dst and teacher:
-        # API: v1
-        model_src, model_dst = teacher, model_src
-    else:
-        raise Exception(&#34;where is teacher?! is this a joke?&#34;)
-
-    graph_src = get_graph(model_src)
-    graph_dst = get_graph(model_dst)
-
+def score_autoencoder(graph_src, graph_dst):
     # src_ids_to_layers_mapping = get_idx_to_layers_mapping(model_src,
     #                                                           graph_src)
     # dst_ids_to_layers_mapping = get_idx_to_layers_mapping(model_dst,
     #                                                           graph_dst)
-
-    if debug:
-        show_graph(graph_src, ver=3, path=&#34;__tli_src&#34;)
-        show_graph(graph_dst, ver=3, path=&#34;__tli_dst&#34;)
 
     from sklearn.preprocessing import MultiLabelBinarizer
     from sklearn.manifold import Isomap
@@ -917,7 +900,7 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
     _l1 = len(graph_dst.nodes.keys())
     _l2 = len(graph_dst.cluster_map.keys())
     # print(_l2, _l1)
-    mfa = Isomap(n_components=30, n_neighbors=50, p=3) # 30 best
+    mfa = Isomap(n_components=min(_l1//2, 30), n_neighbors=min(_l1//10, 50), p=3) # 30 best
     _vec = mlb.transform(vec)
     mfa.fit(_vec)
 
@@ -966,6 +949,7 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
 
     y_hat = model.predict(X_test)
     loss = mean_squared_error(y_test, y_hat)
+    print(f&#34; LOSS --&gt; {loss}&#34;)
 
     #################################################################
     ## FIXME: bipartie_matching between top-k #######################
@@ -989,8 +973,6 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
 
     src_arr, src_map = __norm_weights(graph_src)
     dst_arr, dst_map = __norm_weights(graph_dst)
-
-    remap = {}
 
     n, m = len(src_arr), len(dst_arr)
     scores = np.zeros((n, m))
@@ -1042,6 +1024,34 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
         y_hat = model.predict(q_arr)
         scores[:, dst_j] *= y_hat
 
+    return scores, src_arr, dst_arr
+
+
+def transfer(model_src, model_dst=None, teacher=None, inject=True, debug=False):
+    # FIXME: replace str to model if needed
+    if model_src and model_dst:
+        # API: v2
+        print(&#34;API: V2&#34;)
+        pass
+    elif not model_dst and teacher:
+        # API: v1
+        print(&#34;API: V1&#34;)
+        model_src, model_dst = teacher, model_src
+    else:
+        raise Exception(&#34;where is teacher?! is this a joke?&#34;)
+
+    graph_src = get_graph(model_src)
+    graph_dst = get_graph(model_dst)
+
+    if debug:
+        show_graph(graph_src, ver=3, path=&#34;__tli_src&#34;)
+        show_graph(graph_dst, ver=3, path=&#34;__tli_dst&#34;)
+
+    scores, src_arr, dst_arr = score_autoencoder(graph_src, graph_dst)
+
+    remap = {}
+    n, m = len(src_arr), len(dst_arr)
+
     ##############################################
 
     # for size in np.arange(0.10, 0.50, 0.10):
@@ -1073,16 +1083,26 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
         if idx_dst not in remap:
             remap[idx_dst] = src_arr[i]
 
+    window_size = 1
+    for _dst_j, idx_dst in enumerate(dst_arr[::-1]):
+        dst_j = m - _dst_j - 1
+        ith = dst_j / m
+        shift = max(int(ith*n - window_size*n), 0)
+        i = np.argmax(smap[shift:, dst_j])+shift
+        if idx_dst not in remap:
+            remap[idx_dst] = src_arr[i]
+
     ##############################################
 
     seen = set()
     all_scores = []
     error_n, error_sum = 0, 0
+    print(&#34; &#34;*45 + &#34;[[src]]&#34; + &#34; &#34;*30 + &#34;[[dst]]&#34;)
     for j, idx_dst in enumerate(dst_arr):
         node_dst = graph_dst.nodes[idx_dst]
 
         idx_src = remap[idx_dst]
-        score = scores[src_map[idx_src], j]  # src_i, dst_i
+        score = scores[src_arr.index(idx_src), j]  # src_i, dst_i
         all_scores.append(score)
 
         name_src = graph_src.nodes[idx_src].name
@@ -1105,7 +1125,6 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
     sim = max(0, min(1, np.mean(all_scores)))
 
     print(&#34;=== MATCH =================&#34;)
-    print(f&#34; LOSS --&gt; {loss}&#34;)
     n = len(graph_src.nodes.keys())
     print(f&#34;  SIM --&gt; \x1b[0;34;40m{round(sim, 4)}\x1b[0m&#34;)
     print(f&#34; SEEN --&gt; {len(seen):5} / {n:5} | {round(len(seen)/n,2)}&#34;)
@@ -1123,20 +1142,21 @@ def transfer(model_src, model_dst=None, teacher=None, debug=False):
         # FIXME: do pracy dodac rysunek z sieci typu &#34;debug&#34;
         show_remap(graph_src, graph_dst, remap, path=&#34;__tli_remap&#34;)
 
-    # p_src_ref = {}
-    # for name, param in model_src.named_parameters():
-    #     p_src_ref[name] = param
-    # p_dst_ref = {}
-    # for name, param in model_dst.named_parameters():
-    #     p_dst_ref[name] = param
+    if inject:
+        p_src_ref = {}
+        for name, param in model_src.named_parameters():
+            p_src_ref[name] = param
+        p_dst_ref = {}
+        for name, param in model_dst.named_parameters():
+            p_dst_ref[name] = param
 
-    # with torch.no_grad():
-    #     for idx_dst, idx_src in remap.items():
-    #         node_src = graph_src.nodes[idx_src]
-    #         node_dst = graph_dst.nodes[idx_dst]
-    #         p_src = p_src_ref[node_src.name]
-    #         p_dst = p_dst_ref[node_dst.name]
-    #         fn_inject(p_src, p_dst)
+        with torch.no_grad():
+            for idx_dst, idx_src in remap.items():
+                node_src = graph_src.nodes[idx_src]
+                node_dst = graph_dst.nodes[idx_dst]
+                p_src = p_src_ref[node_src.name]
+                p_dst = p_dst_ref[node_dst.name]
+                fn_inject(p_src, p_dst)
 
     return sim, remap, graph_src, graph_dst
 
@@ -1267,7 +1287,8 @@ def make_graph(var, params=None) -&gt; Graph:
             visited, queue = set(), collections.deque([graph])
             for idx_root in _rev_edges:
                 # print(f&#34;----&gt; root {nodes[idx_root].name:50} {len(_rev_edges[idx_root])}&#34;)
-                if len(_rev_edges[idx_root]) &gt;= degree:
+                if len(_rev_edges[idx_root]) &gt;= degree \
+                        and nodes[idx_root].type != &#34;W&#34;: # FIXME: bug?
                     # print(&#34;\t[MATCH]&#34;)
                     nodes[idx_root].type = &#34;OP&#34;
             while queue:
@@ -1511,7 +1532,7 @@ def show_graph(model, ver=0, path=&#34;__tli_debug&#34;, input=None):
     print(&#34;saved to file&#34;)
 
 
-def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;):
+def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;, for_edges = False):
     # FIXME: colors? for each cluster?
     # FIXME: show as matrix? A: top-down B: left-right
     dot_g1 = make_dot(g1, ver=3, prefix=&#34;src&#34;, rankdir=&#34;TB&#34;)
@@ -1532,12 +1553,21 @@ def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;):
     import matplotlib.pyplot as plt
 
     cmap = plt.get_cmap(&#34;gist_rainbow&#34;)
-    colors = cmap(np.linspace(0, 1, len(g1.cluster_map.keys())))
+    if not for_edges:
+        arr = g1.cluster_map.keys()
+    else:
+        arr = range(len(remap.keys()))
+
+    colors = cmap(np.linspace(0, 1, len(arr)))
     colors_map = {}  # FIXME: sorted?
-    for (cluster_idx, color) in zip(g1.cluster_map.keys(), colors):
-        colors_map[cluster_idx] = color
-    for idx_dst, idx_src in remap.items():
-        color = colors_map[g1.nodes[idx_src].cluster_idx]
+    for (i, color) in zip(arr, colors):
+        colors_map[i] = color
+
+    for i, (idx_dst, idx_src) in enumerate(remap.items()):
+        if not for_edges:
+            color = colors_map[g1.nodes[idx_src].cluster_idx]
+        else:
+            color = colors_map[i]
         dot.edge(
             &#34;src&#34; + str(idx_src),
             &#34;dst&#34; + str(idx_dst),
@@ -1557,11 +1587,20 @@ def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;):
 ################################################################################
 
 if __name__ == &#34;__main__&#34;:
-    if False:
+    if True:
         from research_models import get_model_debug, ResNetUNet
 
-        model_debug = get_model_debug(seed=3, channels=3, classes=10)
+        model_debug_small = get_model_debug(seed=42, channels=3, classes=10)
+        model_debug_large = get_model_debug(seed=3, channels=3, classes=10)
         model_unet = ResNetUNet(n_class=6)
+
+        show_graph(model_debug_small, ver=0, path=&#34;__tli_figure_1_all&#34;)
+        show_graph(model_debug_small, ver=3, path=&#34;__tli_figure_1_graph&#34;)
+
+        transfer(model_debug_small, model_debug_large, debug=True)
+
+        show_graph(model_unet, ver=1, path=&#34;__tli_figure_unet&#34;)
+        # sys.exit()
 
     if False:  # 8, 11, 9
         model_A = get_model_timm(&#34;efficientnet_lite1&#34;)
@@ -1571,7 +1610,7 @@ if __name__ == &#34;__main__&#34;:
         model_A = get_model_timm(&#34;efficientnet_lite1&#34;)
         model_B = get_model_timm(&#34;efficientnet_lite0&#34;)
 
-    if False:  # 47, 53, 49, 45, 47, 45
+    if True:  # 47, 53, 49, 45, 47, 45
         model_A = get_model_timm(&#34;efficientnet_lite0&#34;)
         model_B = get_model_timm(&#34;efficientnet_lite1&#34;)
 
@@ -1587,7 +1626,7 @@ if __name__ == &#34;__main__&#34;:
         model_A = get_model_timm(&#34;mixnet_s&#34;)
         model_B = get_model_timm(&#34;mixnet_s&#34;)
 
-    if True:  # [83, 77, 85, 78] 82
+    if False:  # [83, 77, 85, 78] 82
         model_A = get_model_timm(&#34;mixnet_s&#34;)
         model_B = get_model_timm(&#34;mixnet_m&#34;)
 
@@ -2447,7 +2486,8 @@ if __name__ == &#34;__main__&#34;:
             visited, queue = set(), collections.deque([graph])
             for idx_root in _rev_edges:
                 # print(f&#34;----&gt; root {nodes[idx_root].name:50} {len(_rev_edges[idx_root])}&#34;)
-                if len(_rev_edges[idx_root]) &gt;= degree:
+                if len(_rev_edges[idx_root]) &gt;= degree \
+                        and nodes[idx_root].type != &#34;W&#34;: # FIXME: bug?
                     # print(&#34;\t[MATCH]&#34;)
                     nodes[idx_root].type = &#34;OP&#34;
             while queue:
@@ -2516,6 +2556,166 @@ if __name__ == &#34;__main__&#34;:
     return size</code></pre>
 </details>
 </dd>
+<dt id="iatransfer.toolkit.tli.score_autoencoder"><code class="name flex">
+<span>def <span class="ident">score_autoencoder</span></span>(<span>graph_src, graph_dst)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def score_autoencoder(graph_src, graph_dst):
+    # src_ids_to_layers_mapping = get_idx_to_layers_mapping(model_src,
+    #                                                           graph_src)
+    # dst_ids_to_layers_mapping = get_idx_to_layers_mapping(model_dst,
+    #                                                           graph_dst)
+
+    from sklearn.preprocessing import MultiLabelBinarizer
+    from sklearn.manifold import Isomap
+
+    mlb = MultiLabelBinarizer()
+
+    vec = []
+    # FIXME: mutual
+    for idx, node in graph_dst.nodes.items():
+        # if node.type != &#34;W&#34;:
+        #    continue
+        vec.append(__encode(node.name))
+    # for idx, node in graph_src.nodes.items():
+    #     vec.append(__encode(node.name))
+    #     vec.append(node.name.split(&#34;.&#34;))
+    mlb.fit(vec) # FIXME: 50
+    _l1 = len(graph_dst.nodes.keys())
+    _l2 = len(graph_dst.cluster_map.keys())
+    # print(_l2, _l1)
+    mfa = Isomap(n_components=min(_l1//2, 30), n_neighbors=min(_l1//10, 50), p=3) # 30 best
+    _vec = mlb.transform(vec)
+    mfa.fit(_vec)
+
+    P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb, mfa=mfa)
+    P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb, mfa=mfa)
+
+    from pprint import pprint
+    split_map = {}
+    for cluster_idx in graph_src.cluster_map.keys():
+        _split_map = split_cluster_level(graph_src, cluster_idx)
+        for key in _split_map:
+            split_map[f&#34;src_{key}&#34;] = _split_map[key]
+    print(&#34;(graph_src ended)&#34;)
+    for cluster_idx in graph_dst.cluster_map.keys():
+        _split_map = split_cluster_level(graph_dst, cluster_idx)
+        for key in _split_map:
+            split_map[f&#34;dst_{key}&#34;] = _split_map[key]
+    print(&#34;(graph_dst ended)&#34;)
+    EG = encode_graph(split_map)
+    # for key in EG:
+    #     print(&#34;--------&gt;&#34;, key, EG[key][&#34;in-tree&#34;].shape)
+
+    X1, y1 = gen_dataset(graph_src, P_src, S_src, N_src, EG, prefix=&#34;src&#34;)
+    X2, y2 = gen_dataset(graph_dst, P_dst, S_dst, N_dst, EG, prefix=&#34;dst&#34;)
+    X = X1 + X2
+    y = y1 + y2
+
+    print(&#34;DATASET FULL&#34;, np.array(X).shape)
+    # for x in range(len(X)):
+    #     print(np.array(X[x]).shape)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=CONFIG.test_size, random_state=42
+    )
+
+    ### AUTOENCODER ###
+
+    # https://scikit-learn.org/stable/modules/generated/sklearn.semi_supervised.SelfTrainingClassifier.html#sklearn.semi_supervised.SelfTrainingClassifier
+
+    model = copy(CONFIG.autoencoder)
+    ### model.fit(X1, y1)
+    ### model.fit(X2, y2)
+    model.fit(X_train, y_train)
+
+    #########################
+
+    y_hat = model.predict(X_test)
+    loss = mean_squared_error(y_test, y_hat)
+    print(f&#34; LOSS --&gt; {loss}&#34;)
+
+    #################################################################
+    ## FIXME: bipartie_matching between top-k #######################
+    ## FIXME: match by clusters --&gt; if best in cluster / eliminate ##
+    ## FIXME: try connection? # FIXME: elimination? greedy {top 3} ##
+    #################################################################
+
+    ### MATCHING ###
+
+    # FIXME: move to [fn_matcher, fn_scorer]
+
+    def __norm_weights(graph):
+        arr, imap, i = [], {}, 0
+        for _, (idx, node) in enumerate(graph.nodes.items()):
+            if node.type != &#34;W&#34;:
+                continue
+            arr.append(idx)
+            imap[idx] = i
+            i += 1
+        return arr, imap
+
+    src_arr, src_map = __norm_weights(graph_src)
+    dst_arr, dst_map = __norm_weights(graph_dst)
+
+    n, m = len(src_arr), len(dst_arr)
+    scores = np.zeros((n, m))
+
+    # classes = [
+    #         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
+    #         nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+    #         nn.Linear
+    # ]
+
+    for dst_j, idx_dst in enumerate(dst_arr):
+        node_dst = graph_dst.nodes[idx_dst]
+        dst_type = node_dst.name.split(&#34;.&#34;)[-1]
+
+        q_dst = (
+            list(P_dst[node_dst.cluster_idx])
+            + list(S_dst[idx_dst])
+            + list(N_dst[idx_dst])
+            + list(EG[f&#34;dst_{idx_dst}&#34;][&#34;in-tree&#34;].tolist())
+        )
+
+        q_arr = []
+        for src_i, idx_src in enumerate(src_arr):
+            node_src = graph_src.nodes[idx_src]
+            src_type = node_src.name.split(&#34;.&#34;)[-1]
+
+            q_src = (
+                list(P_src[node_src.cluster_idx])
+                + list(S_src[idx_src])
+                + list(N_src[idx_src])
+                + list(EG[f&#34;src_{idx_src}&#34;][&#34;in-tree&#34;].tolist())
+            )
+            q_arr.append(__q(q_src, q_dst))
+            scores[src_i, dst_j] = __shape_score(node_dst.size, node_src.size)
+
+            # src_layer = src_ids_to_layers_mapping[idx_src]
+            # dst_layer = dst_ids_to_layers_mapping[idx_dst]
+
+            # not_same_class = True
+            # for classname in classes:
+            #     if isinstance(src_layer, classname) and \
+            #         isinstance(dst_layer, classname):
+            #             not_same_class = False
+            #             break
+
+            if dst_type != src_type:  # or not_same_class:
+                scores[src_i, dst_j] = 0
+
+        y_hat = model.predict(q_arr)
+        scores[:, dst_j] *= y_hat
+
+    return scores, src_arr, dst_arr</code></pre>
+</details>
+</dd>
 <dt id="iatransfer.toolkit.tli.show_graph"><code class="name flex">
 <span>def <span class="ident">show_graph</span></span>(<span>model, ver=0, path='__tli_debug', input=None)</span>
 </code></dt>
@@ -2555,7 +2755,7 @@ if __name__ == &#34;__main__&#34;:
 </details>
 </dd>
 <dt id="iatransfer.toolkit.tli.show_remap"><code class="name flex">
-<span>def <span class="ident">show_remap</span></span>(<span>g1, g2, remap, path='__tli_debug')</span>
+<span>def <span class="ident">show_remap</span></span>(<span>g1, g2, remap, path='__tli_debug', for_edges=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2563,7 +2763,7 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;):
+<pre><code class="python">def show_remap(g1, g2, remap, path=&#34;__tli_debug&#34;, for_edges = False):
     # FIXME: colors? for each cluster?
     # FIXME: show as matrix? A: top-down B: left-right
     dot_g1 = make_dot(g1, ver=3, prefix=&#34;src&#34;, rankdir=&#34;TB&#34;)
@@ -2584,12 +2784,21 @@ if __name__ == &#34;__main__&#34;:
     import matplotlib.pyplot as plt
 
     cmap = plt.get_cmap(&#34;gist_rainbow&#34;)
-    colors = cmap(np.linspace(0, 1, len(g1.cluster_map.keys())))
+    if not for_edges:
+        arr = g1.cluster_map.keys()
+    else:
+        arr = range(len(remap.keys()))
+
+    colors = cmap(np.linspace(0, 1, len(arr)))
     colors_map = {}  # FIXME: sorted?
-    for (cluster_idx, color) in zip(g1.cluster_map.keys(), colors):
-        colors_map[cluster_idx] = color
-    for idx_dst, idx_src in remap.items():
-        color = colors_map[g1.nodes[idx_src].cluster_idx]
+    for (i, color) in zip(arr, colors):
+        colors_map[i] = color
+
+    for i, (idx_dst, idx_src) in enumerate(remap.items()):
+        if not for_edges:
+            color = colors_map[g1.nodes[idx_src].cluster_idx]
+        else:
+            color = colors_map[i]
         dot.edge(
             &#34;src&#34; + str(idx_src),
             &#34;dst&#34; + str(idx_dst),
@@ -2655,7 +2864,7 @@ if __name__ == &#34;__main__&#34;:
 </details>
 </dd>
 <dt id="iatransfer.toolkit.tli.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>model_src, model_dst=None, teacher=None, debug=False)</span>
+<span>def <span class="ident">transfer</span></span>(<span>model_src, model_dst=None, teacher=None, inject=True, debug=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2663,13 +2872,15 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transfer(model_src, model_dst=None, teacher=None, debug=False):
+<pre><code class="python">def transfer(model_src, model_dst=None, teacher=None, inject=True, debug=False):
     # FIXME: replace str to model if needed
     if model_src and model_dst:
         # API: v2
+        print(&#34;API: V2&#34;)
         pass
     elif not model_dst and teacher:
         # API: v1
+        print(&#34;API: V1&#34;)
         model_src, model_dst = teacher, model_src
     else:
         raise Exception(&#34;where is teacher?! is this a joke?&#34;)
@@ -2677,157 +2888,14 @@ if __name__ == &#34;__main__&#34;:
     graph_src = get_graph(model_src)
     graph_dst = get_graph(model_dst)
 
-    # src_ids_to_layers_mapping = get_idx_to_layers_mapping(model_src,
-    #                                                           graph_src)
-    # dst_ids_to_layers_mapping = get_idx_to_layers_mapping(model_dst,
-    #                                                           graph_dst)
-
     if debug:
         show_graph(graph_src, ver=3, path=&#34;__tli_src&#34;)
         show_graph(graph_dst, ver=3, path=&#34;__tli_dst&#34;)
 
-    from sklearn.preprocessing import MultiLabelBinarizer
-    from sklearn.manifold import Isomap
-
-    mlb = MultiLabelBinarizer()
-
-    vec = []
-    # FIXME: mutual
-    for idx, node in graph_dst.nodes.items():
-        # if node.type != &#34;W&#34;:
-        #    continue
-        vec.append(__encode(node.name))
-    # for idx, node in graph_src.nodes.items():
-    #     vec.append(__encode(node.name))
-    #     vec.append(node.name.split(&#34;.&#34;))
-    mlb.fit(vec) # FIXME: 50
-    _l1 = len(graph_dst.nodes.keys())
-    _l2 = len(graph_dst.cluster_map.keys())
-    # print(_l2, _l1)
-    mfa = Isomap(n_components=30, n_neighbors=50, p=3) # 30 best
-    _vec = mlb.transform(vec)
-    mfa.fit(_vec)
-
-    P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb, mfa=mfa)
-    P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb, mfa=mfa)
-
-    from pprint import pprint
-    split_map = {}
-    for cluster_idx in graph_src.cluster_map.keys():
-        _split_map = split_cluster_level(graph_src, cluster_idx)
-        for key in _split_map:
-            split_map[f&#34;src_{key}&#34;] = _split_map[key]
-    print(&#34;(graph_src ended)&#34;)
-    for cluster_idx in graph_dst.cluster_map.keys():
-        _split_map = split_cluster_level(graph_dst, cluster_idx)
-        for key in _split_map:
-            split_map[f&#34;dst_{key}&#34;] = _split_map[key]
-    print(&#34;(graph_dst ended)&#34;)
-    EG = encode_graph(split_map)
-    # for key in EG:
-    #     print(&#34;--------&gt;&#34;, key, EG[key][&#34;in-tree&#34;].shape)
-
-    X1, y1 = gen_dataset(graph_src, P_src, S_src, N_src, EG, prefix=&#34;src&#34;)
-    X2, y2 = gen_dataset(graph_dst, P_dst, S_dst, N_dst, EG, prefix=&#34;dst&#34;)
-    X = X1 + X2
-    y = y1 + y2
-
-    print(&#34;DATASET FULL&#34;, np.array(X).shape)
-    # for x in range(len(X)):
-    #     print(np.array(X[x]).shape)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=CONFIG.test_size, random_state=42
-    )
-
-    ### AUTOENCODER ###
-
-    # https://scikit-learn.org/stable/modules/generated/sklearn.semi_supervised.SelfTrainingClassifier.html#sklearn.semi_supervised.SelfTrainingClassifier
-
-    model = copy(CONFIG.autoencoder)
-    ### model.fit(X1, y1)
-    ### model.fit(X2, y2)
-    model.fit(X_train, y_train)
-
-    #########################
-
-    y_hat = model.predict(X_test)
-    loss = mean_squared_error(y_test, y_hat)
-
-    #################################################################
-    ## FIXME: bipartie_matching between top-k #######################
-    ## FIXME: match by clusters --&gt; if best in cluster / eliminate ##
-    ## FIXME: try connection? # FIXME: elimination? greedy {top 3} ##
-    #################################################################
-
-    ### MATCHING ###
-
-    # FIXME: move to [fn_matcher, fn_scorer]
-
-    def __norm_weights(graph):
-        arr, imap, i = [], {}, 0
-        for _, (idx, node) in enumerate(graph.nodes.items()):
-            if node.type != &#34;W&#34;:
-                continue
-            arr.append(idx)
-            imap[idx] = i
-            i += 1
-        return arr, imap
-
-    src_arr, src_map = __norm_weights(graph_src)
-    dst_arr, dst_map = __norm_weights(graph_dst)
+    scores, src_arr, dst_arr = score_autoencoder(graph_src, graph_dst)
 
     remap = {}
-
     n, m = len(src_arr), len(dst_arr)
-    scores = np.zeros((n, m))
-
-    # classes = [
-    #         nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
-    #         nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
-    #         nn.Linear
-    # ]
-
-    for dst_j, idx_dst in enumerate(dst_arr):
-        node_dst = graph_dst.nodes[idx_dst]
-        dst_type = node_dst.name.split(&#34;.&#34;)[-1]
-
-        q_dst = (
-            list(P_dst[node_dst.cluster_idx])
-            + list(S_dst[idx_dst])
-            + list(N_dst[idx_dst])
-            + list(EG[f&#34;dst_{idx_dst}&#34;][&#34;in-tree&#34;].tolist())
-        )
-
-        q_arr = []
-        for src_i, idx_src in enumerate(src_arr):
-            node_src = graph_src.nodes[idx_src]
-            src_type = node_src.name.split(&#34;.&#34;)[-1]
-
-            q_src = (
-                list(P_src[node_src.cluster_idx])
-                + list(S_src[idx_src])
-                + list(N_src[idx_src])
-                + list(EG[f&#34;src_{idx_src}&#34;][&#34;in-tree&#34;].tolist())
-            )
-            q_arr.append(__q(q_src, q_dst))
-            scores[src_i, dst_j] = __shape_score(node_dst.size, node_src.size)
-
-            # src_layer = src_ids_to_layers_mapping[idx_src]
-            # dst_layer = dst_ids_to_layers_mapping[idx_dst]
-
-            # not_same_class = True
-            # for classname in classes:
-            #     if isinstance(src_layer, classname) and \
-            #         isinstance(dst_layer, classname):
-            #             not_same_class = False
-            #             break
-
-            if dst_type != src_type:  # or not_same_class:
-                scores[src_i, dst_j] = 0
-
-        y_hat = model.predict(q_arr)
-        scores[:, dst_j] *= y_hat
 
     ##############################################
 
@@ -2860,16 +2928,26 @@ if __name__ == &#34;__main__&#34;:
         if idx_dst not in remap:
             remap[idx_dst] = src_arr[i]
 
+    window_size = 1
+    for _dst_j, idx_dst in enumerate(dst_arr[::-1]):
+        dst_j = m - _dst_j - 1
+        ith = dst_j / m
+        shift = max(int(ith*n - window_size*n), 0)
+        i = np.argmax(smap[shift:, dst_j])+shift
+        if idx_dst not in remap:
+            remap[idx_dst] = src_arr[i]
+
     ##############################################
 
     seen = set()
     all_scores = []
     error_n, error_sum = 0, 0
+    print(&#34; &#34;*45 + &#34;[[src]]&#34; + &#34; &#34;*30 + &#34;[[dst]]&#34;)
     for j, idx_dst in enumerate(dst_arr):
         node_dst = graph_dst.nodes[idx_dst]
 
         idx_src = remap[idx_dst]
-        score = scores[src_map[idx_src], j]  # src_i, dst_i
+        score = scores[src_arr.index(idx_src), j]  # src_i, dst_i
         all_scores.append(score)
 
         name_src = graph_src.nodes[idx_src].name
@@ -2892,7 +2970,6 @@ if __name__ == &#34;__main__&#34;:
     sim = max(0, min(1, np.mean(all_scores)))
 
     print(&#34;=== MATCH =================&#34;)
-    print(f&#34; LOSS --&gt; {loss}&#34;)
     n = len(graph_src.nodes.keys())
     print(f&#34;  SIM --&gt; \x1b[0;34;40m{round(sim, 4)}\x1b[0m&#34;)
     print(f&#34; SEEN --&gt; {len(seen):5} / {n:5} | {round(len(seen)/n,2)}&#34;)
@@ -2910,20 +2987,21 @@ if __name__ == &#34;__main__&#34;:
         # FIXME: do pracy dodac rysunek z sieci typu &#34;debug&#34;
         show_remap(graph_src, graph_dst, remap, path=&#34;__tli_remap&#34;)
 
-    # p_src_ref = {}
-    # for name, param in model_src.named_parameters():
-    #     p_src_ref[name] = param
-    # p_dst_ref = {}
-    # for name, param in model_dst.named_parameters():
-    #     p_dst_ref[name] = param
+    if inject:
+        p_src_ref = {}
+        for name, param in model_src.named_parameters():
+            p_src_ref[name] = param
+        p_dst_ref = {}
+        for name, param in model_dst.named_parameters():
+            p_dst_ref[name] = param
 
-    # with torch.no_grad():
-    #     for idx_dst, idx_src in remap.items():
-    #         node_src = graph_src.nodes[idx_src]
-    #         node_dst = graph_dst.nodes[idx_dst]
-    #         p_src = p_src_ref[node_src.name]
-    #         p_dst = p_dst_ref[node_dst.name]
-    #         fn_inject(p_src, p_dst)
+        with torch.no_grad():
+            for idx_dst, idx_src in remap.items():
+                node_src = graph_src.nodes[idx_src]
+                node_dst = graph_dst.nodes[idx_dst]
+                p_src = p_src_ref[node_src.name]
+                p_dst = p_dst_ref[node_dst.name]
+                fn_inject(p_src, p_dst)
 
     return sim, remap, graph_src, graph_dst</code></pre>
 </details>
@@ -3077,6 +3155,7 @@ if __name__ == &#34;__main__&#34;:
 <li><code><a title="iatransfer.toolkit.tli.make_dot" href="#iatransfer.toolkit.tli.make_dot">make_dot</a></code></li>
 <li><code><a title="iatransfer.toolkit.tli.make_graph" href="#iatransfer.toolkit.tli.make_graph">make_graph</a></code></li>
 <li><code><a title="iatransfer.toolkit.tli.resize_dot" href="#iatransfer.toolkit.tli.resize_dot">resize_dot</a></code></li>
+<li><code><a title="iatransfer.toolkit.tli.score_autoencoder" href="#iatransfer.toolkit.tli.score_autoencoder">score_autoencoder</a></code></li>
 <li><code><a title="iatransfer.toolkit.tli.show_graph" href="#iatransfer.toolkit.tli.show_graph">show_graph</a></code></li>
 <li><code><a title="iatransfer.toolkit.tli.show_networkx" href="#iatransfer.toolkit.tli.show_networkx">show_networkx</a></code></li>
 <li><code><a title="iatransfer.toolkit.tli.show_remap" href="#iatransfer.toolkit.tli.show_remap">show_remap</a></code></li>

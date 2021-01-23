@@ -32,55 +32,15 @@ import networkx as nx
 import numpy as np
 import torch.nn as nn
 
-from iatransfer.toolkit.base_matching import Matching
+from iatransfer.toolkit.matching.dp_matching import DPMatching
 from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
-class NBipartiteMatching(Matching):
+class NBipartiteMatching(DPMatching):
     &#34;&#34;&#34;
     Nested Bipartide Matching
     &#34;&#34;&#34;
-
-    def __init__(self, standardization: Standardization = BlocksStandardization(), **kwargs):
-        self.standardization = standardization
-        super().__init__(**kwargs)
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
-        return matched
-
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_models(flattened_from_module, flattened_to_module)
-        return score / self._match_models(flattened_to_module, flattened_to_module)[0]
-
-    def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -&gt; float:
-        def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -&gt; bool:
-            return all([isinstance(layer, clazz) for layer in layers])
-
-        score = 0
-        layers = [from_module, to_module]
-        if are_all_of_this_class(layers, list):
-            score, _, _ = self._match_models(from_module, to_module)
-        else:
-            classes = [
-                nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
-                nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
-                nn.Linear
-            ]
-            for clazz in classes:
-                if are_all_of_this_class(layers, clazz):
-                    score = 1
-                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
-                        score *= min(x / y, y / x)
-                    break
-
-        return score
 
     def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],
                       flat_to_module: Union[nn.Module, List[nn.Module]]) \
@@ -131,7 +91,7 @@ class NBipartiteMatching(Matching):
 <dl>
 <dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching"><code class="flex name class">
 <span>class <span class="ident">NBipartiteMatching</span></span>
-<span>(</span><span>standardization: <a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a> = &lt;iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization object&gt;, **kwargs)</span>
+<span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Nested Bipartide Matching</p></div>
@@ -139,50 +99,10 @@ class NBipartiteMatching(Matching):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NBipartiteMatching(Matching):
+<pre><code class="python">class NBipartiteMatching(DPMatching):
     &#34;&#34;&#34;
     Nested Bipartide Matching
     &#34;&#34;&#34;
-
-    def __init__(self, standardization: Standardization = BlocksStandardization(), **kwargs):
-        self.standardization = standardization
-        super().__init__(**kwargs)
-
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
-        return matched
-
-    def sim(self, from_module: nn.Module, to_module: nn.Module):
-        flattened_from_module = self.standardization.standardize(from_module)
-        flattened_to_module = self.standardization.standardize(to_module)
-        score, _, _ = self._match_models(flattened_from_module, flattened_to_module)
-        return score / self._match_models(flattened_to_module, flattened_to_module)[0]
-
-    def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -&gt; float:
-        def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -&gt; bool:
-            return all([isinstance(layer, clazz) for layer in layers])
-
-        score = 0
-        layers = [from_module, to_module]
-        if are_all_of_this_class(layers, list):
-            score, _, _ = self._match_models(from_module, to_module)
-        else:
-            classes = [
-                nn.Conv1d, nn.Conv2d, nn.Conv3d, nn.ConvTranspose1d, nn.ConvTranspose2d, nn.ConvTranspose3d,
-                nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
-                nn.Linear
-            ]
-            for clazz in classes:
-                if are_all_of_this_class(layers, clazz):
-                    score = 1
-                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
-                        score *= min(x / y, y / x)
-                    break
-
-        return score
 
     def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],
                       flat_to_module: Union[nn.Module, List[nn.Module]]) \
@@ -223,45 +143,10 @@ class NBipartiteMatching(Matching):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="dp_matching.html#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></li>
 <li><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-        -&gt; List[Tuple[nn.Module, nn.Module]]:
-    flattened_from_module = self.standardization.standardize(from_module)
-    flattened_to_module = self.standardization.standardize(to_module)
-    _, matched, _ = self._match_models(flattened_from_module, flattened_to_module)
-    return matched</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim"><code class="name flex">
-<span>def <span class="ident">sim</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sim(self, from_module: nn.Module, to_module: nn.Module):
-    flattened_from_module = self.standardization.standardize(from_module)
-    flattened_to_module = self.standardization.standardize(to_module)
-    score, _, _ = self._match_models(flattened_from_module, flattened_to_module)
-    return score / self._match_models(flattened_to_module, flattened_to_module)[0]</code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 </dl>
 </section>
@@ -281,10 +166,6 @@ class NBipartiteMatching(Matching):
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching">NBipartiteMatching</a></code></h4>
-<ul class="">
-<li><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.match">match</a></code></li>
-<li><code><a title="iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim" href="#iatransfer.toolkit.matching.nbipartite_matching.NBipartiteMatching.sim">sim</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

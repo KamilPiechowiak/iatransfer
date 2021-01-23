@@ -35,6 +35,7 @@ from inflection import camelize
 from iatransfer.toolkit.base_matching import Matching
 from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.base_transfer import Transfer
+from iatransfer.toolkit.base_score import Score
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
@@ -53,6 +54,7 @@ class IAT(ABC):
     _standardization_classes = _get_subclasses(Standardization)
     _matching_classes = _get_subclasses(Matching)
     _transfer_classes = _get_subclasses(Transfer)
+    _score_classes = _get_subclasses(Score)
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -62,11 +64,13 @@ class IAT(ABC):
                  = &#39;blocks&#39;,
                  matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = &#39;dp&#39;,
                  transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = &#39;clip&#39;,
+                 score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = &#39;ShapeScore&#39;,
                  *args,
                  **kwargs) -&gt; None:
         self._try_setting(&#39;standardization&#39;, standardization, Standardization)
         self._try_setting(&#39;matching&#39;, matching, Matching)
         self._try_setting(&#39;transfer&#39;, transfer, Transfer)
+        self._try_setting(&#39;score&#39;, score, Score)
 
     def _try_setting(self, key: str, value: Any, clazz: Any) -&gt; None:
         kwargs = {}
@@ -96,12 +100,16 @@ class IAT(ABC):
         context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-        matched_tensors = self.matching(from_paths, to_paths)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
+        matched_tensors = self.matching(from_paths, to_paths, context=context)
         return self.transfer(matched_tensors, context=context)
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
         return self.matching.sim(from_paths, to_paths)
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
@@ -120,7 +128,7 @@ class IAT(ABC):
 <dl>
 <dt id="iatransfer.toolkit.iat.IAT"><code class="flex name class">
 <span>class <span class="ident">IAT</span></span>
-<span>(</span><span>standardization: Union[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, str, Tuple[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, Dict], Tuple[str, Dict]] = 'blocks', matching: Union[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, str, Tuple[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, Dict], Tuple[str, Dict]] = 'dp', transfer: Union[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, str, Tuple[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, Dict], Tuple[str, Dict]] = 'clip', *args, **kwargs)</span>
+<span>(</span><span>standardization: Union[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, str, Tuple[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, Dict], Tuple[str, Dict]] = 'blocks', matching: Union[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, str, Tuple[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, Dict], Tuple[str, Dict]] = 'dp', transfer: Union[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, str, Tuple[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, Dict], Tuple[str, Dict]] = 'clip', score: Union[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, str, Tuple[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, Dict], Tuple[str, Dict]] = 'ShapeScore', *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper class that provides a standard way to create an ABC using
@@ -133,6 +141,7 @@ inheritance.</p></div>
     _standardization_classes = _get_subclasses(Standardization)
     _matching_classes = _get_subclasses(Matching)
     _transfer_classes = _get_subclasses(Transfer)
+    _score_classes = _get_subclasses(Score)
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -142,11 +151,13 @@ inheritance.</p></div>
                  = &#39;blocks&#39;,
                  matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = &#39;dp&#39;,
                  transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = &#39;clip&#39;,
+                 score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = &#39;ShapeScore&#39;,
                  *args,
                  **kwargs) -&gt; None:
         self._try_setting(&#39;standardization&#39;, standardization, Standardization)
         self._try_setting(&#39;matching&#39;, matching, Matching)
         self._try_setting(&#39;transfer&#39;, transfer, Transfer)
+        self._try_setting(&#39;score&#39;, score, Score)
 
     def _try_setting(self, key: str, value: Any, clazz: Any) -&gt; None:
         kwargs = {}
@@ -176,12 +187,16 @@ inheritance.</p></div>
         context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-        matched_tensors = self.matching(from_paths, to_paths)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
+        matched_tensors = self.matching(from_paths, to_paths, context=context)
         return self.transfer(matched_tensors, context=context)
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
         return self.matching.sim(from_paths, to_paths)
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
@@ -223,7 +238,9 @@ inheritance.</p></div>
     context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
 
     from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-    matched_tensors = self.matching(from_paths, to_paths)
+    self.score.precompute_scores(from_module, to_module)
+    self.matching.set_score(self.score)
+    matched_tensors = self.matching(from_paths, to_paths, context=context)
     return self.transfer(matched_tensors, context=context)</code></pre>
 </details>
 </dd>
@@ -239,6 +256,8 @@ inheritance.</p></div>
 <pre><code class="python">def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
         -&gt; float:
     from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+    self.score.precompute_scores(from_module, to_module)
+    self.matching.set_score(self.score)
     return self.matching.sim(from_paths, to_paths)</code></pre>
 </details>
 </dd>

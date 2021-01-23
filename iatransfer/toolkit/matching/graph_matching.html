@@ -38,6 +38,8 @@ class GraphNewMatching(Matching):
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+        from_module = kwargs[&#39;context&#39;][&#39;from_module&#39;]
+        to_module = kwargs[&#39;context&#39;][&#39;to_module&#39;]
         _, remap, teacher_graph, student_graph = transfer(from_module, to_module)
         teacher_ids_to_layers_mapping = self.get_ids_to_layers_mapping(from_module, teacher_graph)
         student_ids_to_layers_mapping = self.get_ids_to_layers_mapping(to_module, student_graph)
@@ -108,6 +110,8 @@ inheritance.</p></div>
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+        from_module = kwargs[&#39;context&#39;][&#39;from_module&#39;]
+        to_module = kwargs[&#39;context&#39;][&#39;to_module&#39;]
         _, remap, teacher_graph, student_graph = transfer(from_module, to_module)
         teacher_ids_to_layers_mapping = self.get_ids_to_layers_mapping(from_module, teacher_graph)
         student_ids_to_layers_mapping = self.get_ids_to_layers_mapping(to_module, student_graph)
@@ -198,6 +202,8 @@ inheritance.</p></div>
 </summary>
 <pre><code class="python">def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
         -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+    from_module = kwargs[&#39;context&#39;][&#39;from_module&#39;]
+    to_module = kwargs[&#39;context&#39;][&#39;to_module&#39;]
     _, remap, teacher_graph, student_graph = transfer(from_module, to_module)
     teacher_ids_to_layers_mapping = self.get_ids_to_layers_mapping(from_module, teacher_graph)
     student_ids_to_layers_mapping = self.get_ids_to_layers_mapping(to_module, student_graph)

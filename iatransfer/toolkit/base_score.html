@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>iatransfer.toolkit.base_matching API documentation</title>
+<title>iatransfer.toolkit.base_score API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>iatransfer.toolkit.base_matching</code></h1>
+<h1 class="title">Module <code>iatransfer.toolkit.base_score</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -31,28 +31,24 @@ from typing import List, Tuple, Union
 
 import torch.nn as nn
 
-from iatransfer.toolkit.base_score import Score
 
-
-class Matching(ABC):
+class Score(ABC):
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
-        raise NotImplementedError()
-
     @abstractmethod
-    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
+    def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; float:
         pass
 
-    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
-        return self.match(from_module, to_module, *args, **kwargs)
+    def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
+            -&gt; float:
+        pass
 
-    def set_score(self, score: Score) -&gt; None:
-        self.score = score</code></pre>
+    def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; float:
+        return self.score(from_module, to_module, *args, **kwargs)</code></pre>
 </details>
 </section>
 <section>
@@ -64,8 +60,8 @@ class Matching(ABC):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="iatransfer.toolkit.base_matching.Matching"><code class="flex name class">
-<span>class <span class="ident">Matching</span></span>
+<dt id="iatransfer.toolkit.base_score.Score"><code class="flex name class">
+<span>class <span class="ident">Score</span></span>
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
@@ -75,25 +71,23 @@ inheritance.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Matching(ABC):
+<pre><code class="python">class Score(ABC):
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
-        raise NotImplementedError()
-
     @abstractmethod
-    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
+    def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; float:
         pass
 
-    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-            -&gt; List[Tuple[nn.Module, nn.Module]]:
-        return self.match(from_module, to_module, *args, **kwargs)
+    def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
+            -&gt; float:
+        pass
 
-    def set_score(self, score: Score) -&gt; None:
-        self.score = score</code></pre>
+    def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -&gt; float:
+        return self.score(from_module, to_module, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -101,19 +95,29 @@ inheritance.</p></div>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="iatransfer.toolkit.matching.dp_flat_matching.DPFlatMatching" href="matching/dp_flat_matching.html#iatransfer.toolkit.matching.dp_flat_matching.DPFlatMatching">DPFlatMatching</a></li>
-<li><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="matching/dp_matching.html#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></li>
-<li><a title="iatransfer.toolkit.matching.graph_matching.GraphNewMatching" href="matching/graph_matching.html#iatransfer.toolkit.matching.graph_matching.GraphNewMatching">GraphNewMatching</a></li>
-<li><a title="iatransfer.toolkit.matching.random_matching.RandomMatching" href="matching/random_matching.html#iatransfer.toolkit.matching.random_matching.RandomMatching">RandomMatching</a></li>
-<li>matching.dp_flat_matching.DPFlatMatching</li>
-<li>matching.dp_matching.DPMatching</li>
-<li>matching.graph_matching.GraphNewMatching</li>
-<li>matching.random_matching.RandomMatching</li>
+<li><a title="iatransfer.toolkit.score.autoencoder_score.AutoEncoderScore" href="score/autoencoder_score.html#iatransfer.toolkit.score.autoencoder_score.AutoEncoderScore">AutoEncoderScore</a></li>
+<li><a title="iatransfer.toolkit.score.shape_score.ShapeScore" href="score/shape_score.html#iatransfer.toolkit.score.shape_score.ShapeScore">ShapeScore</a></li>
+<li>score.autoencoder_score.AutoEncoderScore</li>
+<li>score.shape_score.ShapeScore</li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="iatransfer.toolkit.base_matching.Matching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
+<dt id="iatransfer.toolkit.base_score.Score.precompute_scores"><code class="name flex">
+<span>def <span class="ident">precompute_scores</span></span>(<span>self, from_model: torch.nn.modules.module.Module, to_model: torch.nn.modules.module.Module, *args, **kwargs) ‑> float</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
+        -&gt; float:
+    pass</code></pre>
+</details>
+</dd>
+<dt id="iatransfer.toolkit.base_score.Score.score"><code class="name flex">
+<span>def <span class="ident">score</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> float</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -122,35 +126,9 @@ inheritance.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-        -&gt; List[Tuple[nn.Module, nn.Module]]:
+def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+        -&gt; float:
     pass</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.base_matching.Matching.set_score"><code class="name flex">
-<span>def <span class="ident">set_score</span></span>(<span>self, score: <a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def set_score(self, score: Score) -&gt; None:
-    self.score = score</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.base_matching.Matching.sim"><code class="name flex">
-<span>def <span class="ident">sim</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> float</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
-    raise NotImplementedError()</code></pre>
 </details>
 </dd>
 </dl>
@@ -172,11 +150,10 @@ def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="iatransfer.toolkit.base_matching.Matching" href="#iatransfer.toolkit.base_matching.Matching">Matching</a></code></h4>
+<h4><code><a title="iatransfer.toolkit.base_score.Score" href="#iatransfer.toolkit.base_score.Score">Score</a></code></h4>
 <ul class="">
-<li><code><a title="iatransfer.toolkit.base_matching.Matching.match" href="#iatransfer.toolkit.base_matching.Matching.match">match</a></code></li>
-<li><code><a title="iatransfer.toolkit.base_matching.Matching.set_score" href="#iatransfer.toolkit.base_matching.Matching.set_score">set_score</a></code></li>
-<li><code><a title="iatransfer.toolkit.base_matching.Matching.sim" href="#iatransfer.toolkit.base_matching.Matching.sim">sim</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_score.Score.precompute_scores" href="#iatransfer.toolkit.base_score.Score.precompute_scores">precompute_scores</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_score.Score.score" href="#iatransfer.toolkit.base_score.Score.score">score</a></code></li>
 </ul>
 </li>
 </ul>
