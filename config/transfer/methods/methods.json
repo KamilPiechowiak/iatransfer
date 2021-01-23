@@ -36,10 +36,6 @@
             "transfer": "ClipTransfer"
         },
         {
-            "matching": "GraphMatching",
-            "transfer": "ClipTransfer"
-        },
-        {
             "standardization": "BlocksStandardization",
             "matching": "DPMatching",
             "transfer": "FullTransfer"

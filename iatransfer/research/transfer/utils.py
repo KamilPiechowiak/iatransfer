@@ -6,4 +6,6 @@ def get_transfer_method_name(transfer_method: Dict) -> str:
         name.append(transfer_method["matching"])
     if "standardization" in transfer_method:
         name.append(transfer_method["standardization"])
+    if "score" in transfer_method:
+        name.append(transfer_method["score"])
     return "-".join(name)

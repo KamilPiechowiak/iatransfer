@@ -5,6 +5,7 @@ import os
 import pickle
 
 def get_stats_from_file(path: str, key: str = "acc_val") -> np.array:
+    print(path)
     i = 0
     stats = []
     while os.path.exists(path.replace('#', str(i))):

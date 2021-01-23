@@ -3,6 +3,8 @@ from typing import List, Tuple, Union
 
 import torch.nn as nn
 
+from iatransfer.toolkit.base_score import Score
+
 
 class Matching(ABC):
 
@@ -20,3 +22,6 @@ class Matching(ABC):
     def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -> List[Tuple[nn.Module, nn.Module]]:
         return self.match(from_module, to_module, *args, **kwargs)
+
+    def set_score(self, score: Score) -> None:
+        self.score = score

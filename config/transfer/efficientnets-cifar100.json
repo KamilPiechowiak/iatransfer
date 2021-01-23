@@ -3,7 +3,7 @@
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["efficientnet_b0"],
+                "args": ["tf_efficientnet_b0"],
                 "kwargs": {"num_classes": 100},
                 "name": "efficientnet-b0"
             },
@@ -17,7 +17,7 @@
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["efficientnet_b1"],
+                "args": ["tf_efficientnet_b1"],
                 "kwargs": {"num_classes": 100},
                 "name": "efficientnet-b1"
             },
@@ -31,7 +31,7 @@
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["efficientnet_b2"],
+                "args": ["tf_efficientnet_b2"],
                 "kwargs": {"num_classes": 100},
                 "name": "efficientnet-b2"
             },

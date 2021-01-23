@@ -7,6 +7,7 @@ from inflection import camelize
 from iatransfer.toolkit.base_matching import Matching
 from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.base_transfer import Transfer
+from iatransfer.toolkit.base_score import Score
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
@@ -25,6 +26,7 @@ class IAT(ABC):
     _standardization_classes = _get_subclasses(Standardization)
     _matching_classes = _get_subclasses(Matching)
     _transfer_classes = _get_subclasses(Transfer)
+    _score_classes = _get_subclasses(Score)
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -34,11 +36,13 @@ class IAT(ABC):
                  = 'blocks',
                  matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = 'dp',
                  transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = 'clip',
+                 score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = 'ShapeScore',
                  *args,
                  **kwargs) -> None:
         self._try_setting('standardization', standardization, Standardization)
         self._try_setting('matching', matching, Matching)
         self._try_setting('transfer', transfer, Transfer)
+        self._try_setting('score', score, Score)
 
     def _try_setting(self, key: str, value: Any, clazz: Any) -> None:
         kwargs = {}
@@ -68,12 +72,16 @@ class IAT(ABC):
         context = {'from_module': from_module, 'to_module': to_module}
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-        matched_tensors = self.matching(from_paths, to_paths)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
+        matched_tensors = self.matching(from_paths, to_paths, context=context)
         return self.transfer(matched_tensors, context=context)
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> float:
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
         return self.matching.sim(from_paths, to_paths)
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \

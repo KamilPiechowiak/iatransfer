@@ -10,6 +10,8 @@ class GraphNewMatching(Matching):
 
     def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
             -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
+        from_module = kwargs['context']['from_module']
+        to_module = kwargs['context']['to_module']
         _, remap, teacher_graph, student_graph = transfer(from_module, to_module)
         teacher_ids_to_layers_mapping = self.get_ids_to_layers_mapping(from_module, teacher_graph)
         student_ids_to_layers_mapping = self.get_ids_to_layers_mapping(to_module, student_graph)

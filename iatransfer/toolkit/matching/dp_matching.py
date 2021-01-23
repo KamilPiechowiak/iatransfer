@@ -35,9 +35,7 @@ class DPMatching(Matching):
             ]
             for clazz in classes:
                 if are_all_of_this_class(layers, clazz):
-                    score = 1
-                    for x, y in zip(from_module.weight.shape, to_module.weight.shape):
-                        score *= min(x / y, y / x)
+                    score = self.score(from_module, to_module)
                     break
 
         return score

@@ -1,8 +1,16 @@
 {
     "methods": [
         {
-            "matching": "GraphNewMatching",
-            "transfer": "ClipTransfer"
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer",
+            "score": "AutoEncoderScore"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer",
+            "score": "AutoEncoderScore"
         }
     ]
 }

@@ -9,12 +9,11 @@ from iatransfer.toolkit.standardization.flatten_standardization import FlattenSt
 
 class DPFlatMatching(Matching):
 
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+    def match(self, from_module: List[nn.Module],
+              to_module: List[nn.Module], *args, **kwargs) \
             -> List[Tuple[nn.Module, nn.Module]]:
-        s = FlattenStandardization()
-        flat_from_module = s.standardize(from_module)
-        flat_to_module = s.standardize(to_module)
-        return self._match_modules(flat_from_module, flat_to_module)[1]
+        _, matched, _ = self._match_models(from_module, to_module)
+        return matched
 
     def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
         def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -> bool:
@@ -39,7 +38,7 @@ class DPFlatMatching(Matching):
     def _penalty(self, x):
         return -(x + 1) / 2 if x >= 0 else 0
 
-    def _match_modules(self, from_module: List[nn.Module], to_module: List[nn.Module]) -> List[
+    def _match_models(self, from_module: List[nn.Module], to_module: List[nn.Module]) -> List[
         Tuple[Optional[nn.Module]]]:
         n = len(to_module)
         m = len(from_module)
