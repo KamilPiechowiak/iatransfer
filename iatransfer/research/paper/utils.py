@@ -13,5 +13,6 @@ def get_stats_from_file(path: str, key: str = "acc_val") -> np.array:
             stats += [pickle.load(f)[key]]
         i+=1
     stats = np.array(stats)
-    stats = stats.mean(axis=0)
+    stats[stats < 0.005] = np.nan
+    stats = np.nanmean(stats, axis=0)
     return stats

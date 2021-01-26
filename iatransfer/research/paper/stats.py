@@ -10,7 +10,7 @@ from iatransfer.research.transfer.utils import get_transfer_method_name
 PLOT = 'plot'
 TABLE = 'table'
 
-def plot(models: List[Dict], methods: List[Dict], path: str) -> None:
+def plot(models: List[Dict], methods: List[Dict], path: str, **kwargs) -> None:
     for model in models:
         for method in methods:
             draw_epochs_plot(model, get_transfer_method_name(method), path)
@@ -18,6 +18,8 @@ def plot(models: List[Dict], methods: List[Dict], path: str) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=[PLOT, TABLE])
+    parser.add_argument('-t', '--teacher-models', 
+        help="Path to configuration of teacher models")
     parser.add_argument('-s', '--student-models', required=True,
         help="Path to configuration of student models for transfer")
     parser.add_argument('-i', '--ia-methods', required=True,
@@ -30,7 +32,11 @@ if __name__ == "__main__":
         path = args.path
     else:
         path = "./stats"
+    if args.teacher_models is not None:
+        teachers = read_json(args.teacher_models)["models"]
+    else:
+        teachers = None
     models = read_json(args.student_models)["models"]
     methods = read_json(args.ia_methods)["methods"]
-    {TABLE: create_table, PLOT: plot}[args.mode](models, methods, path)
+    {TABLE: create_table, PLOT: plot}[args.mode](models, methods, path, teacher_models = teachers)
         
