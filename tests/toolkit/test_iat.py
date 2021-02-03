@@ -1,15 +1,15 @@
 import unittest
 
-from iatransfer.toolkit import IAT
 from matching.dp_matching import DPMatching
 from standardization.blocks_standardization import BlocksStandardization
 from transfer.clip_transfer import ClipTransfer
+
+from iatransfer.toolkit import IAT
 
 
 class IATTest(unittest.TestCase):
 
     def _assert_blocks_dp_clip(self, iat: IAT):
-
         self.assertTrue(isinstance(iat.standardization, BlocksStandardization))
         self.assertTrue(isinstance(iat.matching, DPMatching))
         self.assertTrue(isinstance(iat.transfer, ClipTransfer))

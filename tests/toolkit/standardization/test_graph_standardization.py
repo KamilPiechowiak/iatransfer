@@ -2,6 +2,7 @@ import unittest
 from pprint import pprint
 
 import timm
+import torch
 
 from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
 

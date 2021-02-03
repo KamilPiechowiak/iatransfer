@@ -5,8 +5,6 @@ import timm
 
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 from iatransfer.toolkit import IAT
-from iatransfer.toolkit.matching.dp_matching import DPMatching
-from iatransfer.toolkit.standardization.graph_standardization import GraphStandardization
 
 
 class DPMatchingTest(unittest.TestCase):

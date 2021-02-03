@@ -4,8 +4,6 @@ import timm
 
 from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
 from iatransfer.toolkit import IAT
-from iatransfer.toolkit.transfer.full_transfer import FullTransfer
-from iatransfer.toolkit.matching.bipartite_matching import BipartiteMatching
 from tests.toolkit.transfer.utils import run_transfer
 
 

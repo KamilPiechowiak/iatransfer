@@ -5,9 +5,9 @@ import torch.nn as nn
 from inflection import camelize
 
 from iatransfer.toolkit.base_matching import Matching
+from iatransfer.toolkit.base_score import Score
 from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.base_score import Score
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
@@ -59,7 +59,9 @@ class IAT(ABC):
         classes = getattr(self, f'_{key}_classes')
         trials = [lambda x: x[1],
                   lambda x: camelize(f'{x[1]}_{x[0]}'),
-                  lambda x: camelize(f'{x[1].upper()}{camelize(x[0])}')
+                  lambda x: camelize(f'{camelize(x[1])}{camelize(x[0])}'),
+                  lambda x: camelize(f'{x[1].upper()}{camelize(x[0])}'),
+                  lambda x: f'{x[1].split("_")[0].upper()}{camelize("_".join(x[1].split("_")[1:]))}{camelize(x[0])}'
                   ]
         for trial in trials:
             res = classes.get(trial((key, value)))

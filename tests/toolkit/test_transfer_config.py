@@ -22,7 +22,7 @@ class TransferConfigTest(unittest.TestCase):
                     print(f"{method}: {teacher_name} -> {student_json['model']['name']}")
                     iat = IAT(**method_json)
                     iat(teacher, student)
-    
+
     def test_transfer_methods(self) -> None:
         models = read_json("config/transfer/methods/models-small.json")["models"]
         methods = read_json("config/transfer/methods/methods-append.json")["methods"]

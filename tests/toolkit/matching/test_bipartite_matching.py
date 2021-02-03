@@ -5,6 +5,7 @@ import timm
 
 from iatransfer.toolkit import IAT
 
+
 class BipartiteMatchingTest(unittest.TestCase):
 
     def test_bipartite_matching(self):

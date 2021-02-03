@@ -1,25 +1,24 @@
 import unittest
-from pprint import pprint
 
 import timm
 
-from iatransfer.toolkit.matching.random_matching import RandomMatching
+from iatransfer.toolkit import IAT
 
 
 class RandomMatchingTest(unittest.TestCase):
 
     def test_random_matching(self):
-        m1 = RandomMatching()
+        m1 = IAT(matching='random')
 
         amodel = timm.create_model("efficientnet_b3")
         bmodel = timm.create_model("efficientnet_b0")
 
-        print(m1.sim(amodel, bmodel))
+        print(m1.run(amodel, bmodel))
 
     def test_output_matching(self):
-        m1 = RandomMatching()
+        m1 = IAT(matching='random')
 
         amodel = timm.create_model("efficientnet_b3")
         bmodel = timm.create_model("efficientnet_b0")
 
-        pprint(m1.match(amodel, bmodel))
+        print(m1.run(amodel, bmodel))
