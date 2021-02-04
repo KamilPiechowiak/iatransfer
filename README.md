@@ -71,5 +71,8 @@ When referring to or using iatransfer in a scientific publication, please consid
 Copy the source code to the GCP cloudshell or install `iatransfer_research` package.
 
 Run:
-`/bin/bash -x ./scripts/research/iatransfer_full_run.sh`
+`/bin/bash ./scripts/research/iatransfer_full_run.sh`
+or
+`iatransfer_full_run.sh`
+if `iatransfer_research` has been installed.
 
