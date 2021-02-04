@@ -50,10 +50,8 @@ When referring to or using iatransfer in a scientific publication, please consid
 &emsp;note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},<br />
 &emsp;type = {Bachelor’s Thesis},<br />
 &emsp;address = {Poznan, Poland},<br />
-&emsp;year= {2021}<br />
+&emsp;year = {2021}<br />
 }<br /><br />
-
-iatransfer has been tested under python 3.8.
 
 ## Development
 
@@ -74,3 +72,7 @@ Copy the source code to the GCP cloudshell or install `iatransfer_research` pack
 
 Run:
 `/bin/bash -x ./scripts/research/iatransfer_full_run.sh`
+
+
+---
+iatransfer has been tested under python 3.8.
