@@ -31,8 +31,8 @@
 from torch import nn
 
 from iatransfer.toolkit.base_score import Score
+from iatransfer.toolkit.tli import score_autoencoder
 from iatransfer.toolkit.tli_helpers import get_model_graph_and_ids_mapping
-from iatransfer.toolkit.tli import score_autoencoder, get_graph
 
 
 class AutoEncoderScore(Score):

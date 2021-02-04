@@ -563,7 +563,7 @@ class TLIConfig(object):
     def __init__(self, adict):
         self.__dict__.update(adict)
 
-from karateclub import Diff2Vec
+
 embedding_dim = 5  # best 4, 6, 5 / FIXME: was 9, how to find?
 CONFIG = TLIConfig(
     {
@@ -907,7 +907,6 @@ def score_autoencoder(graph_src, graph_dst):
     P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb, mfa=mfa)
     P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb, mfa=mfa)
 
-    from pprint import pprint
     split_map = {}
     for cluster_idx in graph_src.cluster_map.keys():
         _split_map = split_cluster_level(graph_src, cluster_idx)
@@ -2596,7 +2595,6 @@ if __name__ == &#34;__main__&#34;:
     P_src, S_src, N_src = F_architecture(graph_src, mlb=mlb, mfa=mfa)
     P_dst, S_dst, N_dst = F_architecture(graph_dst, mlb=mlb, mfa=mfa)
 
-    from pprint import pprint
     split_map = {}
     for cluster_idx in graph_src.cluster_map.keys():
         _split_map = split_cluster_level(graph_src, cluster_idx)
