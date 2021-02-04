@@ -11,7 +11,7 @@
 ![Pytorch](https://img.shields.io/badge/torch-1.7.1-blue)
 
 # Inter-Architecture Knowledge Transfer
-iatransfer is a PyTorch package for transferring pretrained weights between models of different architectures.
+iatransfer is a PyTorch package for transferring pretrained weights between models of different architectures instantaneously.
 
 Drastically speed up your training process using two additional lines of code.
 
