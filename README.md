@@ -62,10 +62,12 @@ iat = IAT(matching=DPMatching())
 ```python
 from iatransfer.toolkit.base_matching import Matching
 
+
 class CustomMatching(Matching):
 
     def match(self, from_module, to_module, *args, **kwargs)
         # provide your implementation
+
 
 # This will instantiate the above CustomMatching in IAT
 iat = IAT(matching='custom') 
