@@ -73,6 +73,3 @@ Copy the source code to the GCP cloudshell or install `iatransfer_research` pack
 Run:
 `/bin/bash -x ./scripts/research/iatransfer_full_run.sh`
 
-
----
-iatransfer has been tested under python 3.8.
