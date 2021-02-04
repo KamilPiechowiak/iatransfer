@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Any, Dict, Tuple, Union
 
 import torch.nn as nn
@@ -13,42 +12,41 @@ from iatransfer.utils.dot_dict import DotDict
 from iatransfer.utils.subclass_utils import get_subclasses
 
 
-class IAT(ABC):
-    class _IAT:
-        standardization: Standardization = None
-        matching: Matching = None
-        transfer: Transfer = None
-        score: Score = None
+class IAT:
+    standardization: Standardization = None
+    matching: Matching = None
+    transfer: Transfer = None
+    score: Score = None
 
-        def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-                -> TransferStats:
-            context = {'from_module': from_module, 'to_module': to_module}
+    def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -> TransferStats:
+        context = {'from_module': from_module, 'to_module': to_module}
 
-            from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-            self.score.precompute_scores(from_module, to_module)
-            self.matching.set_score(self.score)
-            matched_tensors = self.matching(from_paths, to_paths, context=context)
-            return self.transfer(matched_tensors, context=context)
+        from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
+        matched_tensors = self.matching(from_paths, to_paths, context=context)
+        return self.transfer(matched_tensors, context=context)
 
-        def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-                -> float:
-            from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
-            self.score.precompute_scores(from_module, to_module)
-            self.matching.set_score(self.score)
-            return self.matching.sim(from_paths, to_paths)
+    def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -> float:
+        from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
+        self.score.precompute_scores(from_module, to_module)
+        self.matching.set_score(self.score)
+        return self.matching.sim(from_paths, to_paths)
 
-        def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
-                -> TransferStats:
-            return self.run(from_module, to_module, *args, **kwargs)
+    def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
+            -> TransferStats:
+        return self.run(from_module, to_module, *args, **kwargs)
 
-    def __new__(cls,
-                standardization: Union[Standardization, str, Tuple[Standardization, Dict], Tuple[str, Dict]]
-                = 'blocks',
-                matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = 'dp',
-                transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = 'clip',
-                score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = 'ShapeScore',
-                *args,
-                **kwargs) -> _IAT:
+    def __init__(self,
+                 standardization: Union[Standardization, str, Tuple[Standardization, Dict], Tuple[str, Dict]]
+                 = 'blocks',
+                 matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = 'dp',
+                 transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = 'clip',
+                 score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = 'ShapeScore',
+                 *args,
+                 **kwargs):
         ctx = DotDict()
 
         ctx._standardization_classes = get_subclasses(Standardization)
@@ -56,29 +54,33 @@ class IAT(ABC):
         ctx._transfer_classes = get_subclasses(Transfer)
         ctx._score_classes = get_subclasses(Score)
 
-        ctx.algorithm = IAT._IAT()
-
-        cls._try_setting(ctx, 'standardization', standardization, Standardization)
-        cls._try_setting(ctx, 'matching', matching, Matching)
-        cls._try_setting(ctx, 'transfer', transfer, Transfer)
-        cls._try_setting(ctx, 'score', score, Score)
-
-        return ctx.algorithm
+        self._try_setting(ctx, 'standardization', standardization, Standardization)
+        self._try_setting(ctx, 'matching', matching, Matching)
+        self._try_setting(ctx, 'transfer', transfer, Transfer)
+        self._try_setting(ctx, 'score', score, Score)
 
     @staticmethod
-    def _try_setting(ctx, key: str, value: Any, clazz: Any) -> None:
+    def make(standardization: Union[Standardization, str, Tuple[Standardization, Dict], Tuple[str, Dict]]
+             = 'blocks',
+             matching: Union[Matching, str, Tuple[Matching, Dict], Tuple[str, Dict]] = 'dp',
+             transfer: Union[Transfer, str, Tuple[Transfer, Dict], Tuple[str, Dict]] = 'clip',
+             score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = 'ShapeScore',
+             *args,
+             **kwargs):
+        return IAT(standardization, matching, transfer, score, *args, **kwargs)
+
+    def _try_setting(self, ctx: Dict, key: str, value: Any, clazz: Any) -> None:
         kwargs = {}
         if isinstance(value, tuple):
             value, kwargs = value[0], value[1]
         if isinstance(value, str):
-            setattr(ctx.algorithm, key, IAT._find_subclass(ctx, key, value)(**kwargs))
+            setattr(self, key, self._find_subclass(ctx, key, value)(**kwargs))
         elif isinstance(value, clazz):
-            setattr(ctx.algorithm, key, value)
+            setattr(self, key, value)
         else:
             raise TypeError()
 
-    @staticmethod
-    def _find_subclass(ctx, key: str, value: str) -> Any:
+    def _find_subclass(self, ctx: Dict, key: str, value: str) -> Any:
         classes = getattr(ctx, f'_{key}_classes')
         trials = [lambda x: x[1],
                   lambda x: camelize(f'{x[1]}_{x[0]}'),

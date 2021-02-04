@@ -10,7 +10,7 @@ from iatransfer.utils.subclass_utils import get_subclasses
 
 class IATTest(unittest.TestCase):
 
-    def _assert_blocks_dp_clip(self, iat: IAT._IAT):
+    def _assert_blocks_dp_clip(self, iat: IAT):
         self.assertEquals(iat.standardization.__class__.__name__, 'BlocksStandardization')
         self.assertEquals(iat.matching.__class__.__name__, 'DPMatching')
         self.assertEquals(iat.transfer.__class__.__name__, 'ClipTransfer')
