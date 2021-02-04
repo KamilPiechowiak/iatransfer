@@ -1,5 +1,5 @@
-![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
-![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
+[![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)](https://github.com/KamilPiechowiak/iatransfer/actions?query=workflow%3A%22Toolkit+build%22)
+[![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)](https://github.com/KamilPiechowiak/iatransfer/actions?query=workflow%3A%22Research+build%22)
 [![Documentation](https://github.com/KamilPiechowiak/weights-transfer/workflows/Documentation/badge.svg)](https://kamilpiechowiak.github.io/iatransfer/iatransfer/toolkit/index.html)
 
 ![Coverage](https://img.shields.io/badge/coverage-95%25-green)
