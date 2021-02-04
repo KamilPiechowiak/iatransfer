@@ -23,6 +23,7 @@ pip install iatransfer
 
 
 ## Usage
+* simple
 ```python
 import torch
 from iatransfer.toolkit import IAT
@@ -40,7 +41,35 @@ model_to: nn.Module = Model2()
 # enjoy high-accuracy initialization
 transfer(model_from, model_to)
 ```
+* parametrization
+```python
+from iatransfer.toolkit import IAT
 
+
+iat = IAT(standardization='blocks', matching='dp', score='autoencoder', transfer='trace')
+
+# ==== or
+
+iat = IAT(matching=('dp', {'param': 'value'}))
+
+# ==== or
+
+from iatransfer.toolkit.matching.dp_matching import DPMatching
+
+iat = IAT(matching=DPMatching())
+```
+* plugins
+```python
+from iatransfer.toolkit.base_matching import Matching
+
+class CustomMatching(Matching):
+
+    def match(self, from_module, to_module, *args, **kwargs)
+        # provide your implementation
+
+# This will instantiate the above CustomMatching in IAT
+iat = IAT(matching='custom') 
+```
 ## Citation
 When referring to or using iatransfer in a scientific publication, please consider including citation to the following thesis:<br /><br />
 @manual{<br />
