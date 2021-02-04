@@ -41,10 +41,10 @@ model_to: nn.Module = Model2()
 transfer(model_from, model_to)
 ```
 
-## Cite
+## Citation
 When referring to or using iatransfer in a scientific publication, please consider including citation to the following thesis:<br /><br />
 @manual{<br />
-  iat2021,<br />
+&emsp;iat2021,<br />
   title        = {Inter-Architecture Knowledge Transfer},<br />
   author       = {Maciej A. Czyzewski and Daniel Nowak and Kamil Piechowiak},<br />
   note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},<br />
