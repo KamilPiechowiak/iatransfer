@@ -13,6 +13,8 @@ from iatransfer.toolkit.base_standardization import Standardization
 
 
 class GraphStandardization(Standardization):
+    """Graph standardization algorithm for IAT.
+    """
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -> List[Union[nn.Module, List[nn.Module]]]:

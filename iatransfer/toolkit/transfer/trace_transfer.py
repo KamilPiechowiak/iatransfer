@@ -9,6 +9,8 @@ from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class TraceTransfer(Transfer):
+    """Trace tensor transfer algorithm for IAT.
+    """
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -> None:
         if reverse_priority:

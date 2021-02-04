@@ -8,6 +8,8 @@ from iatransfer.toolkit.tli_helpers import get_model_graph_and_ids_mapping
 
 
 class AutoEncoderScore(Score):
+    """Auto-encoder score algorithm for IAT.
+    """
 
     def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
             -> float:

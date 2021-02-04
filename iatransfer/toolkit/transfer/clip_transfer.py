@@ -4,6 +4,8 @@ from iatransfer.toolkit.base_transfer import Transfer
 
 
 class ClipTransfer(Transfer):
+    """Clip tensor transfer algorithm for IAT.
+    """
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

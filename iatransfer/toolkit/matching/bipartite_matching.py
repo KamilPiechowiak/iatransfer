@@ -8,6 +8,8 @@ from iatransfer.toolkit.matching.dp_matching import DPMatching
 
 
 class BipartiteMatching(DPMatching):
+    """Bipartite matching algorithm for IAT.
+    """
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -16,7 +18,7 @@ class BipartiteMatching(DPMatching):
         return matched
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-              to_module: List[Union[nn.Module, List[nn.Module]]]):
+            to_module: List[Union[nn.Module, List[nn.Module]]]):
         score, _, _ = self._match_bipartite(from_module, to_module)
         return score
 

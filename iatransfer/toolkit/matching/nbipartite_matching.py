@@ -8,8 +8,7 @@ from iatransfer.toolkit.matching.dp_matching import DPMatching
 
 
 class NBipartiteMatching(DPMatching):
-    """
-    Nested Bipartide Matching
+    """Nested bipartite matching algorithm for IAT.
     """
 
     def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],

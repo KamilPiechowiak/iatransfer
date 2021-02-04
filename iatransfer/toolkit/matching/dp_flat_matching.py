@@ -7,6 +7,8 @@ from iatransfer.toolkit.base_matching import Matching
 
 
 class DPFlatMatching(Matching):
+    """Dynamic programming flat matching algorithm for IAT.
+    """
 
     def match(self, from_module: List[nn.Module],
               to_module: List[nn.Module], *args, **kwargs) \

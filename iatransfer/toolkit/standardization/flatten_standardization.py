@@ -6,6 +6,8 @@ from iatransfer.toolkit.base_standardization import Standardization
 
 
 class FlattenStandardization(Standardization):
+    """Basic flatten standardization algorithm for IAT.
+    """
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -> List[Union[nn.Module, List[nn.Module]]]:

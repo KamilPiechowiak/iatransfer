@@ -7,8 +7,10 @@ from iatransfer.toolkit.tli import transfer, get_graph, Graph
 
 
 class GraphNewMatching(Matching):
+    """PyTorch execution graph analysis matching algorithm for IAT.
+    """
 
-    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs)\
+    def match(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
         from_module = kwargs['context']['from_module']
         to_module = kwargs['context']['to_module']

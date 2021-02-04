@@ -13,6 +13,8 @@ from iatransfer.utils.subclass_utils import get_subclasses
 
 
 class IAT:
+    """Represents the inter-architecture transfer algorithm.
+    """
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -20,16 +22,23 @@ class IAT:
 
     def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> TransferStats:
+        """Executes the entire IAT algorithm.
+        """
         context = {'from_module': from_module, 'to_module': to_module}
+        stats = TransferStats()
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
         matched_tensors = self.matching(from_paths, to_paths, context=context)
-        return self.transfer(matched_tensors, context=context)
+        self.transfer(matched_tensors, context=context)
+
+        return stats
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> float:
+        """Returns similarity score between two models.
+        """
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
@@ -37,6 +46,8 @@ class IAT:
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> TransferStats:
+        """Alias for 'run'.
+        """
         return self.run(from_module, to_module, *args, **kwargs)
 
     def __init__(self,
@@ -67,6 +78,8 @@ class IAT:
              score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = 'ShapeScore',
              *args,
              **kwargs):
+        """Method factory.
+        """
         return IAT(standardization, matching, transfer, score, *args, **kwargs)
 
     def _try_setting(self, ctx: Dict, key: str, value: Any, clazz: Any) -> None:

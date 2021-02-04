@@ -7,6 +7,8 @@ from iatransfer.toolkit.base_matching import Matching
 
 
 class RandomMatching(Matching):
+    """Random matching algorithm for IAT. Used for baseline.
+    """
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -15,7 +17,7 @@ class RandomMatching(Matching):
         return matched
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-              to_module: List[Union[nn.Module, List[nn.Module]]]) -> float:
+            to_module: List[Union[nn.Module, List[nn.Module]]]) -> float:
         return random.random()
     
     def _get_layers_buckets(self, module: nn.Module):

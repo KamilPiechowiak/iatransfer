@@ -4,6 +4,8 @@ from iatransfer.toolkit.base_transfer import Transfer
 
 
 class FullTransfer(Transfer):
+    """Full tensor transfer algorithm for IAT.
+    """
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)

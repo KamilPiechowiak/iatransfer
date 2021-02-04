@@ -8,7 +8,7 @@ from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class MagnitudeTransfer(Transfer):
-    """
+    """Magnitude tensor transfer algorithm for IAT.
         :param reverse_priority: if set to True, choose channels with smallest weights' sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     """

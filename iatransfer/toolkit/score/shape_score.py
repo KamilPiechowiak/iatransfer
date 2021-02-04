@@ -4,6 +4,8 @@ from iatransfer.toolkit.base_score import Score
 
 
 class ShapeScore(Score):
+    """Shape based score algorithm for IAT.
+    """
 
     def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> float:
