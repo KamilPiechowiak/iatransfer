@@ -48,9 +48,9 @@ When referring to or using iatransfer in a scientific publication, please consid
 &emsp;title        = {Inter-Architecture Knowledge Transfer},<br />
 &emsp;author       = {Maciej A. Czyzewski and Daniel Nowak and Kamil Piechowiak},<br />
 &emsp;note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},<br />
-&emsp;type&emsp;&emsp;&emsp;&emsp;= {Bachelor’s Thesis},<br />
-&emsp;address&emsp;&emsp;= {Poznan, Poland},<br />
-&emsp;year&emsp;&emsp;&emsp;&emsp;= {2021}<br />
+&emsp;type = {Bachelor’s Thesis},<br />
+&emsp;address = {Poznan, Poland},<br />
+&emsp;year= {2021}<br />
 }<br /><br />
 
 iatransfer has been tested under python 3.8.
