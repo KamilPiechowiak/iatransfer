@@ -37,7 +37,7 @@ train(model_from)
 # instantiate new model
 model_to: nn.Module = Model2() 
 
-# 
+# enjoy high-accuracy initialization
 transfer(model_from, model_to)
 ```
 
