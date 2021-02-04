@@ -56,23 +56,25 @@ When referring to or using iatransfer in a scientific publication, please consid
 ## Development
 
 #### Init:
-`./dev/init.sh`
+```bash
+./dev/init.sh
+```
 
 #### Run tests:
-`nosetests tests`
-
-#### Install package:
-`pip install .`
-
-##### in edit mode:
-`pip install -e .`
+```bash
+nosetests tests
+```
+#### Install in edit mode:
+```
+pip install -e .
+```
 
 ## Research reproduction:
 Copy the source code to the GCP cloudshell or install `iatransfer_research` package.
 
 Run:
-`/bin/bash ./scripts/research/iatransfer_full_run.sh`
+```/bin/bash ./scripts/research/iatransfer_full_run.sh```
 or
-`iatransfer_full_run.sh`
+```iatransfer_full_run.sh```
 if `iatransfer_research` has been installed.
 
