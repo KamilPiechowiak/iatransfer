@@ -4,7 +4,6 @@ import numpy as np
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.standardization.flatten_standardization import FlattenStandardization
 
 
 class DPFlatMatching(Matching):

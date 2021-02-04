@@ -1,12 +1,9 @@
-from typing import Tuple, List, Any, Union
-
 import random
-import numpy as np
+from typing import Tuple, List, Union
+
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.standardization.flatten_standardization import FlattenStandardization
 
 
 class RandomMatching(Matching):

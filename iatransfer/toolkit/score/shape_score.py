@@ -1,5 +1,3 @@
-from typing import List, Any
-
 from torch import nn
 
 from iatransfer.toolkit.base_score import Score

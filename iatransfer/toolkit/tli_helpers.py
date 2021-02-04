@@ -4,6 +4,7 @@ from torch import nn
 
 from iatransfer.toolkit.tli import get_graph
 
+
 def get_model_graph_and_ids_mapping(model: nn.Module) -> ['Graph', Dict[nn.Module, int]]:
     graph = get_graph(model)
     names_to_layers_mapping = {}

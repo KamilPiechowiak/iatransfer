@@ -1,10 +1,10 @@
-from typing import Tuple, List, Any, Union, Dict
+from typing import Tuple, List, Union, Dict
 
-import numpy as np
 import torch.nn as nn
 
 from iatransfer.toolkit.base_matching import Matching
 from iatransfer.toolkit.tli import transfer, get_graph, Graph
+
 
 class GraphNewMatching(Matching):
 

@@ -1,12 +1,10 @@
-from typing import Tuple, List, Union, Any
+from typing import Tuple, List, Union
 
 import networkx as nx
 import numpy as np
 import torch.nn as nn
 
 from iatransfer.toolkit.matching.dp_matching import DPMatching
-from iatransfer.toolkit.base_standardization import Standardization
-from iatransfer.toolkit.standardization.blocks_standardization import BlocksStandardization
 
 
 class NBipartiteMatching(DPMatching):

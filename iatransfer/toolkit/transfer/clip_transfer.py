@@ -1,10 +1,6 @@
-from typing import List, Tuple
-
 import torch
-import torch.nn as nn
 
 from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class ClipTransfer(Transfer):
