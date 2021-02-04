@@ -30,7 +30,12 @@
 
 
 class TransferStats(NamedTuple):
-    pass</code></pre>
+    matched_from: int
+    matched_to: int
+    left_from: int
+    left_to: int
+    all_from: int
+    all_to: int</code></pre>
 </details>
 </section>
 <section>
@@ -44,20 +49,53 @@ class TransferStats(NamedTuple):
 <dl>
 <dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats"><code class="flex name class">
 <span>class <span class="ident">TransferStats</span></span>
+<span>(</span><span>matched_from: int, matched_to: int, left_from: int, left_to: int, all_from: int, all_to: int)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>TransferStats()</p></div>
+<div class="desc"><p>TransferStats(matched_from, matched_to, left_from, left_to, all_from, all_to)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TransferStats(NamedTuple):
-    pass</code></pre>
+    matched_from: int
+    matched_to: int
+    left_from: int
+    left_to: int
+    all_from: int
+    all_to: int</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>builtins.tuple</li>
 </ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_from"><code class="name">var <span class="ident">all_from</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 4</p></div>
+</dd>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_to"><code class="name">var <span class="ident">all_to</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 5</p></div>
+</dd>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_from"><code class="name">var <span class="ident">left_from</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 2</p></div>
+</dd>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_to"><code class="name">var <span class="ident">left_to</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 3</p></div>
+</dd>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_from"><code class="name">var <span class="ident">matched_from</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+<dt id="iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_to"><code class="name">var <span class="ident">matched_to</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+</dl>
 </dd>
 </dl>
 </section>
@@ -77,6 +115,14 @@ class TransferStats(NamedTuple):
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></code></h4>
+<ul class="two-column">
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_from" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_from">all_from</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_to" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.all_to">all_to</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_from" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_from">left_from</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_to" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.left_to">left_to</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_from" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_from">matched_from</a></code></li>
+<li><code><a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_to" href="#iatransfer.toolkit.transfer.transfer_stats.TransferStats.matched_to">matched_to</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
