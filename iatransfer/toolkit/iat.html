@@ -38,17 +38,7 @@ from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.base_transfer import Transfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.utils.dot_dict import DotDict
-
-
-def _get_subclasses(clazz: type):
-    subclasses = {}
-    classes = [clazz]
-    while len(classes) &gt; 0:
-        clazz = classes.pop()
-        for c in clazz.__subclasses__():
-            subclasses[c.__name__] = c
-            classes.append(c)
-    return subclasses
+from iatransfer.utils.subclass_utils import get_subclasses
 
 
 class IAT(ABC):
@@ -89,10 +79,10 @@ class IAT(ABC):
                 **kwargs) -&gt; _IAT:
         ctx = DotDict()
 
-        ctx._standardization_classes = _get_subclasses(Standardization)
-        ctx._matching_classes = _get_subclasses(Matching)
-        ctx._transfer_classes = _get_subclasses(Transfer)
-        ctx._score_classes = _get_subclasses(Score)
+        ctx._standardization_classes = get_subclasses(Standardization)
+        ctx._matching_classes = get_subclasses(Matching)
+        ctx._transfer_classes = get_subclasses(Transfer)
+        ctx._score_classes = get_subclasses(Score)
 
         ctx.algorithm = IAT._IAT()
 
@@ -189,10 +179,10 @@ inheritance.</p></div>
                 **kwargs) -&gt; _IAT:
         ctx = DotDict()
 
-        ctx._standardization_classes = _get_subclasses(Standardization)
-        ctx._matching_classes = _get_subclasses(Matching)
-        ctx._transfer_classes = _get_subclasses(Transfer)
-        ctx._score_classes = _get_subclasses(Score)
+        ctx._standardization_classes = get_subclasses(Standardization)
+        ctx._matching_classes = get_subclasses(Matching)
+        ctx._transfer_classes = get_subclasses(Transfer)
+        ctx._score_classes = get_subclasses(Score)
 
         ctx.algorithm = IAT._IAT()
 
