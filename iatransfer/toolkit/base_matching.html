@@ -35,20 +35,35 @@ from iatransfer.toolkit.base_score import Score
 
 
 class Matching(ABC):
+    &#34;&#34;&#34;Base-class for any matching algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+            to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+        &#34;&#34;&#34; Calculates the similarity between two standardized models (lists of blocks).
+
+        :return: Float in range [0; 1] representing similarity score.
+        &#34;&#34;&#34;
         raise NotImplementedError()
 
     @abstractmethod
-    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
+        &#34;&#34;&#34; Matches two standardized models (lists of blocks).
+
+        :return: The list of tuples of matched layers.
+        &#34;&#34;&#34;
         pass
 
-    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
+    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+                 to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
+        &#34;&#34;&#34; Alias for &#39;match&#39;.
+        &#34;&#34;&#34;
         return self.match(from_module, to_module, *args, **kwargs)
 
     def set_score(self, score: Score) -&gt; None:
@@ -69,27 +84,41 @@ class Matching(ABC):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Base-class for any matching algorithm detectable from IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Matching(ABC):
+    &#34;&#34;&#34;Base-class for any matching algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+    def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+            to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+        &#34;&#34;&#34; Calculates the similarity between two standardized models (lists of blocks).
+
+        :return: Float in range [0; 1] representing similarity score.
+        &#34;&#34;&#34;
         raise NotImplementedError()
 
     @abstractmethod
-    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
+    def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+              to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
+        &#34;&#34;&#34; Matches two standardized models (lists of blocks).
+
+        :return: The list of tuples of matched layers.
+        &#34;&#34;&#34;
         pass
 
-    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
+    def __call__(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+                 to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
             -&gt; List[Tuple[nn.Module, nn.Module]]:
+        &#34;&#34;&#34; Alias for &#39;match&#39;.
+        &#34;&#34;&#34;
         return self.match(from_module, to_module, *args, **kwargs)
 
     def set_score(self, score: Score) -&gt; None:
@@ -116,14 +145,20 @@ inheritance.</p></div>
 <span>def <span class="ident">match</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Matches two standardized models (lists of blocks).</p>
+<p>:return: The list of tuples of matched layers.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
+def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+          to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
         -&gt; List[Tuple[nn.Module, nn.Module]]:
+    &#34;&#34;&#34; Matches two standardized models (lists of blocks).
+
+    :return: The list of tuples of matched layers.
+    &#34;&#34;&#34;
     pass</code></pre>
 </details>
 </dd>
@@ -144,12 +179,18 @@ def match(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module:
 <span>def <span class="ident">sim</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> float</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calculates the similarity between two standardized models (lists of blocks).</p>
+<p>:return: Float in range [0; 1] representing similarity score.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]], to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
+        to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) -&gt; float:
+    &#34;&#34;&#34; Calculates the similarity between two standardized models (lists of blocks).
+
+    :return: Float in range [0; 1] representing similarity score.
+    &#34;&#34;&#34;
     raise NotImplementedError()</code></pre>
 </details>
 </dd>

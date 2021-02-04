@@ -33,6 +33,8 @@ import torch.nn as nn
 
 
 class Standardization(ABC):
+    &#34;&#34;&#34;Base-class for any standardization algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
@@ -40,10 +42,14 @@ class Standardization(ABC):
     @abstractmethod
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
+        &#34;&#34;&#34;Standardizes the model to a list of blocks.
+        &#34;&#34;&#34;
         pass
 
     def __call__(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
+        &#34;&#34;&#34;Alias for standardize.
+        &#34;&#34;&#34;
         return self.standardize(module, *args, **kwargs)</code></pre>
 </details>
 </section>
@@ -61,13 +67,14 @@ class Standardization(ABC):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Base-class for any standardization algorithm detectable from IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Standardization(ABC):
+    &#34;&#34;&#34;Base-class for any standardization algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
@@ -75,10 +82,14 @@ inheritance.</p></div>
     @abstractmethod
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
+        &#34;&#34;&#34;Standardizes the model to a list of blocks.
+        &#34;&#34;&#34;
         pass
 
     def __call__(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
+        &#34;&#34;&#34;Alias for standardize.
+        &#34;&#34;&#34;
         return self.standardize(module, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -100,7 +111,7 @@ inheritance.</p></div>
 <span>def <span class="ident">standardize</span></span>(<span>self, module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Standardizes the model to a list of blocks.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -108,6 +119,8 @@ inheritance.</p></div>
 <pre><code class="python">@abstractmethod
 def standardize(self, module: nn.Module, *args, **kwargs) \
         -&gt; List[Union[nn.Module, List[nn.Module]]]:
+    &#34;&#34;&#34;Standardizes the model to a list of blocks.
+    &#34;&#34;&#34;
     pass</code></pre>
 </details>
 </dd>

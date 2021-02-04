@@ -41,6 +41,8 @@ from iatransfer.toolkit.base_standardization import Standardization
 
 
 class GraphStandardization(Standardization):
+    &#34;&#34;&#34;Graph standardization algorithm for IAT.
+    &#34;&#34;&#34;
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
@@ -278,13 +280,14 @@ class GraphStandardization(Standardization):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Graph standardization algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GraphStandardization(Standardization):
+    &#34;&#34;&#34;Graph standardization algorithm for IAT.
+    &#34;&#34;&#34;
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
@@ -781,21 +784,15 @@ inheritance.</p></div>
     return new_graph</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.standardize"><code class="name flex">
-<span>def <span class="ident">standardize</span></span>(<span>self, module: nn.Module, *args, **kwargs) ‑> List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def standardize(self, module: nn.Module, *args, **kwargs) \
-        -&gt; List[Union[nn.Module, List[nn.Module]]]:
-    return self.get_blocks(module)</code></pre>
-</details>
-</dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_standardization.Standardization.standardize" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization.standardize">standardize</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -815,13 +812,12 @@ inheritance.</p></div>
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization">GraphStandardization</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_blocks" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_blocks">get_blocks</a></code></li>
 <li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_graph" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_graph">get_graph</a></code></li>
 <li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_layers" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.get_layers">get_layers</a></code></li>
 <li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.make_dot" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.make_dot">make_dot</a></code></li>
 <li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.sort_graph" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.sort_graph">sort_graph</a></code></li>
-<li><code><a title="iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.standardize" href="#iatransfer.toolkit.standardization.graph_standardization.GraphStandardization.standardize">standardize</a></code></li>
 </ul>
 </li>
 </ul>

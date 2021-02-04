@@ -35,6 +35,8 @@ from iatransfer.toolkit.base_matching import Matching
 
 
 class DPMatching(Matching):
+    &#34;&#34;&#34;Dynamic programming matching algorithm for IAT.
+    &#34;&#34;&#34;
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -154,13 +156,14 @@ class DPMatching(Matching):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Dynamic programming matching algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DPMatching(Matching):
+    &#34;&#34;&#34;Dynamic programming matching algorithm for IAT.
+    &#34;&#34;&#34;
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -277,40 +280,15 @@ inheritance.</p></div>
 <li>matching.bipartite_matching.BipartiteMatching</li>
 <li>matching.nbipartite_matching.NBipartiteMatching</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="iatransfer.toolkit.matching.dp_matching.DPMatching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> List[Union[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module], List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]]]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-          to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-        -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
-    _, matched, _ = self._match_models(from_module, to_module)
-    return matched</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.matching.dp_matching.DPMatching.sim"><code class="name flex">
-<span>def <span class="ident">sim</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]]) ‑> float</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-        to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
-    score, _, _ = self._match_models(from_module, to_module)
-    return score / self._match_models(to_module, to_module)[0]</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_matching.Matching.match" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.match">match</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_matching.Matching.sim" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.sim">sim</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -330,10 +308,6 @@ inheritance.</p></div>
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></code></h4>
-<ul class="">
-<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.match" href="#iatransfer.toolkit.matching.dp_matching.DPMatching.match">match</a></code></li>
-<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.sim" href="#iatransfer.toolkit.matching.dp_matching.DPMatching.sim">sim</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

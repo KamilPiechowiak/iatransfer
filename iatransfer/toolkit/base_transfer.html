@@ -32,16 +32,17 @@ from typing import List, Tuple
 import torch
 import torch.nn as nn
 
-from iatransfer.toolkit.transfer.transfer_stats import TransferStats
-
 
 class Transfer(ABC):
+    &#34;&#34;&#34;Base-class for any tensor transfer algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
-            -&gt; TransferStats:
+    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Invokes the transfer procedure for a list of matched tensors.
+        &#34;&#34;&#34;
         with torch.no_grad():
             for matching in matched_tensors:
                 if isinstance(matching, list):
@@ -49,16 +50,17 @@ class Transfer(ABC):
                 elif matching[0] is not None and matching[1] is not None:
                     self.transfer_layer(matching[0].weight, matching[1].weight)
                     self.transfer_layer(matching[0].bias, matching[1].bias)
-        return TransferStats()
 
     @abstractmethod
-    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
-            -&gt; TransferStats:
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Transfers the matched layers. Changes the contents of matched tensors in model_to.
+        &#34;&#34;&#34;
         pass
 
-    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
-            -&gt; TransferStats:
-        return self.transfer(matched_tensors, *args, **kwargs)</code></pre>
+    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Alias for &#39;transfer&#39;.
+        &#34;&#34;&#34;
+        self.transfer(matched_tensors, *args, **kwargs)</code></pre>
 </details>
 </section>
 <section>
@@ -75,19 +77,21 @@ class Transfer(ABC):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Base-class for any tensor transfer algorithm detectable from IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Transfer(ABC):
+    &#34;&#34;&#34;Base-class for any tensor transfer algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
 
-    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
-            -&gt; TransferStats:
+    def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Invokes the transfer procedure for a list of matched tensors.
+        &#34;&#34;&#34;
         with torch.no_grad():
             for matching in matched_tensors:
                 if isinstance(matching, list):
@@ -95,16 +99,17 @@ inheritance.</p></div>
                 elif matching[0] is not None and matching[1] is not None:
                     self.transfer_layer(matching[0].weight, matching[1].weight)
                     self.transfer_layer(matching[0].bias, matching[1].bias)
-        return TransferStats()
 
     @abstractmethod
-    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
-            -&gt; TransferStats:
+    def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Transfers the matched layers. Changes the contents of matched tensors in model_to.
+        &#34;&#34;&#34;
         pass
 
-    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
-            -&gt; TransferStats:
-        return self.transfer(matched_tensors, *args, **kwargs)</code></pre>
+    def __call__(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+        &#34;&#34;&#34;Alias for &#39;transfer&#39;.
+        &#34;&#34;&#34;
+        self.transfer(matched_tensors, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -124,38 +129,39 @@ inheritance.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="iatransfer.toolkit.base_transfer.Transfer.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>self, matched_tensors: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+<span>def <span class="ident">transfer</span></span>(<span>self, matched_tensors: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Invokes the transfer procedure for a list of matched tensors.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) \
-        -&gt; TransferStats:
+<pre><code class="python">def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
+    &#34;&#34;&#34;Invokes the transfer procedure for a list of matched tensors.
+    &#34;&#34;&#34;
     with torch.no_grad():
         for matching in matched_tensors:
             if isinstance(matching, list):
                 self.transfer(matching)
             elif matching[0] is not None and matching[1] is not None:
                 self.transfer_layer(matching[0].weight, matching[1].weight)
-                self.transfer_layer(matching[0].bias, matching[1].bias)
-    return TransferStats()</code></pre>
+                self.transfer_layer(matching[0].bias, matching[1].bias)</code></pre>
 </details>
 </dd>
 <dt id="iatransfer.toolkit.base_transfer.Transfer.transfer_layer"><code class="name flex">
-<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.nn.modules.module.Module, tensor_to: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
+<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.nn.modules.module.Module, tensor_to: torch.nn.modules.module.Module, *args, **kwargs) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Transfers the matched layers. Changes the contents of matched tensors in model_to.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
-def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) \
-        -&gt; TransferStats:
+def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) -&gt; None:
+    &#34;&#34;&#34;Transfers the matched layers. Changes the contents of matched tensors in model_to.
+    &#34;&#34;&#34;
     pass</code></pre>
 </details>
 </dd>

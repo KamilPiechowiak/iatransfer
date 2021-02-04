@@ -36,7 +36,7 @@ from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class MagnitudeTransfer(Transfer):
-    &#34;&#34;&#34;
+    &#34;&#34;&#34;Magnitude tensor transfer algorithm for IAT.
         :param reverse_priority: if set to True, choose channels with smallest weights&#39; sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     &#34;&#34;&#34;
@@ -137,14 +137,15 @@ class MagnitudeTransfer(Transfer):
 <span>(</span><span>reverse_priority=False, input_constrained_by_output=True, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>:param reverse_priority: if set to True, choose channels with smallest weights' sum
+<div class="desc"><p>Magnitude tensor transfer algorithm for IAT.
+:param reverse_priority: if set to True, choose channels with smallest weights' sum
 :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MagnitudeTransfer(Transfer):
-    &#34;&#34;&#34;
+    &#34;&#34;&#34;Magnitude tensor transfer algorithm for IAT.
         :param reverse_priority: if set to True, choose channels with smallest weights&#39; sum
         :param input_constrained_by_output: if set to True, choose input channels considering only already chosen output channels. If set to False, choose input channels taking into account all weights.
     &#34;&#34;&#34;
@@ -276,49 +277,6 @@ class MagnitudeTransfer(Transfer):
     return tuple(to_slices), tuple(from_slices)</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>self, matched_tensors: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transfer(self, matched_tensors: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
-    with torch.no_grad():
-        for matching in matched_tensors:
-            if isinstance(matching, list):
-                self.transfer(matching)
-            elif matching[0] is not None and matching[1] is not None:
-                self.transfer_layer(matching[0], matching[1])</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer_layer"><code class="name flex">
-<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.nn.modules.module.Module, tensor_to: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transfer_layer(self, tensor_from: nn.Module, tensor_to: nn.Module, *args, **kwargs) -&gt; TransferStats:
-    to_slices, from_slices = self.get_slices(tensor_from.weight, tensor_to.weight)
-    if tensor_to.weight is not None and tensor_from.weight is not None:
-        tensor_to.weight[to_slices] = tensor_from.weight[from_slices]
-    if tensor_to.bias is not None and tensor_from.bias is not None:
-        to_ids = to_slices[0]
-        from_ids = from_slices[0]
-        if isinstance(to_ids, torch.Tensor):
-            to_ids = to_ids.flatten()
-        if isinstance(from_ids, torch.Tensor):
-            from_ids = from_ids.flatten()
-        tensor_to.bias[to_ids] = tensor_from.bias[from_ids]
-
-    return TransferStats()</code></pre>
-</details>
-</dd>
 <dt id="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice"><code class="name flex">
 <span>def <span class="ident">update_slice</span></span>(<span>self, from_tensor: torch.Tensor, to_tensor: torch.Tensor, idx: int, from_slices: List[Union[List[int], slice]], to_slices: List[Union[List[int], slice]]) ‑> NoneType</span>
 </code></dt>
@@ -350,6 +308,15 @@ class MagnitudeTransfer(Transfer):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer_layer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer_layer">transfer_layer</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -371,8 +338,6 @@ class MagnitudeTransfer(Transfer):
 <h4><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer">MagnitudeTransfer</a></code></h4>
 <ul class="">
 <li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.get_slices" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.get_slices">get_slices</a></code></li>
-<li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer">transfer</a></code></li>
-<li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer_layer" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.transfer_layer">transfer_layer</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice" href="#iatransfer.toolkit.transfer.magnitude_transfer.MagnitudeTransfer.update_slice">update_slice</a></code></li>
 </ul>
 </li>

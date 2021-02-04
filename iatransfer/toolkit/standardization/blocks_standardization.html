@@ -34,6 +34,8 @@ from iatransfer.toolkit.base_standardization import Standardization
 
 
 class BlocksStandardization(Standardization):
+    &#34;&#34;&#34;Block standardization algorithm for IAT.
+    &#34;&#34;&#34;
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
@@ -118,13 +120,14 @@ class BlocksStandardization(Standardization):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Block standardization algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class BlocksStandardization(Standardization):
+    &#34;&#34;&#34;Block standardization algorithm for IAT.
+    &#34;&#34;&#34;
 
     def standardize(self, module: nn.Module, *args, **kwargs) \
             -&gt; List[Union[nn.Module, List[nn.Module]]]:
@@ -275,21 +278,15 @@ inheritance.</p></div>
     return depth, dimensional_layers_num, layers</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization.standardize"><code class="name flex">
-<span>def <span class="ident">standardize</span></span>(<span>self, module: torch.nn.modules.module.Module, *args, **kwargs) ‑> List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def standardize(self, module: nn.Module, *args, **kwargs) \
-        -&gt; List[Union[nn.Module, List[nn.Module]]]:
-    return self.flatten_with_blocks(module, 0)[2]</code></pre>
-</details>
-</dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_standardization.Standardization" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_standardization.Standardization.standardize" href="../base_standardization.html#iatransfer.toolkit.base_standardization.Standardization.standardize">standardize</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -311,7 +308,6 @@ inheritance.</p></div>
 <h4><code><a title="iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization" href="#iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization">BlocksStandardization</a></code></h4>
 <ul class="">
 <li><code><a title="iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization.flatten_with_blocks" href="#iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization.flatten_with_blocks">flatten_with_blocks</a></code></li>
-<li><code><a title="iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization.standardize" href="#iatransfer.toolkit.standardization.blocks_standardization.BlocksStandardization.standardize">standardize</a></code></li>
 </ul>
 </li>
 </ul>

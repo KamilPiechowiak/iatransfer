@@ -35,6 +35,8 @@ from iatransfer.toolkit.base_matching import Matching
 
 
 class RandomMatching(Matching):
+    &#34;&#34;&#34;Random matching algorithm for IAT. Used for baseline.
+    &#34;&#34;&#34;
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -43,7 +45,7 @@ class RandomMatching(Matching):
         return matched
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-              to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
+            to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
         return random.random()
     
     def _get_layers_buckets(self, module: nn.Module):
@@ -88,13 +90,14 @@ class RandomMatching(Matching):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Random matching algorithm for IAT. Used for baseline.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RandomMatching(Matching):
+    &#34;&#34;&#34;Random matching algorithm for IAT. Used for baseline.
+    &#34;&#34;&#34;
 
     def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
               to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
@@ -103,7 +106,7 @@ inheritance.</p></div>
         return matched
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-              to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
+            to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
         return random.random()
     
     def _get_layers_buckets(self, module: nn.Module):
@@ -138,39 +141,15 @@ inheritance.</p></div>
 <li><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="iatransfer.toolkit.matching.random_matching.RandomMatching.match"><code class="name flex">
-<span>def <span class="ident">match</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], *args, **kwargs) ‑> List[Union[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module], List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]]]]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def match(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-          to_module: List[Union[nn.Module, List[nn.Module]]], *args, **kwargs) \
-        -&gt; List[Union[Tuple[nn.Module, nn.Module], List[Tuple[nn.Module, nn.Module]]]]:
-    matched = self._match_models(from_module, to_module)
-    return matched</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.matching.random_matching.RandomMatching.sim"><code class="name flex">
-<span>def <span class="ident">sim</span></span>(<span>self, from_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]], to_module: List[Union[torch.nn.modules.module.Module, List[torch.nn.modules.module.Module]]]) ‑> float</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
-          to_module: List[Union[nn.Module, List[nn.Module]]]) -&gt; float:
-    return random.random()</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_matching.Matching.match" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.match">match</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_matching.Matching.sim" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.sim">sim</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -190,10 +169,6 @@ inheritance.</p></div>
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.matching.random_matching.RandomMatching" href="#iatransfer.toolkit.matching.random_matching.RandomMatching">RandomMatching</a></code></h4>
-<ul class="">
-<li><code><a title="iatransfer.toolkit.matching.random_matching.RandomMatching.match" href="#iatransfer.toolkit.matching.random_matching.RandomMatching.match">match</a></code></li>
-<li><code><a title="iatransfer.toolkit.matching.random_matching.RandomMatching.sim" href="#iatransfer.toolkit.matching.random_matching.RandomMatching.sim">sim</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

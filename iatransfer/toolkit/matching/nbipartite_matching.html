@@ -36,8 +36,7 @@ from iatransfer.toolkit.matching.dp_matching import DPMatching
 
 
 class NBipartiteMatching(DPMatching):
-    &#34;&#34;&#34;
-    Nested Bipartide Matching
+    &#34;&#34;&#34;Nested bipartite matching algorithm for IAT.
     &#34;&#34;&#34;
 
     def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],
@@ -92,14 +91,13 @@ class NBipartiteMatching(DPMatching):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Nested Bipartide Matching</p></div>
+<div class="desc"><p>Nested bipartite matching algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NBipartiteMatching(DPMatching):
-    &#34;&#34;&#34;
-    Nested Bipartide Matching
+    &#34;&#34;&#34;Nested bipartite matching algorithm for IAT.
     &#34;&#34;&#34;
 
     def _match_models(self, flat_from_module: Union[nn.Module, List[nn.Module]],
@@ -144,6 +142,15 @@ class NBipartiteMatching(DPMatching):
 <li><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="dp_matching.html#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></li>
 <li><a title="iatransfer.toolkit.base_matching.Matching" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a></li>
 <li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.matching.dp_matching.DPMatching" href="dp_matching.html#iatransfer.toolkit.matching.dp_matching.DPMatching">DPMatching</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.match" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.match">match</a></code></li>
+<li><code><a title="iatransfer.toolkit.matching.dp_matching.DPMatching.sim" href="../base_matching.html#iatransfer.toolkit.base_matching.Matching.sim">sim</a></code></li>
+</ul>
+</li>
 </ul>
 </dd>
 </dl>

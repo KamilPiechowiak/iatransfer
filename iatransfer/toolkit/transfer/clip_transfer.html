@@ -32,6 +32,8 @@ from iatransfer.toolkit.base_transfer import Transfer
 
 
 class ClipTransfer(Transfer):
+    &#34;&#34;&#34;Clip tensor transfer algorithm for IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         super().__init__(**kwargs)
@@ -67,13 +69,14 @@ class ClipTransfer(Transfer):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Clip tensor transfer algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ClipTransfer(Transfer):
+    &#34;&#34;&#34;Clip tensor transfer algorithm for IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         super().__init__(**kwargs)
@@ -99,35 +102,15 @@ inheritance.</p></div>
 <li><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></li>
 <li>abc.ABC</li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="iatransfer.toolkit.transfer.clip_transfer.ClipTransfer.transfer_layer"><code class="name flex">
-<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -&gt; None:
-    if tensor_from is None or tensor_to is None:
-        return
-    from_slices, to_slices = [], []
-    for a, b in zip(tensor_from.shape, tensor_to.shape):
-        if a &lt; b:
-            from_slices.append(slice(0, a))
-            to_slices.append(slice((b - a) // 2, -((b - a + 1) // 2)))
-        elif a &gt; b:
-            from_slices.append(slice((a - b) // 2, -((a - b + 1) // 2)))
-            to_slices.append(slice(0, b))
-        else:
-            from_slices.append(slice(0, a))
-            to_slices.append(slice(0, b))
-    tensor_to[tuple(to_slices)] = tensor_from[tuple(from_slices)]</code></pre>
-</details>
-</dd>
-</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer_layer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer_layer">transfer_layer</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -147,9 +130,6 @@ inheritance.</p></div>
 <ul>
 <li>
 <h4><code><a title="iatransfer.toolkit.transfer.clip_transfer.ClipTransfer" href="#iatransfer.toolkit.transfer.clip_transfer.ClipTransfer">ClipTransfer</a></code></h4>
-<ul class="">
-<li><code><a title="iatransfer.toolkit.transfer.clip_transfer.ClipTransfer.transfer_layer" href="#iatransfer.toolkit.transfer.clip_transfer.ClipTransfer.transfer_layer">transfer_layer</a></code></li>
-</ul>
 </li>
 </ul>
 </li>

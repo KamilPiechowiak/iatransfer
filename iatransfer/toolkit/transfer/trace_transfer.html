@@ -37,6 +37,8 @@ from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class TraceTransfer(Transfer):
+    &#34;&#34;&#34;Trace tensor transfer algorithm for IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -&gt; None:
         if reverse_priority:
@@ -217,13 +219,14 @@ class TraceTransfer(Transfer):
 <span>(</span><span>reverse_priority: bool = False, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Trace tensor transfer algorithm for IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class TraceTransfer(Transfer):
+    &#34;&#34;&#34;Trace tensor transfer algorithm for IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, reverse_priority: bool = False, **kwargs) -&gt; None:
         if reverse_priority:
@@ -432,38 +435,16 @@ inheritance.</p></div>
             self.layers_mapping[matching[1]] = matching[0]</code></pre>
 </details>
 </dd>
-<dt id="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer"><code class="name flex">
-<span>def <span class="ident">transfer</span></span>(<span>self, matched: List[Tuple[torch.nn.modules.module.Module, torch.nn.modules.module.Module]], *args, **kwargs) ‑> NoneType</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transfer(self, matched: List[Tuple[nn.Module, nn.Module]], *args, **kwargs) -&gt; None:
-    to_module = args[0] if len(args) &gt; 0 else kwargs[&#39;context&#39;][&#39;to_module&#39;]
-    with torch.no_grad():
-        self.create_layers_mapping(matched)
-        to_module.eval()
-        module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
-        module.forward()</code></pre>
-</details>
-</dd>
-<dt id="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer"><code class="name flex">
-<span>def <span class="ident">transfer_layer</span></span>(<span>self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -&gt; TransferStats:
-    raise ValueError(&#34;Not implemented&#34;)</code></pre>
-</details>
-</dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="iatransfer.toolkit.base_transfer.Transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a></b></code>:
+<ul class="hlist">
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer">transfer</a></code></li>
+<li><code><a title="iatransfer.toolkit.base_transfer.Transfer.transfer_layer" href="../base_transfer.html#iatransfer.toolkit.base_transfer.Transfer.transfer_layer">transfer_layer</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 </dl>
 </section>
@@ -489,8 +470,6 @@ inheritance.</p></div>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.create_layers_mapping" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.create_layers_mapping">create_layers_mapping</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_classes" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_classes">layers_classes</a></code></li>
 <li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_mapping" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.layers_mapping">layers_mapping</a></code></li>
-<li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer">transfer</a></code></li>
-<li><code><a title="iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer" href="#iatransfer.toolkit.transfer.trace_transfer.TraceTransfer.transfer_layer">transfer_layer</a></code></li>
 </ul>
 </li>
 </ul>

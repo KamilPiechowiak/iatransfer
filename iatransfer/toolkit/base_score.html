@@ -32,6 +32,8 @@ import torch.nn as nn
 
 
 class Score(ABC):
+    &#34;&#34;&#34;Base-class for any scoring algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
@@ -39,6 +41,8 @@ class Score(ABC):
     @abstractmethod
     def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Calculates the float score between two layers.
+        &#34;&#34;&#34;
         pass
 
     def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
@@ -47,6 +51,8 @@ class Score(ABC):
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Alias for &#39;score&#39;.
+        &#34;&#34;&#34;
         return self.score(from_module, to_module, *args, **kwargs)</code></pre>
 </details>
 </section>
@@ -64,13 +70,14 @@ class Score(ABC):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Helper class that provides a standard way to create an ABC using
-inheritance.</p></div>
+<div class="desc"><p>Base-class for any scoring algorithm detectable from IAT.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Score(ABC):
+    &#34;&#34;&#34;Base-class for any scoring algorithm detectable from IAT.
+    &#34;&#34;&#34;
 
     def __init__(self, **kwargs) -&gt; None:
         self.kwargs = kwargs
@@ -78,6 +85,8 @@ inheritance.</p></div>
     @abstractmethod
     def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Calculates the float score between two layers.
+        &#34;&#34;&#34;
         pass
 
     def precompute_scores(self, from_model: nn.Module, to_model: nn.Module, *args, **kwargs) \
@@ -86,6 +95,8 @@ inheritance.</p></div>
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Alias for &#39;score&#39;.
+        &#34;&#34;&#34;
         return self.score(from_module, to_module, *args, **kwargs)</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -119,7 +130,7 @@ inheritance.</p></div>
 <span>def <span class="ident">score</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> float</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Calculates the float score between two layers.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -127,6 +138,8 @@ inheritance.</p></div>
 <pre><code class="python">@abstractmethod
 def score(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
         -&gt; float:
+    &#34;&#34;&#34;Calculates the float score between two layers.
+    &#34;&#34;&#34;
     pass</code></pre>
 </details>
 </dd>

@@ -41,6 +41,8 @@ from iatransfer.utils.subclass_utils import get_subclasses
 
 
 class IAT:
+    &#34;&#34;&#34;Represents the inter-architecture transfer algorithm.
+    &#34;&#34;&#34;
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -48,16 +50,23 @@ class IAT:
 
     def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
+        &#34;&#34;&#34;Executes the entire IAT algorithm.
+        &#34;&#34;&#34;
         context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
+        stats = TransferStats()
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
         matched_tensors = self.matching(from_paths, to_paths, context=context)
-        return self.transfer(matched_tensors, context=context)
+        self.transfer(matched_tensors, context=context)
+
+        return stats
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Returns similarity score between two models.
+        &#34;&#34;&#34;
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
@@ -65,6 +74,8 @@ class IAT:
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
+        &#34;&#34;&#34;Alias for &#39;run&#39;.
+        &#34;&#34;&#34;
         return self.run(from_module, to_module, *args, **kwargs)
 
     def __init__(self,
@@ -95,6 +106,8 @@ class IAT:
              score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = &#39;ShapeScore&#39;,
              *args,
              **kwargs):
+        &#34;&#34;&#34;Method factory.
+        &#34;&#34;&#34;
         return IAT(standardization, matching, transfer, score, *args, **kwargs)
 
     def _try_setting(self, ctx: Dict, key: str, value: Any, clazz: Any) -&gt; None:
@@ -137,12 +150,14 @@ class IAT:
 <span>(</span><span>standardization: Union[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, str, Tuple[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, Dict], Tuple[str, Dict]] = 'blocks', matching: Union[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, str, Tuple[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, Dict], Tuple[str, Dict]] = 'dp', transfer: Union[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, str, Tuple[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, Dict], Tuple[str, Dict]] = 'clip', score: Union[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, str, Tuple[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, Dict], Tuple[str, Dict]] = 'ShapeScore', *args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Represents the inter-architecture transfer algorithm.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class IAT:
+    &#34;&#34;&#34;Represents the inter-architecture transfer algorithm.
+    &#34;&#34;&#34;
     standardization: Standardization = None
     matching: Matching = None
     transfer: Transfer = None
@@ -150,16 +165,23 @@ class IAT:
 
     def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
+        &#34;&#34;&#34;Executes the entire IAT algorithm.
+        &#34;&#34;&#34;
         context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
+        stats = TransferStats()
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
         matched_tensors = self.matching(from_paths, to_paths, context=context)
-        return self.transfer(matched_tensors, context=context)
+        self.transfer(matched_tensors, context=context)
+
+        return stats
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; float:
+        &#34;&#34;&#34;Returns similarity score between two models.
+        &#34;&#34;&#34;
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
@@ -167,6 +189,8 @@ class IAT:
 
     def __call__(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -&gt; TransferStats:
+        &#34;&#34;&#34;Alias for &#39;run&#39;.
+        &#34;&#34;&#34;
         return self.run(from_module, to_module, *args, **kwargs)
 
     def __init__(self,
@@ -197,6 +221,8 @@ class IAT:
              score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = &#39;ShapeScore&#39;,
              *args,
              **kwargs):
+        &#34;&#34;&#34;Method factory.
+        &#34;&#34;&#34;
         return IAT(standardization, matching, transfer, score, *args, **kwargs)
 
     def _try_setting(self, ctx: Dict, key: str, value: Any, clazz: Any) -&gt; None:
@@ -249,7 +275,7 @@ class IAT:
 <span>def <span class="ident">make</span></span>(<span>standardization: Union[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, str, Tuple[<a title="iatransfer.toolkit.base_standardization.Standardization" href="base_standardization.html#iatransfer.toolkit.base_standardization.Standardization">Standardization</a>, Dict], Tuple[str, Dict]] = 'blocks', matching: Union[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, str, Tuple[<a title="iatransfer.toolkit.base_matching.Matching" href="base_matching.html#iatransfer.toolkit.base_matching.Matching">Matching</a>, Dict], Tuple[str, Dict]] = 'dp', transfer: Union[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, str, Tuple[<a title="iatransfer.toolkit.base_transfer.Transfer" href="base_transfer.html#iatransfer.toolkit.base_transfer.Transfer">Transfer</a>, Dict], Tuple[str, Dict]] = 'clip', score: Union[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, str, Tuple[<a title="iatransfer.toolkit.base_score.Score" href="base_score.html#iatransfer.toolkit.base_score.Score">Score</a>, Dict], Tuple[str, Dict]] = 'ShapeScore', *args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Method factory.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -262,6 +288,8 @@ def make(standardization: Union[Standardization, str, Tuple[Standardization, Dic
          score: Union[Score, str, Tuple[Score, Dict], Tuple[str, Dict]] = &#39;ShapeScore&#39;,
          *args,
          **kwargs):
+    &#34;&#34;&#34;Method factory.
+    &#34;&#34;&#34;
     return IAT(standardization, matching, transfer, score, *args, **kwargs)</code></pre>
 </details>
 </dd>
@@ -272,33 +300,40 @@ def make(standardization: Union[Standardization, str, Tuple[Standardization, Dic
 <span>def <span class="ident">run</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> <a title="iatransfer.toolkit.transfer.transfer_stats.TransferStats" href="transfer/transfer_stats.html#iatransfer.toolkit.transfer.transfer_stats.TransferStats">TransferStats</a></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Executes the entire IAT algorithm.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def run(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
         -&gt; TransferStats:
+    &#34;&#34;&#34;Executes the entire IAT algorithm.
+    &#34;&#34;&#34;
     context = {&#39;from_module&#39;: from_module, &#39;to_module&#39;: to_module}
+    stats = TransferStats()
 
     from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
     self.score.precompute_scores(from_module, to_module)
     self.matching.set_score(self.score)
     matched_tensors = self.matching(from_paths, to_paths, context=context)
-    return self.transfer(matched_tensors, context=context)</code></pre>
+    self.transfer(matched_tensors, context=context)
+
+    return stats</code></pre>
 </details>
 </dd>
 <dt id="iatransfer.toolkit.iat.IAT.sim"><code class="name flex">
 <span>def <span class="ident">sim</span></span>(<span>self, from_module: torch.nn.modules.module.Module, to_module: torch.nn.modules.module.Module, *args, **kwargs) ‑> float</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns similarity score between two models.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
         -&gt; float:
+    &#34;&#34;&#34;Returns similarity score between two models.
+    &#34;&#34;&#34;
     from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
     self.score.precompute_scores(from_module, to_module)
     self.matching.set_score(self.score)
