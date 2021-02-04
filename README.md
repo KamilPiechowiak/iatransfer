@@ -2,10 +2,10 @@
 ![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
 ![Documentation](https://github.com/KamilPiechowiak/weights-transfer/workflows/Documentation/badge.svg)
 
-![Release](https://img.shields.io/badge/toolkit-1.0.0-red)
-![Release](https://img.shields.io/badge/research-1.0.0-red)
-![License](https://img.shields.io/badge/license-Apache--2.0-green)
 ![Coverage](https://img.shields.io/badge/coverage-95%25-green)
+![Release](https://img.shields.io/badge/toolkit-1.0.0-blue)
+![Release](https://img.shields.io/badge/research-1.0.0-blue)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-linux--64-blue)
 ![Python](https://img.shields.io/badge/python-x64%203.8-blue)
 ![Pytorch](https://img.shields.io/badge/torch-1.7.1-blue)
