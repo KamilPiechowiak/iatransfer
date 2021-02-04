@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 
 from iatransfer.toolkit.base_transfer import Transfer
-from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class TraceTransfer(Transfer):
@@ -173,5 +172,5 @@ class TraceTransfer(Transfer):
             module = self.Module(torch.jit.trace(to_module, torch.randn(1, 3, 300, 300)), to_module, self)
             module.forward()
 
-    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> TransferStats:
+    def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> None:
         raise ValueError("Not implemented")

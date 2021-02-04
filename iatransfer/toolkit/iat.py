@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, Union, List, Set
 
 import torch.nn as nn
 from inflection import camelize
@@ -9,6 +9,7 @@ from iatransfer.toolkit.base_standardization import Standardization
 from iatransfer.toolkit.base_transfer import Transfer
 from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 from iatransfer.utils.dot_dict import DotDict
+from iatransfer.utils.flatten import flatten_modules
 from iatransfer.utils.subclass_utils import get_subclasses
 
 
@@ -25,15 +26,39 @@ class IAT:
         """Executes the entire IAT algorithm.
         """
         context = {'from_module': from_module, 'to_module': to_module}
-        stats = TransferStats()
+
+        flat_from = set(flatten_modules(from_module))
+        flat_to = set(flatten_modules(to_module))
 
         from_paths, to_paths = self.standardization(from_module), self.standardization(to_module)
         self.score.precompute_scores(from_module, to_module)
         self.matching.set_score(self.score)
         matched_tensors = self.matching(from_paths, to_paths, context=context)
+
         self.transfer(matched_tensors, context=context)
 
-        return stats
+        all_from = len(flat_from)
+        all_to = len(flat_to)
+        self._flat_remove(matched_tensors, flat_from, flat_to)
+
+        return TransferStats(all_from=all_from,
+                             all_to=all_to,
+                             left_from=len(flat_from),
+                             left_to=len(flat_to),
+                             matched_from=all_from - len(flat_from),
+                             matched_to=all_to - len(flat_to))
+
+    def _flat_remove(self, matched: List, flat_from: Set[nn.Module], flat_to: Set[nn.Module]):
+        for x in matched:
+            if isinstance(x, list):
+                self._flat_remove(x, flat_from, flat_to)
+            else:
+                tensor_from, tensor_to = x
+                if tensor_to and tensor_from:
+                    if tensor_from in flat_from:
+                        flat_from.remove(tensor_from)
+                    if tensor_to in flat_to:
+                        flat_to.remove(tensor_to)
 
     def sim(self, from_module: nn.Module, to_module: nn.Module, *args, **kwargs) \
             -> float:

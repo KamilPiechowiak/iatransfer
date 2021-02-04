@@ -1,4 +1,7 @@
-def get_subclasses(clazz: type):
+from typing import Dict
+
+
+def get_subclasses(clazz: type) -> Dict:
     subclasses = {}
     classes = [clazz]
     while len(classes) > 0:
