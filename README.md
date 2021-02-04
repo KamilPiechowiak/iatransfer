@@ -1,6 +1,6 @@
 ![Toolkit](https://github.com/KamilPiechowiak/weights-transfer/workflows/Toolkit%20build/badge.svg)
 ![Research](https://github.com/KamilPiechowiak/weights-transfer/workflows/Research%20build/badge.svg)
-![Documentation](https://github.com/KamilPiechowiak/weights-transfer/workflows/Documentation/badge.svg)
+[![Documentation](https://github.com/KamilPiechowiak/weights-transfer/workflows/Documentation/badge.svg)](https://kamilpiechowiak.github.io/iatransfer/iatransfer/toolkit/index.html)
 
 ![Coverage](https://img.shields.io/badge/coverage-95%25-green)
 ![Release](https://img.shields.io/badge/toolkit-1.0.0-blue)
