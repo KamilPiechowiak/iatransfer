@@ -73,8 +73,12 @@ pip install -e .
 Copy the source code to the GCP cloudshell or install `iatransfer_research` package.
 
 Run:
-```/bin/bash ./scripts/research/iatransfer_full_run.sh```
+```bash
+/bin/bash ./scripts/research/iatransfer_full_run.sh
+```
 or
-```iatransfer_full_run.sh```
+```bash
+iatransfer_full_run.sh
+```
 if `iatransfer_research` has been installed.
 
