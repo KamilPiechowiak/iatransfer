@@ -42,16 +42,16 @@ transfer(model_from, model_to)
 ```
 
 ## Cite
-When referring to or using iatransfer in a scientific publication, please consider including citation to the following thesis:
-@manual{
-  iat2021,
-  title        = {Inter-Architecture Knowledge Transfer},
-  author       = {Maciej A. Czyzewski and Daniel Nowak and Kamil Piechowiak},
-  note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},
-  type         = {Bachelor’s Thesis},
-  address      = {Poznan, Poland},
-  year         = {2021}
-}
+When referring to or using iatransfer in a scientific publication, please consider including citation to the following thesis:&nbsp;&nbsp;
+@manual{&nbsp;
+  iat2021,&nbsp;
+  title        = {Inter-Architecture Knowledge Transfer},&nbsp;
+  author       = {Maciej A. Czyzewski and Daniel Nowak and Kamil Piechowiak},&nbsp;
+  note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},&nbsp;
+  type         = {Bachelor’s Thesis},&nbsp;
+  address      = {Poznan, Poland},&nbsp;
+  year         = {2021}&nbsp;
+}&nbsp;&nbsp;
 
 iatransfer has been tested under python 3.8.
 
