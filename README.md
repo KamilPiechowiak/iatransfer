@@ -78,7 +78,8 @@ When referring to or using iatransfer in a scientific publication, please consid
 &emsp;iat2021,<br />
 &emsp;title        = {Inter-Architecture Knowledge Transfer},<br />
 &emsp;author       = {Maciej A. Czyzewski and Daniel Nowak and Kamil Piechowiak},<br />
-&emsp;note         = {Transfer learning between different architectures},organization = {Poznan University of Technology},<br />
+&emsp;note         = {Transfer learning between different architectures},
+&emsp;organization = {Poznan University of Technology},<br />
 &emsp;type = {Bachelor’s Thesis},<br />
 &emsp;address = {Poznan, Poland},<br />
 &emsp;year = {2021}<br />
