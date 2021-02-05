@@ -43,6 +43,7 @@ def requirements(filename: str) -> List[str]:
 
 
 def do_setup(configuration: DotDict) -> None:
+    print(configuration.DATA_FILES)
     setup(
         name=configuration.NAME,
         version=configuration.VERSION,
@@ -59,8 +60,8 @@ def do_setup(configuration: DotDict) -> None:
         classifiers=configuration.CLASSIFIERS,
         keywords=configuration.KEYWORDS,
         install_requires=requirements(configuration.REQUIREMENTS_PATH),
-        # data_files=[('.', [PROPERTIES, configuration.REQUIREMENTS_PATH])],
-        zip_safe=True
+        zip_safe=True,
+        data_files=configuration.DATA_FILES
     )
 
 

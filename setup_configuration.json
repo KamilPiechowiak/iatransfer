@@ -2,7 +2,7 @@
   "AUTHOR": "Kamil Piechowiak, Daniel Nowak, Maciej Czyżewski",
   "EMAIL": "",
   "URL": "https://github.com/KamilPiechowiak/weights-transfer",
-  "VERSION": "1.0.0",
+  "VERSION": "1.0.1",
   "DESCRIPTION": "Tool for inter-architecture weight transfer",
   "LONG_DESCRIPTION_CONTENT_TYPE": "text/markdown",
   "LICENSE": "Apache-2.0",
@@ -36,7 +36,16 @@
         "Programming Language :: Python :: 3",
         "Operating System :: POSIX :: Linux"
       ],
-      "REQUIREMENTS_PATH": "requirements.txt"
+      "REQUIREMENTS_PATH": "requirements.txt",
+      "DATA_FILES": [
+        [
+          ".",
+          [
+            "setup_configuration.json",
+            "requirements.txt"
+          ]
+        ]
+      ]
     },
 
     "RESEARCH": {
@@ -57,7 +66,63 @@
         "Programming Language :: Python :: 3",
         "Operating System :: POSIX :: Linux"
       ],
-      "REQUIREMENTS_PATH": "requirements_research.txt"
+      "REQUIREMENTS_PATH": "requirements_research.txt",
+      "DATA_FILES": [
+        [
+          ".",
+          [
+            "setup_configuration.json",
+            "requirements.txt"
+          ]
+        ],
+        [
+          "config/models",
+          [
+            "config/models/flags-small.json",
+            "config/models/timm.json",
+            "config/models/all.json",
+            "config/models/efficientnets-cifar100.json",
+            "config/models/flags-efficientnets.json",
+            "config/models/timm-cifar100.json",
+            "config/models/flags-timm.json",
+            "config/models/efficientnets.json",
+            "config/models/small.json"
+          ]
+        ],
+        [
+          "config/sim",
+          [
+            "config/sim/models.csv",
+            "config/sim/models_subset.csv"
+          ]
+        ],
+        [
+          "config/transfer",
+          [
+            "config/transfer/flags-small.json",
+            "config/transfer/methods",
+            "config/transfer/epochs-run.json",
+            "config/transfer/efficientnets-cifar100.json",
+            "config/transfer/method.json",
+            "config/transfer/flags-efficientnets.json",
+            "config/transfer/epochs-cifar100.json",
+            "config/transfer/efficientnets.json",
+            "config/transfer/small.json",
+            "config/transfer/epochs.json"
+          ]
+        ],
+        [
+          "config/transfer/methods",
+          [
+            "config/transfer/methods/flags.json",
+            "config/transfer/methods/methods.json",
+            "config/transfer/methods/models.json",
+            "config/transfer/methods/methods-append.json",
+            "config/transfer/methods/models-small-append.json",
+            "config/transfer/methods/models-small.json"
+          ]
+        ]
+      ]
     }
   }
 }

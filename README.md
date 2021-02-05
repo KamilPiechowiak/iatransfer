@@ -3,8 +3,8 @@
 [![Documentation](https://github.com/KamilPiechowiak/weights-transfer/workflows/Documentation/badge.svg)](https://kamilpiechowiak.github.io/iatransfer/iatransfer/toolkit/index.html)
 
 ![Coverage](https://img.shields.io/badge/coverage-95%25-green)
-![Release](https://img.shields.io/badge/toolkit-1.0.0-blue)
-![Release](https://img.shields.io/badge/research-1.0.0-blue)
+![Release](https://img.shields.io/badge/toolkit-1.0.1-blue)
+![Release](https://img.shields.io/badge/research-1.0.1-blue)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Platform](https://img.shields.io/badge/platform-linux--64-blue)
 ![Python](https://img.shields.io/badge/python-x64%203.8-blue)
