@@ -60,7 +60,7 @@ def do_setup(configuration: DotDict) -> None:
         classifiers=configuration.CLASSIFIERS,
         keywords=configuration.KEYWORDS,
         install_requires=requirements(configuration.REQUIREMENTS_PATH),
-        zip_safe=True,
+        zip_safe=False,
         data_files=configuration.DATA_FILES
     )
 
