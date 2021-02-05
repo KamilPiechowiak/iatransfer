@@ -15,8 +15,6 @@ iatransfer is a PyTorch package for transferring pretrained weights between mode
 
 Drastically speed up your training process using two additional lines of code.
 
-> [Documentation](https://kamilpiechowiak.github.io/iatransfer/iatransfer/toolkit/index.html)
-
 ## Installation
 ```bash
 pip install iatransfer
@@ -73,6 +71,9 @@ class CustomMatching(Matching):
 # This will instantiate the above CustomMatching in IAT
 iat = IAT(matching='custom') 
 ```
+
+> [Documentation](https://kamilpiechowiak.github.io/iatransfer/iatransfer/toolkit/index.html)
+
 ## Citation
 When referring to or using iatransfer in a scientific publication, please consider including citation to the following thesis:<br /><br />
 @manual{<br />
