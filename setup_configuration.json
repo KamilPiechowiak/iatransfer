@@ -2,7 +2,7 @@
   "AUTHOR": "Kamil Piechowiak, Daniel Nowak, Maciej Czyżewski",
   "EMAIL": "",
   "URL": "https://github.com/KamilPiechowiak/weights-transfer",
-  "VERSION": "1.0.2",
+  "VERSION": "1.0.3",
   "DESCRIPTION": "Tool for inter-architecture weight transfer",
   "LONG_DESCRIPTION_CONTENT_TYPE": "text/markdown",
   "LICENSE": "Apache-2.0",
@@ -100,7 +100,6 @@
           "config/transfer",
           [
             "config/transfer/flags-small.json",
-            "config/transfer/methods",
             "config/transfer/epochs-run.json",
             "config/transfer/efficientnets-cifar100.json",
             "config/transfer/method.json",
