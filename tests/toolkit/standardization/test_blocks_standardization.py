@@ -43,8 +43,16 @@ class BlocksStandardizationTest(unittest.TestCase):
         )
 
     def test_model(self):
-        model = timm.create_model("regnetx_002")
+        model = timm.create_model("regnetx_004")
+        pprint(model)
         bs = BlocksStandardization()
         layers = bs.standardize(model)
         print(len(layers))
+        pprint(layers)
+
+    def test_on_resnet(self):
+        from iatransfer.research.models.cifar10_resnet import Cifar10Resnet
+        model = Cifar10Resnet(2)
+        pprint(model)
+        layers = BlocksStandardization().standardize(model)
         pprint(layers)

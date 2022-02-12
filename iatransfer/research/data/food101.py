@@ -1,5 +1,5 @@
-import copy
 import os
+import io
 from typing import Optional, Callable, Tuple, Any
 
 from PIL import Image
@@ -40,10 +40,11 @@ class Food101(VisionDataset):
         self.targets = []
 
         with open(downloaded_list) as f:
-            for file_name in tqdm(f.read().split('\n')[:-1]):
-                self.data.append(
-                    copy.deepcopy(Image.open(os.path.join(self.root, self.base_folder, 'images', f'{file_name}.jpg'))))
-                self.targets.append(classes[file_name.split('/')[0]])
+            for filename in tqdm(f.read().split('\n')[:-1]):
+                with open(os.path.join(self.root, self.base_folder, 'images', f'{filename}.jpg'), "rb") as fp:
+                    data = io.BytesIO(fp.read())
+                self.data.append(data)
+                self.targets.append(classes[filename.split('/')[0]])
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         '''
@@ -53,8 +54,7 @@ class Food101(VisionDataset):
         Returns:
             tuple: (image, target) where target is index of the target class.
         '''
-        img, target = self.data[index], self.targets[index]
-
+        img, target = Image.open(self.data[index]), self.targets[index]
         if self.transform is not None:
             img = self.transform(img)
 

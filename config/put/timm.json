@@ -1,0 +1,183 @@
+{
+    "general": {
+        "learning_rate": 1e-2,
+        "epochs": 20,
+        "scheduler_mocked_epochs": 50,
+        "persist_state_every": 5,
+        "repeat": 3,
+        "path": "models",
+        "num_workers": 8,
+        "datasets_path": "data",
+        "gradient_accumulation": 2
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["semnasnet_100"],
+                "kwargs": {"num_classes": 10},
+                "name": "semnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mnasnet_100"],
+                "kwargs": {"num_classes": 10},
+                "name": "mnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_s"],
+                "kwargs": {"num_classes": 10},
+                "name": "mixnet_s"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_mobilenetv3_large_minimal_100"],
+                "kwargs": {"num_classes": 10},
+                "name": "tf_mobilenetv3_large_minimal_100"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnety_004"],
+                "kwargs": {"num_classes": 10},
+                "name": "regnety_004"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["semnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "semnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "mnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_s"],
+                "kwargs": {"num_classes": 100},
+                "name": "mixnet_s"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_mobilenetv3_large_minimal_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_mobilenetv3_large_minimal_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnety_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnety_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnetx_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnetx_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["rexnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "rexnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "init": "random"
+        }
+    ]   
+}

@@ -12,7 +12,22 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_20", "resnet_26", "resnet_32", "resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"]
+            "teachers": ["resnet_20", "resnet_26", "resnet_32"]
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [2],
+                "kwargs": {},
+                "name": "resnet_14"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "teachers": ["resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"],
+            "append_to_name": "width"
         },
         {
             "model": {
@@ -26,7 +41,22 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_14", "resnet_26", "resnet_32", "resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"]
+            "teachers": ["resnet_14", "resnet_26", "resnet_32"]
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [3],
+                "kwargs": {},
+                "name": "resnet_20"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "teachers": ["resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"],
+            "append_to_name": "width"
         },
         {
             "model": {
@@ -68,7 +98,7 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_14", "resnet_wide_14"]
+            "teachers": ["resnet_14", "resnet_narrow_14"]
         },
         {
             "model": {
@@ -82,7 +112,22 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_20", "resnet_26", "resnet_32", "resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"]
+            "teachers": ["resnet_20", "resnet_26", "resnet_32"]
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [2],
+                "kwargs": {"no_classes": 100},
+                "name": "resnet_14"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "teachers": ["resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"],
+            "append_to_name": "width"
         },
         {
             "model": {
@@ -96,7 +141,22 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_14", "resnet_26", "resnet_32", "resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"]
+            "teachers": ["resnet_14", "resnet_26", "resnet_32"]
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [3],
+                "kwargs": {"no_classes": 100},
+                "name": "resnet_20"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "teachers": ["resnet_narrow_14", "resnet_wide_14", "resnet_narrow_20", "resnet_wide_20"],
+            "append_to_name": "width"
         },
         {
             "model": {
@@ -138,7 +198,7 @@
                 "resolution": 32
             },
             "batch_size": 128,
-            "teachers": ["resnet_14", "resnet_wide_14"]
+            "teachers": ["resnet_14", "resnet_narrow_14"]
         }
     ]
 }

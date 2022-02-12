@@ -13,12 +13,14 @@
             },
             "batch_size": 128,
             "teachers": ["resnet_14"],
-            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "best.pt"] 
+            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "49_checkpoint.pt"], 
+            "append_to_name": "epochs",
+            "names": ["10", "20", "30", "40", "50"]
         },
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["efficientnet_b0"],
+                "args": ["tf_efficientnet_b0"],
                 "kwargs": {"num_classes": 100},
                 "name": "efficientnet-b0"
             },
@@ -28,7 +30,9 @@
             },
             "batch_size": 32,
             "teachers": ["efficientnet-b2"],
-            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "best.pt"]
+            "checkpoints": ["9_checkpoint.pt", "19_checkpoint.pt", "29_checkpoint.pt", "39_checkpoint.pt", "best.pt"],
+            "append_to_name": "epochs",
+            "names": ["10", "20", "30", "40", "50"]
         }
     ]
 }

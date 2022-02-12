@@ -73,6 +73,18 @@
             "standardization": "FlattenStandardization",
             "matching": "RandomMatching",
             "transfer": "ClipTransfer"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "DPMatching",
+            "transfer": "ClipTransfer",
+            "score": "AutoEncoderScore"
+        },
+        {
+            "standardization": "BlocksStandardization",
+            "matching": "BipartiteMatching",
+            "transfer": "ClipTransfer",
+            "score": "AutoEncoderScore"
         }
     ]
 }

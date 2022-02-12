@@ -4,3 +4,10 @@ build
 dist
 .vscode
 *.egg-info
+*.ipynb*
+logs
+res
+*.zip
+stats
+data
+figures

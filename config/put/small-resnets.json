@@ -1,0 +1,127 @@
+{
+    "general": {
+        "learning_rate": 1e-2,
+        "epochs": 4,
+        "scheduler_mocked_epochs": 50,
+        "persist_state_every": 5,
+        "repeat": 1,
+        "path": "models",
+        "num_workers": 8,
+        "datasets_path": "data"
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [2],
+                "kwargs": {},
+                "name": "resnet_14"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [3],
+                "kwargs": {},
+                "name": "resnet_20"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [4],
+                "kwargs": {},
+                "name": "resnet_26"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [5],
+                "kwargs": {},
+                "name": "resnet_32"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [2],
+                "kwargs": {"num_channels": 10},
+                "name": "resnet_narrow_14"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [3],
+                "kwargs": {"num_channels": 10},
+                "name": "resnet_narrow_20"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [2],
+                "kwargs": {"num_channels": 24},
+                "name": "resnet_wide_14"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        },
+        {
+            "model": {
+                "supplier": "Cifar10Resnet",
+                "args": [3],
+                "kwargs": {"num_channels": 24},
+                "name": "resnet_wide_20"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 32
+            },
+            "batch_size": 128,
+            "init": "random"
+        }
+    ],
+    "methods": []
+}

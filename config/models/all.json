@@ -428,6 +428,19 @@
                 "resolution": 224
             },
             "batch_size": 32
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["rexnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "rexnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32
         }
     ]
 }

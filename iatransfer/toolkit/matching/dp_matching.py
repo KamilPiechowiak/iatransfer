@@ -16,8 +16,12 @@ class DPMatching(Matching):
 
     def sim(self, from_module: List[Union[nn.Module, List[nn.Module]]],
             to_module: List[Union[nn.Module, List[nn.Module]]]) -> float:
-        score, _, _ = self._match_models(from_module, to_module)
-        return score / self._match_models(to_module, to_module)[0]
+        score_a, _, _ = self._match_models(from_module, to_module)
+        score_b, _, _ = self._match_models(to_module, from_module)
+        score_c, _, _ = self._match_models(to_module, to_module)
+        score_d, _, _ = self._match_models(from_module, from_module)
+        return (score_a*score_b/score_c/score_d)**0.5
+        # return score / self._match_models(to_module, to_module)[0]
 
     def _compute_score(self, from_module: nn.Module, to_module: nn.Module) -> float:
         def are_all_of_this_class(layers: List[nn.Module], clazz: Any) -> bool:

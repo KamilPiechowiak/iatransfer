@@ -9,6 +9,7 @@ import torch
 from iatransfer.research.train.pretrain_models import train_models
 from iatransfer.research.transfer.eval_transfer import eval_transfer
 from iatransfer.utils.file_utils import read_json
+from iatransfer.research.distributed.device_connector import DeviceConnector
 
 os.environ['XLA_USE_BF16'] = '1'  # use bfloat16 on tpu
 
@@ -21,22 +22,35 @@ PRETRAIN = 'pretrain'
 TRANSFER = 'transfer'
 
 
+def get_device_connector(FLAGS) -> DeviceConnector:
+    if FLAGS['tpu']:
+        from iatransfer.research.distributed.xla_connector import XlaConnector
+        return XlaConnector()
+    else:
+        from iatransfer.research.distributed.simple_connector import SimpleConnector
+        return SimpleConnector()
+
+
 def pretrain(args: List[str]) -> None:
-    FLAGS = read_json(args.flags)
-    models = read_json(args.models)["models"]
-    train_models(models, FLAGS)
+    obj = read_json(args.models)
+    FLAGS = obj["general"]
+    models = obj["models"]
+    connector = get_device_connector(FLAGS)
+    train_models(models, FLAGS, connector)
 
 
 def transfer(args: List[str]) -> None:
-    FLAGS = read_json(args.flags)
+    obj = read_json(args.student_models)
+    FLAGS = obj["general"]
     teachers = read_json(args.teacher_models)["models"]
-    students = read_json(args.student_models)["models"]
+    students = obj["models"]
     kwargs = {}
     if args.ia_methods is not None:
         kwargs["transfer_methods"] = read_json(args.ia_methods)["methods"]
     else:
-        kwargs["transfer_methods"] = {"transfer": "ClipTransfer"}
-    eval_transfer(teachers, students, FLAGS, **kwargs)
+        kwargs["transfer_methods"] = [{"transfer": "ClipTransfer"}]
+    connector = get_device_connector(FLAGS)
+    eval_transfer(teachers, students, FLAGS, connector, **kwargs)
 
 
 if __name__ == "__main__":
@@ -48,8 +62,6 @@ if __name__ == "__main__":
                         help="Path to configuration of teacher models for transfer")
     parser.add_argument('-s', '--student-models',
                         help="Path to configuration of student models for transfer")
-    parser.add_argument(
-        '-f', '--flags', help="Path to trainig flags", required=True)
     parser.add_argument('-i', '--ia-methods',
                         help="Path to iatransfer methods configuration")
     args = parser.parse_args()

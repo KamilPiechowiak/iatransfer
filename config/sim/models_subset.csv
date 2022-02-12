@@ -1,5 +1,6 @@
 name
-mobilenetv2_100
-regnetx_004
-mixnet_s
+semnasnet_100
 mnasnet_100
+mixnet_s
+tf_mobilenetv3_large_minimal_100
+regnety_004

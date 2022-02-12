@@ -1,24 +1,35 @@
-export MACHINE_TYPE=e2-standard-16
-export ZONE=us-central1-f
-export VM=vm
-export TPU_INSTANCE_NAME=tpu
+#!/bin/bash
 
-gcloud compute instances create $VM \
---image-family pytorch-1-6-xla \
---image-project deeplearning-platform-release \
---preemptible \
---zone $ZONE \
---subnet default \
---machine-type $MACHINE_TYPE \
---quiet
+ZONE=us-central1-f
+TPU_INSTANCE_NAME=tpu
 
-gcloud compute tpus create $TPU_INSTANCE_NAME \
+gcloud alpha compute tpus tpu-vm create $TPU_INSTANCE_NAME \
 --zone=$ZONE \
---network=default \
---version=pytorch-1.6  \
 --accelerator-type=v2-8 \
---quiet
+--version=v2-alpha
 
-dev/zip.sh
-gcloud compute scp --zone $ZONE iatransfer.zip $VM:
-gcloud compute ssh --zone $ZONE $VM
+zip -r weights-transfer.zip iatransfer config scripts -x *__pycache__*
+gcloud alpha compute tpus tpu-vm scp weights-transfer.zip $TPU_INSTANCE_NAME:. --zone=$ZONE
+
+gcloud alpha compute tpus tpu-vm ssh $TPU_INSTANCE_NAME --zone=$ZONE
+
+#vm begin
+gcloud auth login
+unzip -oq weights-transfer.zip
+mkdir res
+mkdir data
+
+cd data
+gsutil cp gs://kamil-piechowiak-weights-transfer/data/food-101.tar.gz .
+tar -xf food-101.tar.gz
+cd ..
+# conda activate torch-xla-1.10
+# sudo apt-get install libjpeg-dev zlib1g-dev
+pip3 install timm tqdm matplotlib inflection networkx
+
+export XRT_TPU_CONFIG="localservice;0;localhost:51011"
+
+nohup python3 -m iatransfer.research.runner pretrain -m config/models_new/others.json 2>&1 > log.log &
+nohup python3 -m iatransfer.research.runner transfer -t config/transfer_new/all.json -s config/transfer_new/random_init.json 2>&1 > log.log &
+
+gcloud alpha compute tpus tpu-vm delete $TPU_INSTANCE_NAME --zone=$ZONE

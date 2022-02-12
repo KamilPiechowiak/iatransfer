@@ -1,0 +1,144 @@
+{
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b0"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b0"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b1", "mnasnet_100", "mixnet_s", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b1"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b1"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 240
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["efficientnet_b2"],
+                "kwargs": {"num_classes": 100},
+                "name": "efficientnet-b2"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 260
+            },
+            "batch_size": 32,
+            "teachers": ["semnasnet_100", "mnasnet_100", "mixnet_s", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["semnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "semnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "mnasnet_100", "mixnet_s", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mnasnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "mnasnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b2", "semnasnet_100", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_s"],
+                "kwargs": {"num_classes": 100},
+                "name": "mixnet_s"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_mobilenetv3_large_minimal_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_mobilenetv3_large_minimal_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "mixnet_s", "regnety_004", "regnetx_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnety_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnety_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "mixnet_s", "tf_mobilenetv3_large_minimal_100", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["regnetx_004"],
+                "kwargs": {"num_classes": 100},
+                "name": "regnetx_004"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "mixnet_s", "tf_mobilenetv3_large_minimal_100", "regnety_004", "rexnet_100"]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["rexnet_100"],
+                "kwargs": {"num_classes": 100},
+                "name": "rexnet_100"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 32,
+            "teachers": ["efficientnet-b0", "efficientnet-b1", "efficientnet-b2", "semnasnet_100", "mnasnet_100", "mixnet_s", "tf_mobilenetv3_large_minimal_100", "regnety_004", "regnetx_004"]
+        } 
+    ]
+}

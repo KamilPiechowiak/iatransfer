@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #locally
-MACHINE_TYPE=e2-standard-16
+MACHINE_TYPE=e2-standard-2
 
 gcloud compute instances create vm2 \
 --image-family pytorch-1-6-xla \

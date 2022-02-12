@@ -1,0 +1,4 @@
+FROM nvcr.io/nvidia/pytorch:21.10-py3
+
+RUN useradd -m -u 16023 iatransfer
+RUN python3 -m pip install nose>=1.3.7 numpy>=1.19.4 torch>=1.6.0 typing-extensions>=3.7.4.3 timm>=0.3.3 networkx>=2.5 graphviz>=0.16 efficientnet_pytorch>=0.7 inflection>=0.5.1 matplotlib>=3.3.3 karateclub>=1.0.22

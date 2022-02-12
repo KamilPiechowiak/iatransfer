@@ -21,15 +21,30 @@ python -m iatransfer.research.runner transfer \
     -f config/transfer/methods/flags.json \
     -i config/transfer/methods/methods-append.json
 
+gsutil cp -r gs://weights-transfer/stats/resnet_14_CIFAR100* res/
+gsutil cp -r gs://weights-transfer/stats/efficientnet-b2_CIFAR100_* res/
+
 python -m iatransfer.research.runner transfer \
     -t config/models/all.json \
-    -s config/transfer/epochs-run.json \
+    -s config/transfer/epochs-cifar100-run.json \
+    -f config/transfer/flags-efficientnets.json \
+    -i config/transfer/method.json
+
+python -m iatransfer.research.runner transfer \
+    -t config/models/all.json \
+    -s config/transfer/efficientnets-cifar100.json \
     -f config/transfer/flags-efficientnets.json \
     -i config/transfer/method.json
 
 python -m iatransfer.research.runner transfer \
     -t config/models/all.json \
     -s config/transfer/small.json \
+    -f config/transfer/flags-small.json \
+    -i config/transfer/method.json
+
+python -m iatransfer.research.runner transfer \
+    -t config/models/all.json \
+    -s config/transfer/small-cifar100.json \
     -f config/transfer/flags-small.json \
     -i config/transfer/method.json
 
@@ -46,3 +61,16 @@ python -m iatransfer.research.runner transfer \
     -s config/transfer/methods/models-small-append.json \
     -f config/transfer/methods/flags.json \
     -i config/transfer/methods/methods.json
+
+python -m iatransfer.research.runner transfer \
+    -t config/models/all.json \
+    -s config/transfer/methods/models-small-append.json \
+    -f config/transfer/methods/flags.json \
+    -i config/transfer/methods/methods-append.json
+
+
+python -m iatransfer.research.runner transfer \
+    -t config/models/all.json \
+    -s config/transfer/methods/models-sim.json \
+    -f config/transfer/methods/flags.json \
+    -i config/transfer/method.json
