@@ -16,44 +16,15 @@
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["tf_efficientnet_b1"],
-                "kwargs": {"num_classes": 10, "pretrained": 1},
-                "name": "tf_efficientnet_b1_lr3_pretrained"
-            },
-            "dataset": {
-                "name": "CIFAR10",
-                "resolution": 240
-            },
-            "batch_size": 16,
-            "lr": 1e-3
-        },
-        {
-            "model": {
-                "supplier": "timm.create_model",
-                "args": ["tf_efficientnet_b1"],
+                "args": ["rexnet_100"],
                 "kwargs": {"num_classes": 100, "pretrained": 1},
-                "name": "tf_efficientnet_b1_lr3_pretrained"
+                "name": "rexnet_100_lr3_pretrained"
             },
             "dataset": {
                 "name": "CIFAR100",
-                "resolution": 240
-            },
-            "batch_size": 16,
-            "lr": 1e-3
-        },
-        {
-            "model": {
-                "supplier": "timm.create_model",
-                "args": ["semnasnet_100"],
-                "kwargs": {"num_classes": 10},
-                "name": "semnasnet_100"
-            },
-            "dataset": {
-                "name": "CIFAR10",
                 "resolution": 224
             },
-            "batch_size": 16,
-            "lr": 4e-3
+            "batch_size": 16
         }
     ]
 }

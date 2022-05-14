@@ -1,14 +1,14 @@
 {
     "general": {
         "lr": 4e-3,
-        "epochs": 100,
+        "epochs": 50,
         "scheduler_mocked_epochs": 100,
         "persist_state_every": 10,
         "repeat": 1,
         "path": "res",
         "bucket_path": "gs://kamil-piechowiak-weights-transfer/stats",
         "num_workers": 4,
-        "datasets_path": "data",
+        "datasets_path": "/mnt/disks/persist",
         "num_cores": 8,
         "tpu": 1
     },
@@ -16,12 +16,12 @@
         {
             "model": {
                 "supplier": "timm.create_model",
-                "args": ["mnasnet_100"],
-                "kwargs": {"num_classes": 100},
-                "name": "mnasnet_100"
+                "args": ["tf_efficientnet_b0"],
+                "kwargs": {},
+                "name": "tf_efficientnet_b0"
             },
             "dataset": {
-                "name": "CIFAR100",
+                "name": "ImageNet",
                 "resolution": 224
             },
             "batch_size": 16
