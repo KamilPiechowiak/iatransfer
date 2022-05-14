@@ -1,6 +1,8 @@
 import torch
+from torch import nn
 
 from iatransfer.toolkit.base_transfer import Transfer
+from iatransfer.toolkit.transfer.transfer_stats import TransferStats
 
 
 class FullTransfer(Transfer):
@@ -31,3 +33,6 @@ class FullTransfer(Transfer):
                 total_unsqueeze += 1
 
         tensor_to[tuple(to_slices)] = tensor_from[tuple(from_slices)]
+
+    def postprocess(self, layer: nn.Module) -> TransferStats:
+        pass

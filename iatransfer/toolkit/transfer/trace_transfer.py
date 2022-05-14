@@ -173,3 +173,6 @@ class TraceTransfer(Transfer):
 
     def transfer_layer(self, tensor_from: torch.Tensor, tensor_to: torch.Tensor, *args, **kwargs) -> TransferStats:
         raise ValueError("Not implemented")
+
+    def postprocess(self, layer: nn.Module) -> TransferStats:
+        raise ValueError("Not implemented")

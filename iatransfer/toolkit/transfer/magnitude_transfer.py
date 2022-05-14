@@ -93,3 +93,6 @@ class MagnitudeTransfer(Transfer):
                     self.transfer(matching)
                 elif matching[0] is not None and matching[1] is not None:
                     self.transfer_layer(matching[0], matching[1])
+
+    def postprocess(self, layer: nn.Module) -> TransferStats:
+        raise ValueError("Not implemented")

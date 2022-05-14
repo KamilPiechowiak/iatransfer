@@ -28,3 +28,5 @@ class ClipTransfer(Transfer):
                 to_slices.append(slice(0, b))
         tensor_to[tuple(to_slices)] = tensor_from[tuple(from_slices)]
 
+    def postprocess(self, layer: nn.Module) -> TransferStats:
+        pass
