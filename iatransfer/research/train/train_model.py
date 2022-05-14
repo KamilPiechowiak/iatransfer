@@ -16,7 +16,7 @@ from iatransfer.research.train.model_freezer import ModelFreezer
 def single_epoch(epoch: int, device: torch.device, connector: DeviceConnector,
                  model: nn.Module, loader: torch.utils.data.DataLoader, loss_func: Callable,
                  opt: torch.optim.Optimizer = None, stats: StatsReporter = None,
-                 metrics: Dict = {}, gradeBy: str = 'bce', grad_acc: int = 1):
+                 metrics: Dict = {}, gradeBy: str = 'bce', grad_acc: int = 1, grad_clip: int = None):
     start_time = datetime.now()
     assert gradeBy in metrics.keys()
     is_training = (opt is not None)
@@ -43,9 +43,13 @@ def single_epoch(epoch: int, device: torch.device, connector: DeviceConnector,
             #         w_max = max(p.max().item(), w_max)
             #     print([w_min, w_max, y_pred.min().item(), y_pred.max().item()], flush=True)  # TODO remove end
             if i % grad_acc == 0:
+                if grad_clip is not None:
+                    nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
                 connector.optimizer_step(opt)
                 opt.zero_grad()
     if is_training and i % grad_acc != 0:
+        if grad_clip is not None:
+            nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
         connector.optimizer_step(opt)
         opt.zero_grad()
 
@@ -78,7 +82,7 @@ def save_model(connector: DeviceConnector, model: nn.Module,
 
 def train_model(FLAGS: Dict, device: torch.device, connector: DeviceConnector,
                 model: nn.Module, path: str, train_dataset: torch.utils.data.Dataset,
-                val_dataset: torch.utils.data.Dataset):
+                val_dataset: torch.utils.data.Dataset, repeat_no: int = 0):
     os.makedirs(path, exist_ok=True)
     model.to(device)
     opt = optim.Adam(model.parameters(), lr=FLAGS['lr'])
@@ -88,6 +92,7 @@ def train_model(FLAGS: Dict, device: torch.device, connector: DeviceConnector,
     metrics = {
         'loss': loss_func,
         'acc': lambda input, target: (torch.max(input, 1)[1] == target).sum() / float(target.shape[0]),
+        'acc5': lambda input, target: (torch.sort(input, 1, descending=True)[1][:, :5] == target.unsqueeze(-1)).sum() / float(target.shape[0])
     }
     if connector.is_master():
         statsReporter = StatsReporter(metrics, path)
@@ -121,11 +126,11 @@ def train_model(FLAGS: Dict, device: torch.device, connector: DeviceConnector,
 
         if hasattr(train_sampler, "set_epoch"):
             logger.info(f"Setting epoch {epoch}")
-            train_sampler.set_epoch(epoch)
+            train_sampler.set_epoch(epoch + repeat_no * 2137)
         connector.print(f'EPOCH: {epoch}')
         model.train()
         single_epoch(epoch, device, connector, model, connector.wrap_data_loader(train_loader, device), loss_func, opt,
-                     stats=statsReporter, metrics=metrics, gradeBy='loss', grad_acc=FLAGS.get("grad_acc", 1))
+                     stats=statsReporter, metrics=metrics, gradeBy='loss', grad_acc=FLAGS.get("grad_acc", 1), grad_clip=FLAGS.get("grad_clip", None))
 
         with torch.no_grad():
             model.eval()
@@ -133,11 +138,13 @@ def train_model(FLAGS: Dict, device: torch.device, connector: DeviceConnector,
                                 loss_func, stats=statsReporter, metrics=metrics, gradeBy='loss', grad_acc=FLAGS.get("grad_acc", 1))
             if loss < bestLoss:
                 bestLoss = loss
-                save_model(connector, model, opt, scheduler, [f'{path}/best.pt'])
+                if FLAGS.get("checkpoint", True) is True:
+                    save_model(connector, model, opt, scheduler, [f'{path}/best.pt'])
 
-        save_model(connector, model, opt, scheduler, [f'{path}/current.pt'])
-        if epoch % FLAGS['persist_state_every'] == FLAGS['persist_state_every'] - 1 and connector.is_master() and os.path.exists(f'{path}/best.pt'):
-            shutil.copy(f'{path}/best.pt', f'{path}/{epoch}_checkpoint.pt')
+        if FLAGS.get("checkpoint", True) is True:
+            save_model(connector, model, opt, scheduler, [f'{path}/current.pt'])
+            if epoch % FLAGS['persist_state_every'] == FLAGS['persist_state_every'] - 1 and connector.is_master() and os.path.exists(f'{path}/best.pt'):
+                shutil.copy(f'{path}/best.pt', f'{path}/{epoch}_checkpoint.pt')
 
         scheduler.step()
     if connector.is_master():

@@ -20,9 +20,10 @@ def train_models(training_tuples: List[Dict], FLAGS: Dict, connector: DeviceConn
             train_dataset, val_dataset = get_dataset(t.dataset_tuple, config)
             if connector.is_master():
                 connector.rendezvous('download_only_once')
-            for i in range(config['repeat']):
+            i_start = config.get('repeat_start', 0)
+            for i in range(i_start, i_start + config['repeat']):
                 train_model(config, device, connector, t.model(),
                             f'{config["path"]}/{t.name}_{t.dataset_tuple.name}_{i}', train_dataset,
-                            val_dataset)
+                            val_dataset, repeat_no=i)
 
     connector.run(_mp_fn, args=(training_tuples,), nprocs=FLAGS['num_cores'])

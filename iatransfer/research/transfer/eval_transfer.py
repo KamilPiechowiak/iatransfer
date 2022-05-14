@@ -1,5 +1,4 @@
 import copy
-import json
 from typing import Dict, List
 import os
 
@@ -36,16 +35,17 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
             train_dataset, val_dataset = get_dataset(t.dataset_tuple, config)
             if connector.is_master():
                 connector.rendezvous('download_only_once')
-            if t_json.get("checkpoints", None) is None:
-                t_json["checkpoints"] = ["best.pt"]
+            if config.get("checkpoints", None) is None:
+                config["checkpoints"] = ["best.pt"]
             for from_model_name in config["teachers"]:
                 for transfer_method in transfer_methods:
                     connector.print(transfer_method)
                     transfer = IAT(**transfer_method)
-                    for checkpoint_filename in t_json["checkpoints"]:
-                        for i in range(config['repeat']):
+                    for checkpoint_filename in config["checkpoints"]:
+                        i_start = config.get('repeat_start', 0)
+                        for i in range(i_start, i_start + config['repeat']):
                             if connector.is_master():
-                                bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{i}", checkpoint_filename)
+                                bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
                                 os.system(f"gsutil cp -r {bucket_path} from_model.pt")
                                 connector.rendezvous('download_model')
                             else:
@@ -60,7 +60,7 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
 
                             transfer(from_model, to_model)
                             train_model(config, device, connector, to_model, to_path,
-                                        train_dataset, val_dataset)
+                                        train_dataset, val_dataset, repeat_no=i)
 
                             # if connector.is_master():
                             #     non_transfer_path = f"{config['path']}/{t.name}_{t.dataset_tuple.name}_{i}"

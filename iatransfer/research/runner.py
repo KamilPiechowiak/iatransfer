@@ -1,5 +1,4 @@
 import argparse
-import os
 import random
 from typing import List
 
@@ -10,8 +9,6 @@ from iatransfer.research.train.pretrain_models import train_models
 from iatransfer.research.transfer.eval_transfer import eval_transfer
 from iatransfer.utils.file_utils import read_json
 from iatransfer.research.distributed.device_connector import DeviceConnector
-
-os.environ['XLA_USE_BF16'] = '1'  # use bfloat16 on tpu
 
 RANDOM_STATE = 13
 random.seed(RANDOM_STATE)
@@ -45,8 +42,8 @@ def transfer(args: List[str]) -> None:
     teachers = read_json(args.teacher_models)["models"]
     students = obj["models"]
     kwargs = {}
-    if args.ia_methods is not None:
-        kwargs["transfer_methods"] = read_json(args.ia_methods)["methods"]
+    if "methods" in obj:
+        kwargs["transfer_methods"] = obj["methods"]
     else:
         kwargs["transfer_methods"] = [{"transfer": "ClipTransfer"}]
     connector = get_device_connector(FLAGS)
@@ -62,8 +59,6 @@ if __name__ == "__main__":
                         help="Path to configuration of teacher models for transfer")
     parser.add_argument('-s', '--student-models',
                         help="Path to configuration of student models for transfer")
-    parser.add_argument('-i', '--ia-methods',
-                        help="Path to iatransfer methods configuration")
     args = parser.parse_args()
     if args.mode == PRETRAIN:
         if args.models is None:

@@ -87,6 +87,7 @@ def get_dataset(dataset_tuple: DatasetTuple, FLAGS: Dict):
             'FGVC_AIRCRAFT': lambda: FGVCAircraft(f'{path}', split='train' if train else 'test', transform=preprocess,
                                                   download=True),
             'FOOD': lambda: Food101(f'{path}', train, transform=preprocess, download=True),
+            'ImageNet': lambda: datasets.ImageNet(path, split='train' if train else 'val', transform=preprocess)
         }[name]
 
     return prepare_dataset(dataset_tuple.name,
