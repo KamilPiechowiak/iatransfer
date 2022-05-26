@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rm -rf iatransfer.zip && zip -q -r iatransfer.zip --exclude=.git** --exclude=venv/* --exclude=.idea/* --exclude=__pycache__/* --exclude=*.egg-info/* --exclude=stats/* .
+rm -rf iatransfer.zip && zip -q -r -v iatransfer.zip --exclude=**__pycache__** --exclude=.git** --exclude=venv/* --exclude=.idea/* --exclude=*.egg-info/* --exclude=stats/* .
