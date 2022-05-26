@@ -4,10 +4,12 @@ import os
 
 import torch
 from torch import nn
+import timm
 
 from iatransfer.research.data.data import TrainingTuple, get_dataset
 from iatransfer.research.distributed.device_connector import DeviceConnector
 from iatransfer.research.train.train_model import train_model
+from iatransfer.research.transfer.ghn_transfer import GHNTransfer
 from iatransfer.research.transfer.utils import get_transfer_method_name
 from iatransfer.toolkit.iat import IAT
 from iatransfer.utils.file_utils import read_json
@@ -44,21 +46,33 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                     for checkpoint_filename in config["checkpoints"]:
                         i_start = config.get('repeat_start', 0)
                         for i in range(i_start, i_start + config['repeat']):
-                            if connector.is_master():
-                                bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
-                                os.system(f"gsutil cp -r {bucket_path} from_model.pt")
-                                connector.rendezvous('download_model')
-                            else:
-                                connector.rendezvous('download_model')
-                            from_model: nn.Module = pretrained_models[
-                                f"{from_model_name}_{t.dataset_tuple.name}"].model()
-                            from_model.load_state_dict(
-                                torch.load("from_model.pt")['model'])
-
                             to_path = f"{config['path']}/{get_transfer_method_name(transfer_method)}_{t.name}_{t.dataset_tuple.name}_{i}_from_{from_model_name}_{checkpoint_filename.replace('.pt', '')}"
                             to_model = t.model()
+                            if from_model_name.split("_")[0] == "ghn":
+                                transfer = GHNTransfer(from_model_name)
+                                transfer.transfer(to_model)
+                            elif from_model_name.split("-")[0] == "timmpretrained":
+                                print("timm - pretrained")
+                                from_model = timm.create_model(
+                                    from_model_name.split("-")[1],
+                                    pretrained=True,
+                                    **t_json["model"]["kwargs"]    
+                                )
+                                transfer(from_model, to_model)
+                            else:
+                                if connector.is_master():
+                                    bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
+                                    os.system(f"gsutil cp -r {bucket_path} from_model.pt")
+                                    connector.rendezvous('download_model')
+                                else:
+                                    connector.rendezvous('download_model')
+                                from_model: nn.Module = pretrained_models[
+                                    f"{from_model_name}_{t.dataset_tuple.name}"].model()
+                                from_model.load_state_dict(
+                                    torch.load("from_model.pt")['model'])
 
-                            transfer(from_model, to_model)
+
+                                transfer(from_model, to_model)
                             train_model(config, device, connector, to_model, to_path,
                                         train_dataset, val_dataset, repeat_no=i)
 

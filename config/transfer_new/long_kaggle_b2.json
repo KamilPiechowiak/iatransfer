@@ -1,0 +1,36 @@
+{
+    "general": {
+        "lr": 4e-3,
+        "epochs": 100,
+        "scheduler_mocked_epochs": 100,
+        "checkpoint": 0,
+        "persist_state_every": 8,
+        "repeat": 1,
+        "repeat_start": 3,
+        "path": "/kaggle/working/res",
+        "num_workers": 2,
+        "num_cores": 1,
+        "datasets_path": "data",
+        "tpu": 0,
+        "gcp": 0
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b2"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_efficientnet_b2"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 260
+            },
+            "batch_size": 43,
+            "gradient_accumulation": 3,
+            "teachers": [
+                "timmpretrained-tf_efficientnet_b0"
+            ]
+        }
+    ]
+}

@@ -25,6 +25,7 @@ def single_epoch(epoch: int, device: torch.device, connector: DeviceConnector,
         metric_values[metric] = []
 
     for i, (x, y) in enumerate(loader):
+        x, y = x.to(device), y.to(device)
         y_pred = model(x)
         loss = loss_func(y_pred, y)
         for metric, f in metrics.items():
@@ -147,5 +148,5 @@ def train_model(FLAGS: Dict, device: torch.device, connector: DeviceConnector,
                 shutil.copy(f'{path}/best.pt', f'{path}/{epoch}_checkpoint.pt')
 
         scheduler.step()
-    if connector.is_master():
+    if connector.is_master() and FLAGS.get('gcp', True):
         os.system(f'gsutil cp -r {path} {FLAGS["bucket_path"]}')
