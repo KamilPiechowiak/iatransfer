@@ -51,7 +51,7 @@ The configurations we used are available in the `config/transfer/` directory. We
 To compare our solution with GHN, you need to download the ppuda repository. Go to the main directory of our repository and run:
 `git pull git@github.com:facebookresearch/ppuda.git`
 
-In the main direcotry run:
+In the main directory run:
 `python3 -m iatransfer.research.runner transfer -t config/transfer/all.json -s config/transfer_gpu/ghn.json`
 
 to start training with GHN initialization.
