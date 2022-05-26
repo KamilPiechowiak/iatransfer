@@ -9,7 +9,7 @@
 ## Usage
 
 ```python
-import torch
+from torch import nn
 from iatransfer.toolkit import IAT
 
 transfer = IAT()
@@ -22,7 +22,7 @@ train(model_from)
 # instantiate new model
 model_to: nn.Module = Model2() 
 
-# enjoy high-accuracy initialization
+# perform the transfer
 transfer(model_from, model_to)
 ```
 
@@ -30,24 +30,30 @@ transfer(model_from, model_to)
 
 To pretrain models run:
 `python3 -m iatransfer.research.runner pretrain -m config/models/...`
+
 for example:
 `python3 -m iatransfer.research.runner pretrain -m config/models/cifar10_local.json`
-The configurations we used are available in the `config/models/` directory. We were running our experiments on TPU. If you want to run them on CPU/GPU, configurations are in `config/models_gpu/`.
+
+The configurations we used are available in the `config/models/` directory. We were running our experiments on TPU. If you want to run them on CPU/GPU, use `config/models_gpu/`.
 
 ## Transfer
 
 To evaluate the performance of DPIAT run:
 `python3 -m iatransfer.research.runner transfer -t config/transfer/all.json -s config/transfer/...`
+
 for example:
 `python3 -m iatransfer.research.runner transfer -t config/transfer/all.json -s config/transfer/local.json`
-The configurations we used are available in the `config/transfer/` directory. We were running our experiments on TPU. If you want to run them on CPU/GPU, configurations are in `config/transfer_gpu/`.
+
+The configurations we used are available in the `config/transfer/` directory. We were running our experiments on TPU. If you want to run them on CPU/GPU, use `config/transfer_gpu/`.
 
 ### Comparison with GHN
 
-To compare our solution with GHN, you need to download the ppuda repository. Go to the main directory of our repository and use a command:
+To compare our solution with GHN, you need to download the ppuda repository. Go to the main directory of our repository and run:
 `git pull git@github.com:facebookresearch/ppuda.git`
+
 In the main direcotry run:
 `python3 -m iatransfer.research.runner transfer -t config/transfer/all.json -s config/transfer_gpu/ghn.json`
+
 to start training with GHN initialization.
 
 ### Running experiments on TPU
