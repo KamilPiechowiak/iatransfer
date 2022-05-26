@@ -1,7 +1,5 @@
 {
-  "AUTHOR": "Kamil Piechowiak, Daniel Nowak, Maciej Czyżewski",
   "EMAIL": "TODO",
-  "URL": "https://github.com/KamilPiechowiak/weights-transfer",
   "VERSION": "1.0.0",
   "DESCRIPTION": "Tool for inter-architecture weight transfer",
   "LONG_DESCRIPTION_CONTENT_TYPE": "text/markdown",

@@ -6,7 +6,7 @@ class GHNTransfer:
 
     def __init__(self, name: str):
         import sys
-        sys.path.append("ppuda-main")
+        sys.path.append("ppuda")
         from ppuda.ghn.nn import GHN2
         self.ghn = GHN2(name.split("_")[1])
 

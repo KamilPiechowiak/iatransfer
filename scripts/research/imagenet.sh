@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BUCKET_NAME=...
+
 gcloud compute disks create tpu-disk \
 --size 400GB  \
 --zone $ZONE \
@@ -17,6 +19,6 @@ sudo mkdir -p /mnt/disks/persist
 sudo mount -o discard,defaults /dev/sdb /mnt/disks/persist
 sudo chmod a+w /mnt/disks/persist
 
-gsutil cp gs://kamil-piechowiak-weights-transfer/data/ILSVRC2012_devkit_t12.tar.gz /mnt/disks/persist/
-gsutil cp gs://kamil-piechowiak-weights-transfer/data/ILSVRC2012_img_train.tar /mnt/disks/persist/
-gsutil cp gs://kamil-piechowiak-weights-transfer/data/ILSVRC2012_img_val.tar /mnt/disks/persist/
+gsutil cp gs://$BUCKET_NAME/data/ILSVRC2012_devkit_t12.tar.gz /mnt/disks/persist/
+gsutil cp gs://$BUCKET_NAME/data/ILSVRC2012_img_train.tar /mnt/disks/persist/
+gsutil cp gs://$BUCKET_NAME/data/ILSVRC2012_img_val.tar /mnt/disks/persist/

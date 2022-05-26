@@ -61,15 +61,19 @@ def eval_transfer(training_tuples: List[Dict], transfer_tuples: List[Dict], FLAG
                                 transfer(from_model, to_model)
                             else:
                                 if connector.is_master():
-                                    bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
-                                    os.system(f"gsutil cp -r {bucket_path} from_model.pt")
+                                    if config.get('gcp', True):
+                                        bucket_path = os.path.join(config['source_bucket_path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
+                                        os.system(f"gsutil cp -r {bucket_path} from_model.pt")
+                                    else:
+                                        from_path = os.path.join(config['path'], f"{from_model_name}_{t.dataset_tuple.name}_{0}", checkpoint_filename)
+                                        os.system(f"cp -r {from_path} from_model.pt")
                                     connector.rendezvous('download_model')
                                 else:
                                     connector.rendezvous('download_model')
                                 from_model: nn.Module = pretrained_models[
                                     f"{from_model_name}_{t.dataset_tuple.name}"].model()
                                 from_model.load_state_dict(
-                                    torch.load("from_model.pt")['model'])
+                                    torch.load("from_model.pt", map_location=device)['model'])
 
 
                                 transfer(from_model, to_model)

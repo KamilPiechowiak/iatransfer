@@ -1,0 +1,71 @@
+{
+    "general": {
+        "lr": 4e-3,
+        "epochs": 100,
+        "scheduler_mocked_epochs": 100,
+        "checkpoint": 0,
+        "persist_state_every": 8,
+        "repeat": 1,
+        "repeat_start": 3,
+        "path": "res",
+        "bucket_path": "gs://weights-transfer/transfer",
+        "source_bucket_path": "gs://weights-transfer/stats",
+        "num_workers": 4,
+        "datasets_path": "data",
+        "num_cores": 8,
+        "tpu": 1
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b0"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_efficientnet_b0"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "teachers": [
+                "tf_efficientnet_b2",
+                "mixnet_l",
+                "rexnet_100",
+                "tf_efficientnet_b2_lr3_pretrained",
+                "mixnet_l_lr3_pretrained",
+                "rexnet_100_lr3_pretrained",
+                "ghn_imagenet",
+                "timmpretrained-mixnet_l",
+                "timmpretrained-rexnet_100",
+                "timmpretrained-tf_efficientnet_b2"
+            ]
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b2"],
+                "kwargs": {"num_classes": 100},
+                "name": "tf_efficientnet_b2"
+            },
+            "dataset": {
+                "name": "CIFAR100",
+                "resolution": 260
+            },
+            "batch_size": 16,
+            "teachers": [
+                "tf_efficientnet_b0",
+                "mixnet_l",
+                "rexnet_100",
+                "tf_efficientnet_b0_lr3_pretrained",
+                "mixnet_l_lr3_pretrained",
+                "rexnet_100_lr3_pretrained",
+                "ghn_imagenet",
+                "timmpretrained-mixnet_l",
+                "timmpretrained-rexnet_100",
+                "timmpretrained-tf_efficientnet_b0"
+            ]
+        }
+    ]
+}
+

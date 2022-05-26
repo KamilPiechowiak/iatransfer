@@ -2,6 +2,7 @@
 
 ZONE=us-central1-f
 TPU_INSTANCE_NAME=tpu
+BUCKET_NAME=...
 
 gcloud alpha compute tpus tpu-vm create $TPU_INSTANCE_NAME \
 --zone=$ZONE \
@@ -20,7 +21,7 @@ mkdir res
 mkdir data
 
 cd data
-gsutil cp gs://kamil-piechowiak-weights-transfer/data/food-101.tar.gz .
+gsutil cp gs://$BUCKET_NAME/data/food-101.tar.gz .
 tar -xf food-101.tar.gz
 cd ..
 # conda activate torch-xla-1.10
