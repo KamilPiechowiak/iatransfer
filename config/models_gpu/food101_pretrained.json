@@ -1,0 +1,142 @@
+{
+    "general": {
+        "lr": 1e-3,
+        "epochs": 100,
+        "scheduler_mocked_epochs": 100,
+        "persist_state_every": 10,
+        "repeat": 1,
+        "path": "res",
+        "num_workers": 4,
+        "datasets_path": "data",
+        "tpu": 0,
+        "gcp": 0,
+        "num_cores": 8
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b0"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "tf_efficientnet_b0_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b1"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "tf_efficientnet_b1_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 240
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b2"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "tf_efficientnet_b2_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 260
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_l"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "mixnet_l_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mixnet_m"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "mixnet_m_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["rexnet_150"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "rexnet_150_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["rexnet_100"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "rexnet_100_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["mnasnet_100"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "mnasnet_100_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        },
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["semnasnet_100"],
+                "kwargs": {"num_classes": 101, "pretrained": 1},
+                "name": "semnasnet_100_pretrained"
+            },
+            "dataset": {
+                "name": "FOOD",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "lr": 1e-3
+        }
+    ]
+}

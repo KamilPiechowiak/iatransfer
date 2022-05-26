@@ -8,12 +8,11 @@
         "repeat": 3,
         "repeat_start": 0,
         "path": "res",
-        "bucket_path": "gs://weights-transfer/transfer",
-        "source_bucket_path": "gs://weights-transfer/stats",
-        "num_workers": 4,
-        "num_cores": 8,
+        "num_workers": 2,
+        "num_cores": 1,
         "datasets_path": "data",
-        "tpu": 1,
+        "tpu": 0,
+        "gcp": 0,
         "teachers": [
             "ghn_imagenet",
             "ghn_cifar10"

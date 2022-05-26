@@ -1,0 +1,35 @@
+{
+    "general": {
+        "lr": 4e-3,
+        "epochs": 4,
+        "scheduler_mocked_epochs": 100,
+        "checkpoint": 0,
+        "persist_state_every": 8,
+        "repeat": 1,
+        "repeat_start": 0,
+        "path": "res",
+        "num_workers": 1,
+        "num_cores": 1,
+        "datasets_path": "data",
+        "tpu": 0,
+        "gcp": 0,
+        "teachers": [
+            "tf_efficientnet_b0"
+        ]
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b1"],
+                "kwargs": {"num_classes": 10},
+                "name": "tf_efficientnet_b1"
+            },
+            "dataset": {
+                "name": "CIFAR10",
+                "resolution": 240
+            },
+            "batch_size": 4
+        }
+    ]
+}

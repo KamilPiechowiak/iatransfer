@@ -1,0 +1,36 @@
+{
+    "general": {
+        "lr": 4e-3,
+        "epochs": 50,
+        "scheduler_mocked_epochs": 100,
+        "persist_state_every": 10,
+        "repeat": 1,
+        "path": "res",
+        "num_workers": 8,
+        "num_cores": 1,
+        "datasets_path": "data",
+        "tpu": 0,
+        "gcp": 0
+    },
+    "models": [
+        {
+            "model": {
+                "supplier": "timm.create_model",
+                "args": ["tf_efficientnet_b0"],
+                "kwargs": {},
+                "name": "tf_efficientnet_b0"
+            },
+            "dataset": {
+                "name": "ImageNet",
+                "resolution": 224
+            },
+            "batch_size": 16,
+            "teachers": [
+                "tf_efficientnet_b2",
+                "mixnet_l",
+                "rexnet_100"
+            ]
+        }
+    ]
+}
+
